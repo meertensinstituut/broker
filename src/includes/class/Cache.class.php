@@ -20,7 +20,7 @@ class Cache {
     $this->configuration = $configuration;    
     $this->init ();
   }
-  private function init(): void {
+  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
@@ -161,13 +161,13 @@ class Cache {
       return null;
     }
   }
-  public function clean(): void {
+  public function clean() {
     $sql = "DELETE FROM \"cache\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
   }
-  public function reset(): void {
+  public function reset() {
     $sql = "DROP TABLE IF EXISTS \"cache\";";
     $query = $this->database->prepare ( $sql );
     $query->execute ();

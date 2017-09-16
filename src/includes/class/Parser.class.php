@@ -84,7 +84,7 @@ class Parser {
   public function getResponseJoins(): \stdClass {
     return $this->responseJoins;
   }
-  private function parse(): void {
+  private function parse() {
     $this->solrConfiguration = null;
     $__facetQueries = array ();
     $__mtasStats = array ();

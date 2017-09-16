@@ -19,7 +19,7 @@ class Session implements \SessionHandlerInterface {
     }
     $this->init();
   }
-  private function init(): void {
+  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS sessions(

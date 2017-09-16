@@ -118,6 +118,13 @@ class Configuration {
           $this->solr [$key] ["required"] = array ();
           $this->solr [$key] ["stored"] = array ();
           $this->solr [$key] ["mtas"] = array ();
+          $this->solr [$key] ["typeText"] = array ();
+          $this->solr [$key] ["typeBoolean"] = array ();
+          $this->solr [$key] ["typeString"] = array ();
+          $this->solr [$key] ["typeInteger"] = array ();
+          $this->solr [$key] ["typeDate"] = array ();
+          $this->solr [$key] ["typeLong"] = array ();
+          $this->solr [$key] ["typeBinary"] = array ();
           // get schema
           $ch = curl_init ( $solrConfiguration ["url"] . "schema?wt=json" );
           $options = array (
@@ -572,9 +579,9 @@ class Configuration {
       die ( $name . " : " . $path . " does not exist" );
     }
     // check access
-    if (! is_readable ( SITE_CACHE_DIR )) {
+    if (! is_readable ( $path )) {
       die ( $name . " : " . $path . " not readable" );
-    } else if ($writeable && ! is_writeable ( SITE_CACHE_DIR )) {
+    } else if ($writeable && ! is_writeable ( $path )) {
       die ( $name . " : " . $path . " not writeable" );
     }
   }

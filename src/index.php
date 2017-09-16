@@ -2,7 +2,11 @@
 
 // settings
 require_once ("includes/defaults.inc.php");
-require_once (SITE_ROOT_DIR . "vendor/autoload.php");
+if(!file_exists(SITE_ROOT_DIR . "vendor/autoload.php")) {
+  die("run composer on ".SITE_ROOT_DIR);
+} else {
+  require_once (SITE_ROOT_DIR . "vendor/autoload.php");
+}  
 
 // load configuration
 $configuration = new \Broker\Configuration ( SITE_CONFIG_DIR . "config.inc.php" );
