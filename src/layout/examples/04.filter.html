@@ -1,0 +1,97 @@
+<div class="title">Filter</div>
+
+<div class="text">
+  A filter can be used to restrict the super set of documents that can
+  be returned, without influencing score. The filter can be declared as
+  a <a data-section="filteritem">filteritem</a> or as an array of
+  filteritems when <a data-section="multiple filters">multiple filters</a>
+  are needed.
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="filteritem">Filteritem</div>
+
+<div class="text">
+  The <em>filteritem</em> is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"condition" : &lt;<a
+      data-tab="condition">condition</a>&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+}</pre>
+</div>
+
+
+<div class="item">
+  Each <em>filteritem</em> should always have a <em>condition</em>. The
+  <em>tag</em> is a string referred to when a filter has to be ignored
+  when computing facets.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'filteritem'</button>
+        <div class="json">{ "filter" : {"condition" : { "type":
+          "equals", "field" : "::exampleFieldText(fieldName)::", "value"
+          : "::exampleFieldTextValue0(word)::"}}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::' by
+        using a filter.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="multiple filters">Multiple filters</div>
+
+To use multiple filters, define the filter as an array of filteritems
+
+<div class="code">
+  <pre>[{
+  <span class="obligatory">"condition" : &lt;<a
+      data-tab="condition">condition</a>&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+},{
+  <span class="obligatory">"condition" : &lt;<a
+      data-tab="condition">condition</a>&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+}]</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'multiple filters'</button>
+        <div class="json">{ "filter" : [{"condition" : { "type":
+          "equals", "field" : "::exampleFieldText(fieldName)::", "value"
+          : "::exampleFieldTextValue0(word)::"}},{"condition" : { "type":
+          "equals", "field" : "::exampleFieldText(fieldName)::", "value"
+          : "::exampleFieldTextValue1(word)::"}}], "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::' and field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue1(word)::' by
+        using two filters.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+
+

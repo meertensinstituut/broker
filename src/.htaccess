@@ -1,0 +1,19 @@
+#enable big upload
+php_value upload_max_filesize 35M
+php_value post_max_size 35M
+
+<IfModule mod_rewrite.c>
+  #detect rewrite from scripts
+  SetEnv HTTP_MOD_REWRITE On
+
+  #rewrite
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !index.php$
+  RewriteCond %{REQUEST_FILENAME} !vendor(/.*)$
+  RewriteCond %{REQUEST_FILENAME} !layout(/.*)?$
+  RewriteRule ^([^\/]*)(\/|$)([^\/]*)(\/|$)(.*) index.php?operation=$1&suboperation=$3 [L]
+</IfModule>
+
+<Files cache/*>
+  deny from all
+</Files>

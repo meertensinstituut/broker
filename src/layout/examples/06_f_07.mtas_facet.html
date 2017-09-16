@@ -1,0 +1,305 @@
+<div class="title">Mtas Facet</div>
+
+<div class="text">
+  The mtas facet section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes facet results that should be included in the
+  response for the set of documents matching condition and filter. 
+  The mtas facet section is of the form
+</div>
+
+<div class="code">
+  <pre>[
+  {
+    <span class="obligatory">"field" : &lt;field&gt;</span>,
+    <span class="obligatory">"queries" : [&lt;query&gt;,... ]</span>,
+    <span class="obligatory">"base" : [&lt;base&gt;,... ]</span>,
+    <span class="optional">"key" : &lt;string&gt;</span>,       
+  },... 
+]</pre>
+</div>
+
+<div class="text">With <em>query</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : &lt;string&gt;</span>,
+  <span class="obligatory">"value" : &lt;string&gt;</span>,
+  <span class="optional">"prefix" : &lt;string&gt;</span>,
+  <span class="optional">"ignore" : &lt;string&gt;</span>,
+  <span class="optional">"maximumIgnoreLength " : &lt;integer&gt;</span>,
+  <span class="optional">"variables": &lt;variables&gt;</span>,
+}</pre>
+</div>
+
+
+
+<div class="text">And <em>base</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;</span>,
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"sort" : &lt;sort&gt;</span>,
+  <span class="optional">"number" : &lt;integer&gt;</span>,
+  <span class="optional">"minimum" : &lt;integer&gt;</span>,
+  <span class="optional">"maximum": &lt;integer&gt;</span>,
+  <span class="optional">"range": &lt;range&gt;</span>,
+  <span class="optional">"functions": [&lt;function&gt;]</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'basic'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "basic example",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]"
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldInteger(fieldName)::","number": 10
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasPosValue0(prefix="value")::]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      over field <em>::exampleFieldInteger(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'multiple'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "basic example",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedPosValue2(prefix=\"value\")::]"
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldText(fieldName1)::","number": 10
+                  },{
+                    "field": "::exampleFieldInteger(fieldName2)::", 
+                    "number": 2,
+                    "type": "n,sum,mean,min,max"
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasPosValue2(prefix="value")::]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      over field <em>::exampleFieldText(fieldName1)::</em> and <em>::exampleFieldInteger(fieldName2)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  The optional <em>variables</em> in a query is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"definitions" : [</span>
+    <span class="optional">{</span>
+      <span class="obligatory">"name" : &lt;string&gt;,</span>
+      <span class="obligatory">"value": &lt;string&gt;,</span>
+      <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;</span>
+    <span class="optional">},...</span>
+  <span class="obligatory">],</span>  
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'variable'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "basic example",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql", 
+                    "value": "[::exampleFieldMtasLemmaPrefix0(prefix)::=$1]",
+                    "variables" : {
+                      "definitions" : [{
+                        "name": "1",
+                        "value": "::exampleFieldMtasLemmaPostfix0(value1)::,::exampleFieldMtasLemmaPostfix1(value2)::",
+                        "expansion": {
+                          "type": "explode"
+                        }
+                      }]
+                    }
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldInteger(fieldName)::","number" : 10
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasLemmaPrefix(prefix)::=$1]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      with variable <em>$1</em> equal to the explode expansion of <em>::exampleFieldMtasLemmaPostfix0(value1)::, ::exampleFieldMtasLemmaPostfix1(value2)::</em>
+      over field <em>::exampleFieldInteger(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">And a <em>sort</em> in a <em>base</em> item is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"direction" : "asc" / "desc"</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'sort'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "example sort",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedWordValue0(prefix=\"value\")::]"
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldInteger(fieldName)::","number": 10,"sort":{"type":"sum","direction":"desc"}
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasWordValue0(prefix="value")::]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      over field <em>::exampleFieldInteger(fieldName)::</em> sorted descending by <em>sum</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">A <em>function</em> in a <em>base</em> item is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="obligatory">"expression" : &lt;string&gt;</span>,
+  <span class="optional">"type": &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'function'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "example sort",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedWordValue2(prefix=\"value\")::]"
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldInteger(fieldName)::","number": 10,
+                    "functions": [
+                    {
+                      "key": "relative",
+                      "expression": "$q0/$n",
+                      "type": "n,sum,mean"
+                    }
+                  ]
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasWordValue2(prefix="value")::]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      over field <em>::exampleFieldInteger(fieldName)::</em> with <em>function</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">A <em>range</em> in a <em>base</em> item is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"size" : &lt;integer&gt;</span>,
+  <span class="optional">"base" : &lt;integer&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facet' - 'range'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "facet" : [{
+                  "key": "basic example",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "queries": [{
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]"
+                  }],
+                  "base" :[{
+                    "field": "::exampleFieldInteger(fieldName)::","number": 10,
+                    "range": {
+                      "size": 10,
+                      "base": 0
+                    }
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get facet for 
+      CQL query <em>[::exampleFieldMtasPosValue0(prefix="value")::]</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      over field <em>::exampleFieldInteger(fieldName)::</em> with ranges of size 10.
+      </td>
+    </tr>
+  </table>
+</div>

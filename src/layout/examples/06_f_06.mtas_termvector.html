@@ -1,0 +1,221 @@
+<div class="title">Mtas Termvector</div>
+
+<div class="text">
+  The mtas termvector section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes termvector results or frequency lists that should be included in the
+  response for the set of documents matching condition and filter. 
+  The mtas termvector section is of the form
+</div>
+
+<div class="code">
+  <pre>[
+  {
+    <span class="obligatory">"field" : &lt;field&gt;</span>,
+    <span class="obligatory">"prefix" : &lt;string&gt;</span>,
+    <span class="optional">"key" : &lt;string&gt;</span>,
+    <span class="optional">"number" : &lt;integer&gt;</span>,
+    <span class="optional">"start" : &lt;integer&gt;</span>,
+    <span class="optional">"type" : &lt;string&gt;</span>,    
+    <span class="optional">"regexp" : &lt;string&gt;</span>,    
+    <span class="optional">"ignoreRegexp" : &lt;string&gt;</span>,
+    <span class="optional">"sort" : &lt;sort&gt;</span>,
+    <span class="optional">"full" : &lt;boolean&gt;</span>,
+    <span class="optional">"list" : [&lt;string&gt;,... ]</span>,    
+    <span class="optional">"listRegexp" : &lt;boolean&gt;</span>, 
+    <span class="optional">"ignoreList" : [&lt;string&gt;,... ]</span>,    
+    <span class="optional">"ignoreListRegexp" : &lt;boolean&gt;</span>, 
+    <span class="optional">"functions" : [&lt;function&gt;,...]</span>,    
+  },... 
+]</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'basic'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasWordPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix)::"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'type'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasLemmaPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasLemmaPrefix(prefix)::",
+                  "start": 0,
+                  "number": 2,
+                  "type": "all"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list with full statistics for 
+      prefix <em>::exampleFieldMtasLemmaPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'regexp'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasWordPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
+                  "regexp": "::exampleFieldMtasWordPostfix8(value)::.*" ,
+                  "ignoreRegexp": ".*::exampleFieldMtasWordPostfix9(value)::"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      with <em>regexp</em> and <em>ignoreRegexp</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'list'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasWordPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
+                  "regexp": "[a-z]*" ,
+                  "ignoreRegexp": "[a-z]{1,3}",
+                  "list": ["::exampleFieldMtasWordPostfix5(value1)::.*","::exampleFieldMtasWordPostfix6(value2)::","::exampleFieldMtasWordPostfix7(value3)::.*","::exampleFieldMtasWordPostfix8(value4)::"],
+                  "listRegexp": true,
+                  "ignoreList": ["::exampleFieldMtasWordPostfix4(value5)::"],
+                  "ignoreListRegexp": false  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">With <em>sort</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"direction" : "asc" / "desc"</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'sort'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasLemmaPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasLemmaPrefix(prefix)::",  
+                  "full": false,
+                  "sort": {
+                    "type": "sum",
+                    "direction": "desc"
+                  }
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasLemmaPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">And <em>function</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"expression" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"type" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'function'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "frequency list ::exampleFieldMtasWordPrefix(prefix)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
+                  "type": "all",
+                  "functions": [{
+                    "key": "basic",
+                    "expression": "$q0",
+                    "type": "all"
+                  },{
+                    "key": "relative",
+                    "expression": "$q0/$n",
+                    "type": "all"
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      with <em>regexp</em> and <em>ignoreRegexp</em>.
+      </td>
+    </tr>
+  </table>
+</div>

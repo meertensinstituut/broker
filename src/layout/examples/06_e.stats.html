@@ -1,0 +1,99 @@
+<div class="title">Stats</div>
+
+
+<div class="text">
+  The stats section occurs within the <a data-tab="response">response</a>,
+  and describes statistics that should be included in the
+  response. The stats section is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"statsfields" : [&lt;statsfield&gt;,...]</span>,
+}</pre>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="statsfield">Statsfields</div>
+
+<div class="text">
+  A <em>statsfield</em> can be used to get statistics
+  some field, and is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;fielditem&gt; / &lt;fieldfunction&gt;</span>,
+  <span class="optional">"tag" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"ex" : &lt;string&gt;</span>,  
+}</pre>
+</div>
+
+<div class="text">
+  Only <em>field</em> is obligatory, and defines the field to be used
+  for computing statistics.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'stats'</button>
+        <div class="json">{ 
+          "response": { 
+            "stats": {
+              "statsfields" : [ {"field":"::exampleFieldInteger(fieldName)::", "key": "statistics"}]
+            }
+          }   }</div>
+      </td>
+      <td class="text">Get statistics for field <em>::exampleFieldInteger(fieldName)::</em> and label it as <em>statistics</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'stats' - 'function'</button>
+        <div class="json">{ 
+          "response": { 
+            "stats": {
+              "statsfields" : [ {"field":"termfreq(\"::exampleFieldText(fieldName)::\",\"::exampleFieldTextValue1(word)::\")", "key": "function statistics"}]
+            }
+          }   }</div>
+      </td>
+      <td class="text">Get statistics for function <em>termfreq("::exampleFieldString(fieldName)::","::exampleFieldTextValue1(word)::")</em> and label it as <em>function statistics</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'stats' - 'ex'</button>
+        <div class="json">{
+          "filter":{"condition":{"type":"equals",
+          "field":"::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue9(word)::"},
+          "tag":"exampleFilter"},"response":
+          { "stats": { "statsfields": [
+          {"field":"::exampleFieldInteger(fieldName)::", "key":"with"},
+          {"field":"::exampleFieldInteger(fieldName)::",
+          "ex":"exampleFilter", "key":"without"}] }}   }</div>
+      </td>
+      <td class="text">Get statistics for field <em>::exampleFieldInteger(fieldName)::</em>
+        with and without applying the filter with tag <em>exampleFilter</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  A <em>tag</em> can be used to refer to when statistics within <a data-tab="facets">facetpivots</a> are required.
+</div>

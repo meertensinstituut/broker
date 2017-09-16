@@ -1,0 +1,308 @@
+<div class="title">Mtas Collection</div>
+
+<div class="text">
+  The mtas collection section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes collection items that should be included in the
+  response for the set of documents matching condition and filter. The mtas 
+  collection section is an array containing one or multiple of the following items  
+</div>
+
+<div class="text">
+  <ul>
+    <li><a data-section="create">create</a> : create a (new) collection</li>
+    <li><a data-section="post">post</a> : post a (new) collection</li>
+    <li><a data-section="list">list</a> : list available collections</li>  
+    <li><a data-section="check">check</a> : check collection</li> 
+    <li><a data-section="import">import</a> : import collection</li> 
+    <li><a data-section="delete">delete</a> : delete collection</li>   
+    <li><a data-section="empty">empty</a> : remove all collections</li> 
+    <li><a data-section="get">get</a> : get collection</li>      
+  </ul>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="create">Create</div>
+
+<div class="text">An item in the mtas collection 
+to <em>create</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "create"</span>,
+  <span class="obligatory">"field" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"id" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'create'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word)::"},"response": { "mtas": { "collection" : [ 
+          {
+            "key": "example create",
+            "action": "create",
+            "field": "::exampleFieldString(fieldName)::"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Create collection by collecting occuring values 
+      from <em>::exampleFieldString(fieldName)::</em> for the selected
+      set of documents.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="post">Post</div>
+
+<div class="text">An item in the mtas collection 
+to <em>post</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "post"</span>,
+  <span class="obligatory">"post" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"id" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'post'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example post",
+            "action": "post",
+            "post": ["een", "twee", "drie,vier"],
+            "id": "1234567890"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Post collection <em>"een", "twee", "drie,vier"</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="list">List</div>
+
+<div class="text">An item in the mtas collection 
+to get a <em>list</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "list"</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'list'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example list",
+            "action": "list"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Post collection <em>"een", "twee", "drie,vier"</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="check">Check</div>
+
+<div class="text">An item in the mtas collection 
+to <em>check</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "check"</span>,
+  <span class="obligatory">"id" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'check'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example check",
+            "action": "check",
+            "id": "1234567890"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Post collection <em>"een", "twee", "drie,vier"</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="import">Import</div>
+
+<div class="text">An item in the mtas collection 
+to <em>import</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "import"</span>,
+  <span class="obligatory">"configuration" : &lt;string&gt;</span>,
+  <span class="obligatory">"collection" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"id" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'import'</button>
+        <div class="json">{ "configuration": "::configuration1(config2)::",
+        "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example import",
+            "action": "import",
+            "configuration": "::configuration0(config1)::",
+            "collection": "1234567890"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Import collection by collecting occuring values 
+      from <em>::exampleFieldString(fieldName)::</em> for the selected
+      set of documents.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="delete">Delete</div>
+
+<div class="text">An item in the mtas collection 
+to <em>delete</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "delete"</span>,
+  <span class="obligatory">"id" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'delete'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example delete",
+            "action": "delete",
+            "id": "1234567890"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Delete collection by <em>identifier</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="empty">Empty</div>
+
+<div class="text">An item in the mtas collection 
+to <em>empty</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "empty"</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'empty'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example empty",
+            "action": "empty"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Remove all collections.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="get">Get</div>
+
+<div class="text">An item in the mtas collection 
+to <em>get</em> is of the form </div>
+
+<div class="code">
+<pre>{
+  <span class="obligatory">"action" : "get"</span>,
+  <span class="obligatory">"id" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'collection' - 'get'</button>
+        <div class="json">{ "response": { "mtas": { "collection" : [ 
+          {
+            "key": "example get",
+            "action": "get",
+            "id": "1234567890"
+          }]
+        }}}</div>
+      </td>
+      <td class="text">Get collection with provided 
+      <em>identifier</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+
+
+

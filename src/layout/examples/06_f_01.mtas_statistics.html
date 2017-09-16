@@ -1,0 +1,370 @@
+<div class="title">Mtas Statistics</div>
+
+<div class="text">
+  The mtas statistics section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes mtas statistics that should be included in the
+  response. The mtas statistics section is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"positions" : [&lt;<a data-section="positions">position</a>&gt;, ...]</span>,
+  <span class="optional">"tokens" : [&lt;<a data-section="tokens">token</a>&gt;, ...]</span>,
+  <span class="optional">"spans" : [&lt;<a data-section="spans">span</a>&gt;, ...]</span>,
+}</pre>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="positions">Positions</div>
+
+<div class="text">
+  With positions, statistics on the number of words can be retrieved, and an item
+  is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"minimum" : &lt;integer&gt;</span>,
+  <span class="optional">"maximum" : &lt;integer&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'positions'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "positions": [ {"field":"::exampleFieldMtas(fieldName)::"}]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for number of words in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'positions' - 'advanced'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "positions": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "key": "advanced", "type": "all", "minimum": 2, "maximum": 100}]
+          }}}}</div>
+      </td>
+      <td class="text">Get full statistics for number of words in <em>::exampleFieldMtas(fieldName)::</em>
+      with <em>minimum</em> and <em>maximum</em> set, and labeled as <em>advanced</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="tokens">Tokens</div>
+
+<div class="text">
+  With tokens, statistics on the number of tokens can be retrieved, and an item
+  is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"minimum" : &lt;integer&gt;</span>,
+  <span class="optional">"maximum" : &lt;integer&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'tokens'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "tokens": [ {"field":"::exampleFieldMtas(fieldName)::"}]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for number of tokens in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'tokens' - 'advanced'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "tokens": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "key": "advanced", "type": "all", "minimum": 2, "maximum": 1000}]
+          }}}}</div>
+      </td>
+      <td class="text">Get full statistics for number of tokens in <em>::exampleFieldMtas(fieldName)::</em>
+      with <em>minimum</em> and <em>maximum</em> set, and labeled as <em>advanced</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="spans">Spans</div>
+
+<div class="text">
+  With spans, statistics on the number of matches on a span query can be retrieved, and an item
+  is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;</span>,
+  <span class="obligatory">"queries" : [&lt;query&gt;]</span>,
+  <span class="optional">"functions" : [&lt;function&gt;]</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"type" : &lt;string&gt;</span>,
+  <span class="optional">"minimum" : &lt;integer&gt;</span>,
+  <span class="optional">"maximum" : &lt;integer&gt;</span>,
+  <span class="optional">"functions": [&lt;function&gt;,...]</span>,
+}</pre>
+</div>
+
+<div class="text">A <em>query</em> is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : &lt;string&gt;</span>,
+  <span class="obligatory">"value" : &lt;string&gt;</span>,
+  <span class="optional">"prefix" : &lt;string&gt;</span>,
+  <span class="optional">"ignore" : &lt;string&gt;</span>,
+  <span class="optional">"maximumIgnoreLength " : &lt;integer&gt;</span>,
+  <span class="optional">"variables": &lt;variables&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'basic'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+            "type": "cql", 
+            "value": "[::exampleFieldMtasEscapedLemmaValue0(prefix=\"value\")::]"
+          }]
+          }]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for CQL query 
+      <em>[::exampleFieldMtasLemmaValue0(prefix="value")::]</em> in 
+      <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'options'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+            "type": "cql", 
+            "value": "[::exampleFieldMtasEscapedWordValue0(prefix=\"value\")::]"
+          }], 
+          "key": "advanced", "type": "all", "minimum": 2, "maximum": 1000
+          }]
+          }}}}</div>
+      </td>
+      <td class="text">Get full statistics for CQL query <em>[::exampleFieldMtasWordValue0(prefix="value")::]</em> in 
+      <em>::exampleFieldMtas(fieldName)::</em> with <em>minimum</em> and <em>maximum</em> set, and 
+      labeled as <em>advanced</em>..
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'advanced'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+          "type": "cql", 
+          "value": "\"::exampleFieldMtasWordPostfix1(value)::\"::space::[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]",
+          "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
+          "ignore": "[::exampleFieldMtasEscapedPosValue2(prefix=\"value\")::]",
+          "maximumIgnoreLength": 2}]}]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for CQL query <em>"::exampleFieldMtasWordPostfix1(value)::"::space::[::exampleFieldMtasPosValue0(prefix="value")::]</em> 
+      with <em>"::exampleFieldMtasWordPrefix(prefix)::"</em> as default <em>prefix</em>, ignoring
+      <em>[::exampleFieldMtasPosValue2(prefix="value")::]</em> with a maximum of 2 in 
+      <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  The optional <em>variables</em> is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"definitions" : [</span>
+    <span class="optional">{</span>
+      <span class="obligatory">"name" : &lt;string&gt;,</span>
+      <span class="obligatory">"value": &lt;string&gt;,</span>
+      <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;</span>
+    <span class="optional">},...</span>
+  <span class="obligatory">],</span>
+  <span class="optional">"stats" : &lt; variableStats &gt;,</span>
+}</pre>
+</div>
+
+<div class="text">The <em>variableStats</em> has again the syntax of <a data-tab="mtas statistics">mtas statistics</a> spans without the query, 
+since this is automatically derived from the CQL query with the different instances of the variables.</div>
+
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'variable'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+            "type": "cql", 
+            "value": "[::exampleFieldMtasPosPrefix(prefix)::=$1]",
+            "variables" : {
+              "definitions" : [{
+                "name": "1",
+                "value": "::exampleFieldMtasPosPostfix0(value1)::,::exampleFieldMtasPosPostfix1(value2)::",
+                "expansion": {
+                  "type": "explode"
+                }
+            }]
+          }
+          }]          
+          }]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for CQL query <em>[::exampleFieldMtasPosPrefix(prefix)::=$1]</em> in 
+      <em>::exampleFieldMtas(fieldName)::</em> with <em>$1</em> defined as the <em>explode</em> expansion
+      of <em>::exampleFieldMtasPosPostfix0(value1)::,::exampleFieldMtasPosPostfix1(value2)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'stats'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+            "type": "cql", 
+            "value": "[::exampleFieldMtasLemmaPrefix(prefix)::=$2]",
+            "variables" : {
+              "definitions" : [{
+                "name": "2",
+                "value": "::exampleFieldMtasLemmaPostfix0(value1)::,::exampleFieldMtasLemmaPostfix1(value2)::,::exampleFieldMtasLemmaPostfix2(value3)::",
+                "expansion": {
+                  "type": "explode"
+                }
+            }],"stats": {
+              "key": "stats variables",
+              "type": "n,sum,mean",
+              "functions": [
+                {
+                  "key": "relative",
+                  "expression": "$q0/$n",
+                  "type": "n,sum,mean"
+                }
+              ]
+            }
+          }
+          }]          
+          }]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for CQL query <em>[::exampleFieldMtasLemmaPrefix(prefix)::=$2]</em> in 
+      <em>::exampleFieldMtas(fieldName)::</em> with <em>$1</em> defined as the <em>explode</em> expansion
+      of <em>::exampleFieldMtasLemmaPostfix0(value1)::,::exampleFieldMtasLemmaPostfix1(value2)::,::exampleFieldMtasLemmaPostfix2(value3)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<div class="text">A <em>function</em> is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="obligatory">"expression" : &lt;string&gt;</span>,
+  <span class="optional">"type": &lt;string&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'spans' - 'function'</button>
+        <div class="json">{ "response": { "mtas": { "stats" : {
+          "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
+          "queries" : [{
+          "type": "cql", 
+          "value": "[::exampleFieldMtasEscapedWordValue0(prefix=\"value\")::]"
+          }],
+          "functions": [
+              {
+                "key": "trivial",
+                "expression": "(1+4-8)/2",
+                "type": "n,sum,mean"
+              },
+              {
+                "key": "simple function",
+                "expression": "2*$q0/3",
+                "type": "n,sum,mean"
+              },
+              {
+                "key": "two variables",
+                "expression": "$q0/$n",
+                "type": "n,sum,mean,min,max"
+              },
+              {
+                "key": "error",
+                "expression": "($n+$q0)/0",
+                "type": "n,sum,mean"
+              }
+            ]          
+          }]
+          }}}}</div>
+      </td>
+      <td class="text">Get statistics for CQL query <em>[::exampleFieldMtasWordValue0(prefix="value")::]</em> 
+      and some functions for field <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+

@@ -1,0 +1,752 @@
+<div class="title">Condition</div>
+
+<div class="text">A condition is used to restrict the number of
+  documents, several types can be distinguished:</div>
+
+<div class="text">
+  <ul>
+    <li><a data-section="equals">equals</a> : field contains term
+      equal to the provided value</li>
+    <li><a data-section="phrase">phrase</a> : field contains the
+      provided phrase</li>
+    <li><a data-section="wildcard">wildcard</a> : field contains
+      term matching the provided wildcard expression</li>
+    <li><a data-section="regexp">regexp</a> : field contains term
+      matching the provided regexp expression</li>
+    <li><a data-section="range">range</a> : field contains term
+      matching the provided range</li>
+    <li><a data-section="cql">cql</a> : field contains the provided
+      cql expression</li>
+  </ul>
+</div>
+
+<div class="text">Furthermore, conditions can be defined from a
+  combination of other conditions:</div>
+
+<div class="text">
+  <ul>
+    <li><a data-section="and">and</a> : each condition in the
+      provided list must be satisfied</li>
+    <li><a data-section="or">or</a> : at least one condition in the
+      provided list must be satisfied</li>
+  </ul>
+</div>
+
+<div class="text">Finally, a relation with another set of
+  documents can be made</div>
+
+<div class="text">
+  <ul>
+    <li><a data-section="join">join</a> : introducing a relation
+      with another set of documents based on field value</li>
+  </ul>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="equals">Equals</div>
+
+<div class="text">
+  In a condition of type <em>equals</em>, documents are matched for
+  which the defined <em>field</em> contains a term equal to the defined
+  <em>value</em>.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "equals",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"value" : &lt;string&gt; / &lt;boolean&gt; / [&lt;string&gt; / &lt;boolean&gt;,...],</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>field</em> and <em>value</em> are
+  obligatory. The <em>facetquery</em> option enables the automatic
+  generation of a <a data-tab="facets">facetquery</a> based on this
+  condition, and the <em><a data-tab="expansion">expansion</a></em>
+  option enables an expansion of the provided value. The optional <em>key</em>
+  is used to label the facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'equals'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word)::"}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::'.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'equals' with 'array'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          ["::exampleFieldTextValue0(word)::", "::exampleFieldTextValue1(word)::"], 
+          "key" : "key for facetquery", "facetquery" : true}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::' or '::exampleFieldTextValue1(word)::'.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'equals' with 'not'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue1(word)::", "not": true}, "response":
+          { "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        not equals "::exampleFieldTextValue1(word)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'equals' -
+          'facetquery'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue2(word)::", "facetquery" : true},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue2(word)::' and
+        generate a facetquery.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'equals' with 'expansion'</button>
+        <div class="json">{ "condition" : { "type": "equals",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word)::*::exampleFieldTextValue1(word)::",
+          "expansion": {
+            "type": "explode", "parameters":{"split":"*"}
+          }, "key" : "key for facetquery", "facetquery" : true}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::' or '::exampleFieldTextValue1(word)::'.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="phrase">Phrase</div>
+
+<div class="text">
+  In a condition of type <em>phrase</em>, documents are matched for
+  which the defined <em>field</em> contains the phrase defined by <em>value</em>.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "phrase",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"value" : &lt;string&gt; / [&lt;string&gt;,...],</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>field</em> and <em>value</em> are
+  obligatory. The <em>facetquery</em> option enables the automatic
+  generation of a <a data-tab="facets">facetquery</a> based on this
+  condition, and the <em><a data-tab="expansion">expansion</a></em>
+  option enables an expansion of the provided value. The optional <em>key</em>
+  is used to label the facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'phrase'</button>
+        <div class="json">{ "condition" : { "type": "phrase",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word1)::::space::::exampleFieldTextValue1(word2)::"},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains the sequence "::exampleFieldTextValue0(word1)::
+        ::exampleFieldTextValue1(word2)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="wildcard">Wildcard</div>
+
+<div class="text">
+  In a condition of type <em>wildcard</em>, documents are matched for
+  wich the defined <em>field</em> contains a term matching the wildcard
+  expression defined by <em>value</em>.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "wildcard",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"value" : &lt;string&gt; / [&lt;string&gt;,...],</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>field</em> and <em>value</em> are
+  obligatory. The <em>facetquery</em> option enables the automatic
+  generation of a <a data-tab="facets">facetquery</a> based on this
+  condition.The optional <em>key</em> is used to label the facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'wildcard'</button>
+        <div class="json">{ "condition" : { "type": "wildcard",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word)::*"}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term matching wildcard expression
+        "::exampleFieldTextValue0(word1)::*".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="regexp">Regexp</div>
+
+<div class="text">
+  In a condition of type <em>regexp</em>, documents are matched for
+  which the defined <em>field</em> contains a term matching the regexp <em>value</em>.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "regexp",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"value" : &lt;string&gt; / [&lt;string&gt;,...],</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>field</em> and <em>value</em> are
+  obligatory. The <em>facetquery</em> option enables the automatic
+  generation of a <a data-tab="facets">facetquery</a> based on this
+  condition. The optional <em>key</em> is used to label the facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'regexp'</button>
+        <div class="json">{ "condition" : { "type": "regexp",
+          "field" : "::exampleFieldText(fieldName)::", "value" :
+          "[a-zA-Z]{3,}"}, "response": { "documents": { "start": 0,
+          "rows": 10, "fields": [ "::uniqueKey::" ,
+          "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        matches regexp "[a-zA-Z]{3,}".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="range">Range</div>
+
+<div class="text">
+  In a condition of type <em>range</em>, documents are matched for which
+  the defined <em>field</em> lies between <em>start</em> and <em>end</em>.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "range",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="optional">"start" : &lt;string&gt;,</span>
+  <span class="optional">"end" : &lt;string&gt;,</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>field</em> is obligatory. The <em>facetquery</em>
+  option enables the automatic generation of a <a data-tab="facets">facetquery</a>
+  based on this condition. The optional <em>key</em> is used to label
+  the facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'range'</button>
+        <div class="json">{ "condition" : { "type": "range",
+          "field" : "::exampleFieldInteger(fieldName)::", "start" : "0",
+          "end": "2000"}, "response": { "documents": { "start": 0,
+          "rows": 10, "fields": [ "::uniqueKey::" ,
+          "::exampleFieldInteger(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldInteger(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldInteger(fieldName)::</em>
+        lies between ::exampleFieldIntegerValue0(0):: and
+        ::exampleFieldIntegerValue1(2000)::.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="cql">CQL</div>
+
+::ifMtasField()(
+<div class="warning">The current configuration does not seem to
+  contain fields where the MtasCodec is used during indexation.</div>
+)::
+
+<div class="text">
+  In a condition of type <em>cql</em>, documents are matched for which
+  the defined <em>field</em> contains the provided cql
+    expression.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "cql",</span>
+  <span class="obligatory">"value" : &lt;string&gt;</span>
+  <span class="optional">"variables" : &lt;variables&gt;</span>
+  <span class="optional">"prefix" : &lt;string&gt;</span>
+  <span class="optional">"ignore" : &lt;string&gt;</span>
+  <span class="optional">"maximumIgnoreLength" : &lt;integer&gt;</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>value</em> is obligatory and should
+  contain a cql expression. The optional <em>prefix</em>
+  can be used to define the default prefix to be used in the cql
+  expression, and the optional <em>ignore</em> allows the definition of
+  a cql expression that should be ignored in the
+  expression defined by the provided <em>value</em>. The <em>facetquery</em>
+  option enables the automatic generation of a <a data-tab="facets">facetquery</a>
+  based on this condition, the optional <em>key</em> is used to label
+  this facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "[::exampleFieldMtasEscapedWordValue0(prefix=\"value\")::]"},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches [::exampleFieldMtasWordValue0(prefix="value")::].
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql' with prefix</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "\"::exampleFieldMtasWordPostfix0(value1)::\"::space::[::exampleFieldMtasEscapedPosValue1(prefix2=\"value2\")::]",
+          "prefix" : "::exampleFieldMtasWordPrefix(prefix1)::"},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches "::exampleFieldMtasWordPostfix0(value1)::"
+        [::exampleFieldMtasPosValue1(prefix2="value2")::] with default
+        prefix <em>::exampleFieldMtasWordPrefix(prefix1)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql' with 'ignore'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "[::exampleFieldMtasEscapedPosValue2(prefix=\"value1\")::]::space::[::exampleFieldMtasEscapedPosValue3(prefix=\"value2\")::]",
+          "ignore" :
+          "[::exampleFieldMtasEscapedPosValue1(prefix=\"value3\")::]", "maximumIgnoreLength": 100},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches [::exampleFieldMtasPosValue2(prefix="value1")::]
+        [::exampleFieldMtasPosValue3(prefix="value2")::] ignoring the
+        occurrence of <em>[::exampleFieldMtasPosValue1(prefix="value3")::]</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql' with
+          'facetquery'</button>
+        <div class="json">{ "condition" : { "type": "cql",
+          "field": "::exampleFieldMtas(fieldName)::", "value":
+          "[::exampleFieldMtasEscapedLemmaValue2(prefix=\"value\")::]",
+          "key": "exampleFacetQuery", "facetquery": true}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches [::exampleFieldMtasLemmaValue2(prefix="value")::] and
+        generate facetquery labeled <em>exampleFacetQuery</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  The optional <em>variables</em> is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"definitions" : [</span>
+    <span class="optional">{</span>
+      <span class="obligatory">"name" : &lt;string&gt;,</span>
+      <span class="obligatory">"value": &lt;string&gt;,</span>
+      <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;</span>
+    <span class="optional">},...</span>
+  <span class="obligatory">],</span>
+  <span class="optional">"stats" : &lt;variableStats&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">The <em>variableStats</em> has the syntax of <a data-tab="mtas statistics">mtas statistics</a> spans without the query, 
+since this is automatically derived from the CQL query with the different instances of the variables.</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql' with 'variable'</button>
+        <div class="json">{ "condition" : { "type": "cql",
+          "field": "::exampleFieldMtas(fieldName)::", "value":
+          "[::exampleFieldMtasWordPrefix(prefix)::=$1]", "variables":
+          {"definitions":[{"name":"1","value":"::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::",
+          "expansion":{"type":"explode"}}]}}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches [::exampleFieldMtasWordPrefix(prefix)::=$1] with variable
+        $1 defined by the explode expansion of
+        "::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'cql' with 'stats'</button>
+        <div class="json">{ "condition" : { "type": "cql",
+          "field": "::exampleFieldMtas(fieldName)::", "value":
+          "[::exampleFieldMtasLemmaPrefix(prefix)::=$2]", "variables":
+          {"definitions":[{"name":"2","value":"::exampleFieldMtasLemmaPostfix0(value1)::|::exampleFieldMtasLemmaPostfix1(value2)::",
+          "expansion":{"type":"explode","parameters":{"split":"|"}}}],
+                  "stats": {
+                    "key": "stats variables",
+                    "type": "n,sum,mean",
+                    "functions": [
+                      {
+                        "key": "relative",
+                        "expression": "$q0/$n",
+                        "type": "n,sum,mean"
+                      }
+                    ]
+                  }}}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches [::exampleFieldMtasLemmaPrefix(prefix)::=$2] with variable
+        $2 defined by the explode expansion of
+        "::exampleFieldMtasLemmaPostfix0(value)::|::exampleFieldMtasLemmaPostfix1(value2)::" 
+        and create statistics for this expansion.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="and">And</div>
+
+<div class="text">
+  In a condition of type <em>and</em>, documents are matched for which
+  each of conditions from the provided <em>list</em> is satisfied.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "and",</span>
+  <span class="obligatory">"list" : [ &lt;condition&gt;, ... ],</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>list</em> is obligatory, where <em>list</em>
+  is a non-empty array of conditions. The <em>facetquery</em> option
+  enables the automatic generation of a <a data-tab="facets">facetquery</a>
+  based on this condition, the optional <em>key</em> is used to label
+  this facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'and'</button>
+        <div class="json">{ "condition" : { "type": "and", "list"
+          :[ {"type": "equals", "field":
+          "::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue0(word1)::"}, {"type":
+          "equals", "field": "::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue1(word2)::"} ]}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to "::exampleFieldTextValue0(word1)::" and
+        a term equal to "::exampleFieldTextValue1(word2)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br />
+
+<hr />
+
+<div class="subtitle" data-section="or">Or</div>
+
+<div class="text">
+  In a condition of type <em>or</em>, documents are matched for which at
+  least one of the conditions from the provided <em>list</em> is
+  satisfied.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "or",</span>
+  <span class="obligatory">"list" : [ &lt;condition&gt;, ... ],</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>list</em> is obligatory, where <em>list</em>
+  is a non-empty array of conditions. The <em>facetquery</em> option
+  enables the automatic generation of a <a data-tab="facets">facetquery</a>
+  based on this condition, the optional <em>key</em> is used to label
+  this facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'or'</button>
+        <div class="json">{ "condition" : { "type": "or", "list"
+          :[ {"type": "equals", "field":
+          "::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue0(word1)::"}, {"type":
+          "equals", "field": "::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue1(word2)::"} ]}, "response": {
+          "documents": { "start": 0, "rows": 10, "fields": [
+          "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to "::exampleFieldTextValue0(word1)::" or
+        a term equal to "::exampleFieldTextValue1(word2)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="join">Join</div>
+
+<div class="text">
+  In a condition of type <em>join</em>, documents are matched for which
+  the value of the defined <em>from</em> field(s) equal a value from the
+  <em>to</em> field(s) in another set of documents.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "join",</span>
+  <span class="obligatory">"from": &lt;field&gt; / [&lt;field&gt;,...]</span>
+  <span class="obligatory">"to": &lt;field&gt; / [&lt;field&gt;,...]</span>
+  <span class="optional">"configuration": &lt;string&gt;</span>
+  <span class="optional">"filter" : &lt;<a data-tab="condition">filter</a>&gt;,</span>
+  <span class="optional">"condition" : &lt;<a
+      data-tab="condition">condition</a>&gt;,</span>
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'join'</button>
+        <div class="json">{ "condition" : { "type": "join",
+          "from": "::uniqueKey::", "to": "::uniqueKey::",
+          "condition" : { "type": "equals", "field" :
+          "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue0(word)::"}}, 
+          "response": { "documents":
+          { "start": 0, "rows": 10, "fields": [ "::uniqueKey::" ,
+          "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue0(word)::'.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'join' nested</button>
+        <div class="json">{ "condition" : { "type": "join",
+          "from": "::uniqueKey::", "to": "::uniqueKey::",
+          "condition" : { "type": "join",
+          "from": "::uniqueKey::", "to": "::uniqueKey::",
+          "condition" : { "type": "equals", "field" :
+          "::exampleFieldText(fieldName)::", "value" :
+          "::exampleFieldTextValue1(word)::"}}}, 
+          "response": { "documents":
+          { "start": 0, "rows": 10, "fields": [ "::uniqueKey::" ,
+          "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
+        contains a term equal to '::exampleFieldTextValue1(word)::'.
+      </td>
+    </tr>
+  </table>
+</div>

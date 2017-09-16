@@ -1,0 +1,653 @@
+<div class="title">Facets</div>
+
+<div class="text">
+  The facets section occurs within the <a data-tab="response">response</a>,
+  and describes the facets to be computed and included in the response.
+  The facets section is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"facetfields" : [&lt;<a
+      data-section="facetfield">facetfield</a>&gt;,...]</span>,
+  <span class="optional">"facetqueries" : [&lt;<a
+      data-section="facetquery">facetquery</a>&gt;,...]</span>,
+  <span class="optional">"facetranges" : [&lt;<a
+      data-section="facetrange">facetrange</a>&gt;,...]</span>, 
+  <span class="optional">"facetpivots" : [&lt;<a
+      data-section="facetpivot">facetpivot</a>&gt;,...]</span>,   
+  <span class="optional">"prefix" : &lt;string&gt;,</span>
+  <span class="optional">"contains" : &lt;string&gt;,</span>
+  <span class="optional">"sort" : "index" / "count",</span>
+  <span class="optional">"limit" : &lt;integer&gt;,</span>
+  <span class="optional">"offset" : &lt;integer&gt;,</span>
+  <span class="optional">"mincount" : &lt;integer&gt;,</span>
+  <span class="optional">"missing" : &lt;boolean&gt;,</span>
+  <span class="optional">"method" : &lt;integer&gt;,</span> 
+  <span class="optional">"excludeTerms" : [&lt;string&gt;,...],</span>       
+}</pre>
+</div>
+
+<div class="text">
+  The <em>prefix</em>, <em>sort</em>, <em>limit</em>, <em>offset</em>, <em>mincount</em>,
+  <em>missing</em> and <em>method</em> options can be set for all
+  occurring <a data-section="facetfield">facetfields</a> at this level.
+</div>
+
+<br />
+
+<div class="text">
+  See also the general <a
+    href="https://cwiki.apache.org/confluence/display/solr/Faceting"
+    target="_blank">Solr documentation</a> on faceting for more information.
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="facetfield">Facetfields</div>
+
+<div class="text">
+  A <em>facetfield</em> can be used to compute occurences of terms over
+  some field, and is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="optional">"prefix" : &lt;string&gt;,</span>
+  <span class="optional">"contains" : &lt;string&gt;,</span>
+  <span class="optional">"sort" : "index" / "count",</span>
+  <span class="optional">"limit" : &lt;integer&gt;,</span>
+  <span class="optional">"offset" : &lt;integer&gt;,</span>
+  <span class="optional">"mincount" : &lt;integer&gt;,</span>
+  <span class="optional">"missing" : &lt;boolean&gt;,</span>
+  <span class="optional">"method" : &lt;string&gt;,</span>
+  <span class="optional">"excludeTerms" : [&lt;string&gt;,...],</span>  
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+  <span class="optional">"ex" : &lt;string&gt;,</span>
+  <span class="optional">"join" : &lt;<a
+      data-section="facetfieldjoin">facetfieldjoin</a>&gt;,</span> 
+}</pre>
+</div>
+
+<div class="text">
+  See the <a
+    href="https://wiki.apache.org/solr/SimpleFacetParameters#Field_Value_Faceting_Parameters"
+    target="_blank">Solr documentation</a> for more information.
+</div>
+
+<br />
+
+<div class="text">
+  Only <em>field</em> is obligatory, and defines the field to be used
+  for computing terms and occurrences.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::"}]
+          }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By defining a <em>prefix</em>, the result can be restricted to terms
+  starting with the provided string.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'prefix'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::",
+          "prefix":"::exampleFieldTextValue0(a)::"} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        and restrict to terms starting with
+        "::exampleFieldTextValue0(a)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By defining <em>contains</em>, the result can be restricted to terms
+  containing with the provided string.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'contains'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::",
+          "contains":"::exampleFieldTextValue1(a)::"} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        and restrict to terms starting with
+        "::exampleFieldTextValue1(a)::".
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  With <em>sort</em>, the returned terms can be sorted by <em>count</em>
+  or <em>index</em>.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'sort'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::",
+          "sort":"index"} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        sorted by <em>index</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  With <em>limit</em> and <em>offset</em>, the returned list of terms
+  can be restricted.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'limit' /
+          'offset'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::",
+          "limit":3, "offset": 2} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        starting with the third, and limit the number of results to
+        three.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By defining <em>mincount</em>, the returned list can be restricted to
+  terms with at least the defined number of occurrences.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'mincount'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [ {"field":"::exampleFieldText(fieldName)::",
+          "mincount": 100} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        and restrict to terms with at least 100 occurrences.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<div class="text">
+  With <em>missing</em> set to true, also terms with no occurrences in
+  the current selection are returned.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'missing'</button>
+        <div class="json">{
+          "condition":{"type":"equals","field":"::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue0(word)::"},"response": {
+          "facets": { "facetfields": [
+          {"field":"::exampleFieldText(fieldName)::", "missing":
+          true,"sort":"index"} ] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        where the set of documents is restricted to items where <em>::exampleFieldText(fieldName)::</em>
+        contains the term "::exampleFieldTextValue0(word)::", and also
+        return terms with no occurrences in this selection.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  With <em>method</em>, the algorithm to be used can be defined: "enum",
+  "fc" or "fcs".
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'method'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [
+          {"field":"::exampleFieldText(fieldName)::","method":"enum"}]
+          }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  With <em>excludeTerms</em>, the defined list of terms will be excluded from the facets.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'excludeTerms'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [
+          {"field":"::exampleFieldText(fieldName)::","excludeTerms": ["::exampleFieldTextValue0(word1)::", "::exampleFieldTextValue1(word2)::"]}]
+          }}  }</div>
+      </td>
+      <td class="text">Get facets over field <em>::exampleFieldText(fieldName)::</em>
+        without <em>"::exampleFieldTextValue0(word1)::"</em> and <em>"::exampleFieldTextValue1(word2)::"</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By providing a <em>key</em>, the result will be labeled by this string
+  instead of the name of the field.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'key'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetfields": [
+          {"field":"::exampleFieldText(fieldName)::","key":"exampleKey"}]
+          }}  }</div>
+      </td>
+      <td class="text">Get facets over field <em>::exampleFieldText(fieldName)::</em>
+        and label this as <em>exampleKey</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<div class="text">
+  By providing <em>ex</em>, the referred filters within this
+  comma-separated string are ignored when computing the terms and
+  occurrences.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'ex'</button>
+        <div class="json">{
+          "filter":{"condition":{"type":"equals",
+          "field":"::exampleFieldText(fieldName)::",
+          "value":"::exampleFieldTextValue9(word)::"},
+          "tag":"exampleFilter"},"response":
+          { "facets": { "facetfields": [
+          {"field":"::exampleFieldText(fieldName)::", "key":"with", "limit":3},
+          {"field":"::exampleFieldText(fieldName)::",
+          "ex":"exampleFilter", "key":"without", "limit":3}] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        with and without applying the filter with tag <em>exampleFilter</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="facetfieldjoin">Facetfield
+  joins</div>
+
+<div class="text">A facetfield join is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"to" : &lt;field&gt;,</span>
+  <span class="optional">"configuration" : &lt;string&gt;,</span>
+  <span class="optional">"filter" : &lt;<a data-tab="condition">filter</a>&gt;,</span>
+  <span class="optional">"condition" : &lt;<a data-tab="condition">condition</a>&gt;,</span>
+  <span class="obligatory">"fields" : [&lt;fielditem&gt;,...],</span>  
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetfield' - 'join'</button>
+        <div class="json">{
+          "response":
+          { "facets": { "facetfields": [
+          {"field":"::uniqueKey::", "limit": 10, "join": {"to": "::uniqueKey::" ,"fields":["::exampleFieldText(fieldName1)::","::exampleFieldInteger(fieldName2)::"]}}] }}  }</div>
+      </td>
+      <td class="text">Get terms and occurrences for field <em>::exampleFieldText(fieldName)::</em>
+        with and without applying the filter with tag <em>exampleFilter</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="facetquery">Facetquery</div>
+
+<div class="text">A facetquery is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"condition" : &lt;<a
+      data-tab="condition">condition</a>&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+  <span class="optional">"ex" : &lt;string&gt;,</span>
+}</pre>
+</div>
+
+
+<div class="text">
+  Only <em>condition</em> is obligatory, and defines the condition to be
+  used for computing occurrences.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetquery'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetqueries": [ {"condition":
+          {"field":"::exampleFieldText(fieldName)::", "type": "equals",
+          "value": "::exampleFieldTextValue0(word)::"}}] }}  }</div>
+      </td>
+      <td class="text">Get occurrences for condition <em>::exampleFieldText(fieldName)::</em>
+        equals to <em>::exampleFieldTextValue0(word)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By providing a <em>key</em>, the result will be labeled by this string
+  instead of the query.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetquery' - 'key'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetqueries": [ {"condition":
+          {"field":"::exampleFieldText(fieldName)::", "type": "equals",
+          "value": "::exampleFieldTextValue0(word)::"}, "key":
+          "example"}] }}   }</div>
+      </td>
+      <td class="text">Get occurrences for condition <em>::exampleFieldText(fieldName)::</em>
+        equals to <em>::exampleFieldTextValue0(word)::</em> and label it
+        as <em>example</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  By providing <em>ex</em>, the referred filters within this
+  comma-separated string are ignored when computing the occurrences.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetquery' - 'ex'</button>
+        <div class="json">{ "filter":{"condition":{"type" :
+          "equals", "field": "::exampleFieldText(fieldName)::", "value":
+          "::exampleFieldTextValue9(word1)::"}, "tag":"exampleFilter"},
+          "response": { "facets": { "facetqueries": [ {"condition":
+          {"field":"::exampleFieldText(fieldName)::", "type": "equals",
+          "value": "::exampleFieldTextValue1(word2)::"}, "key": "with"},
+          {"condition": {"field":"::exampleFieldText(fieldName)::",
+          "type": "equals", "value":
+          "::exampleFieldTextValue1(word2)::"}, "ex": "exampleFilter",
+          "key": "without"}] }}   }</div>
+      </td>
+      <td class="text">Get occurrences with and withoud condition <em>::exampleFieldText(fieldName)::</em>
+        equals to <em>::exampleFieldTextValue0(word)::</em> and label it
+        as <em>with</em> and <em>without</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="facetrange">Facetranges</div>
+
+<div class="text">A facetrange is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"start" : &lt;string&gt; / &lt;integer&gt;,</span>
+  <span class="obligatory">"end" : &lt;string&gt; / &lt;integer&gt;,</span>
+  <span class="obligatory">"gap" : &lt;string&gt; / &lt;integer&gt;,</span>
+  <span class="optional">"other" : &lt;string&gt;,</span>
+  <span class="optional">"include" : &lt;string&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"tag" : &lt;string&gt;,</span>
+  <span class="optional">"ex" : &lt;string&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  See the <a
+    href="https://wiki.apache.org/solr/SimpleFacetParameters#Facet_by_Range"
+    target="_blank">Solr documentation</a> for more information.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetrange'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetranges": [ {"field":"::exampleFieldInteger(fieldName)::", "start": 0, "end": 2000, "gap": 100}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetranges for field <em>::exampleFieldInteger(fieldName)::</em> between 0 and 2000 with a gap of 100.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetrange' - 'advanced'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetranges": [ {"field":"::exampleFieldInteger(fieldName)::", "start": 0, "end": 2000, "gap": 100, "other": "all", "include": "all"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetranges for field <em>::exampleFieldInteger(fieldName)::</em> between 0 and 2000 with a gap of 100 with <em>other</em> and <em>include</em> equal to <em>all</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetrange' - 'ex'</button>
+        <div class="json">{ "filter":{"condition":{"type" :
+          "equals", "field": "::exampleFieldText(fieldName)::", "value":
+          "::exampleFieldTextValue9(word1)::"}, "tag":"exampleFilter"}, "response": { "facets": {
+          "facetranges": [ {"field":"::exampleFieldInteger(fieldName)::", "start": 0, "end": 2000, "gap": 100, "key": "with"},
+          {"field":"::exampleFieldInteger(fieldName)::", "start": 0, "end": 2000, "gap": 100, "ex": "exampleFilter", "key": "without"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetranges on <em>::exampleFieldInteger(fieldName)::</em> with and without condition <em>::exampleFieldText(fieldName)::</em>
+        equals to <em>::exampleFieldTextValue0(word)::</em> and label it
+        as <em>with</em> and <em>without</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<hr />
+
+<div class="subtitle" data-section="facetpivot">Facetpivots</div>
+
+<div class="text">A facetpivot is of the form</div>
+
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"pivot" : [&lt;field&gt;,...],</span>
+  <span class="optional">"mincount" : &lt;integer&gt;,</span>
+  <span class="optional">"limit" : &lt;integer&gt;,</span>
+  <span class="optional">"offset" : &lt;integer&gt;,</span>
+  <span class="optional">"sort" : "index" / "count",</span>
+  <span class="optional">"stats" : &lt;string&gt;,</span>
+  <span class="optional">"query" : &lt;string&gt;,</span>
+  <span class="optional">"range" : &lt;string&gt;,</span>
+  <span class="optional">"ex" : &lt;string&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  See the <a
+    href="https://wiki.apache.org/solr/SimpleFacetParameters#Pivot_.28ie_Decision_Tree.29_Faceting"
+    target="_blank">Solr documentation</a> for more information.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetpivot'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetpivots": [ {"pivot": ["::exampleFieldInteger(fieldName)::", "::exampleFieldText(fieldName)::"],
+          "limit": 3, "offset": 0, "sort": "index", "key": "pivotExample"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetpivots for fields <em>::exampleFieldInteger(fieldName)::</em> and <em>::exampleFieldText(fieldName)::</em>, and label it as <em>pivotExample</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetpivot' - 'ex'</button>
+        <div class="json">{ "filter":{"condition":{"type" :
+          "equals", "field": "::exampleFieldText(fieldName)::", "value":
+          "::exampleFieldTextValue9(word1)::"}, "tag":"exampleFilter"}, "response": { "facets": {
+          "facetpivots": [ {"pivot": ["::exampleFieldText(fieldName)::"], "key": "with"},
+          {"pivot": ["::exampleFieldText(fieldName)::"], "ex": "exampleFilter", "key": "without"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetpivots on only <em>::exampleFieldText(fieldName)::</em> with and without condition <em>::exampleFieldText(fieldName)::</em>
+        equals to <em>::exampleFieldTextValue0(word)::</em> and label it
+        as <em>with</em> and <em>without</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetpivot' - 'query'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetqueries" : [ {"condition":
+          {"field":"::exampleFieldText(fieldName)::", "type": "equals",
+          "value": "::exampleFieldTextValue0(word)::"}, "tag": "exampleQuery"},
+          {"condition":
+          {"field":"::exampleFieldText(fieldName)::", "type": "equals",
+          "value": "::exampleFieldTextValue1(word)::"}, "tag": "exampleQuery"}],
+          "facetpivots": [ {"pivot": ["::exampleFieldText(fieldName)::"], "query": "exampleQuery"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetpivots on only <em>::exampleFieldText(fieldName)::</em> with 
+      two facetqueries labeled as <em>exampleQuery</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetpivot' - 'range'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetranges": [ {"field":"::exampleFieldInteger(fieldName)::", "start": 0, "end": 2000, "gap": 100, "tag": "exampleRange"}],
+          "facetpivots": [ {"pivot": ["::exampleFieldText(fieldName)::"], "range": "exampleRange"}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetpivots on only <em>::exampleFieldText(fieldName)::</em> with 
+      facetRange labeled as <em>exampleRange</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetpivot' - 'stats'</button>
+        <div class="json">{ "response": { 
+          "stats": {
+              "statsfields" : [ {"field":"::exampleFieldInteger(fieldName)::", "key": "statistics", "tag" : "exampleStats"}]
+          },
+          "facets": {
+              "facetpivots": [ {"pivot": ["::exampleFieldInteger(fieldName)::"], "stats": "exampleStats", "limit": 3}]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetpivots on only <em>::exampleFieldInteger(fieldName)::</em> with 
+      fieldstats labeled as <em>exampleStats</em>.
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,193 @@
+<div class="title">Mtas Kwic</div>
+
+<div class="text">
+  The mtas kwic section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes keyword-in-context results that should be included in the
+  response for the listed documents. The mtas kwic section is of the form
+</div>
+
+<br />
+
+<div class="text">
+  To get a keyword-in-context result for all documents
+  matching the condition and filter instead of only the listed documents, 
+  use <a data-tab="mtas kwic">mtas list</a>.
+</div>
+
+<div class="code">
+  <pre>[
+  {
+    <span class="obligatory">"field" : &lt;field&gt;</span>,
+    <span class="obligatory">"query" : &lt;query&gt;</span>,
+    <span class="optional">"key" : &lt;string&gt;</span>,
+    <span class="optional">"prefix" : &lt;string&gt;</span>,
+    <span class="optional">"number" : &lt;integer&gt;</span>,
+    <span class="optional">"start" : &lt;integer&gt;</span>,
+    <span class="optional">"left" : &lt;integer&gt;</span>,    
+    <span class="optional">"right" : &lt;integer&gt;</span>,    
+    <span class="optional">"output" : "token" / "hit"</span>,
+  },... 
+]</pre>
+</div>
+
+<div class="text">A <em>query</em> is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : &lt;string&gt;</span>,
+  <span class="obligatory">"value" : &lt;string&gt;</span>,
+  <span class="optional">"prefix" : &lt;string&gt;</span>,
+  <span class="optional">"ignore" : &lt;string&gt;</span>,
+  <span class="optional">"maximumIgnoreLength " : &lt;integer&gt;</span>,
+  <span class="optional">"variables": &lt;variables&gt;</span>,
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'kwic' - 'hit'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]"},
+          "response": 
+            { "documents": { "start":
+              0, "rows": 2, "fields": [ "::uniqueKey::", "::exampleFieldText(fieldName)::" ] },
+              "mtas": { 
+                "kwic" : [{
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "query": {
+                    "type": "cql",
+                    "value": "[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]"
+                  },
+                  "start": 0,
+                  "number": 2,
+                  "left": 1,
+                  "right": 2,
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix1)::,::exampleFieldMtasLemmaPrefix(prefix2)::,::exampleFieldMtasPosPrefix(prefix3)::",
+                  "output" : "hit"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get kwic of type <em>hit</em> 
+      with prefixes <em>::exampleFieldMtasWordPrefix(prefix1)::</em>, <em>::exampleFieldMtasLemmaPrefix(prefix2)::</em> and <em>::exampleFieldMtasPosPrefix(prefix3)::</em> 
+      for <em>[::exampleFieldMtasPosValue0(prefix="value")::]</em> 
+      in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'kwic' - 'output'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "[::exampleFieldMtasEscapedPosValue1(prefix=\"value\")::]"},
+          "response": 
+            { "documents": { "start":
+              0, "rows": 2, "fields": [ "::uniqueKey::", "::exampleFieldText(fieldName)::" ] },
+              "mtas": { 
+                "kwic" : [{
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "query": {
+                    "type": "cql",
+                    "value": "\"::exampleFieldMtasPosPostfix1(value)::\"",
+                    "prefix": "::exampleFieldMtasPosPrefix(prefix)::"
+                  },
+                  "start": 0,
+                  "number": 2,
+                  "left": 1,
+                  "right": 2,
+                  "prefix": "::exampleFieldMtasPosPrefix(prefix1)::,::exampleFieldMtasWordPrefix(prefix2)::,::exampleFieldMtasLemmaPrefix(prefix3)::",
+                  "output" : "token"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get kwic of type <em>token</em> 
+      with prefixes <em>::exampleFieldMtasPosPrefix(prefix1)::</em>, <em>::exampleFieldMtasWordPrefix(prefix2)::</em> and <em>::exampleFieldMtasLemmaPrefix(prefix3)::</em> 
+      for <em>::exampleFieldMtasPosPrefix1(value)::</em> with value <em>::exampleFieldMtasPosPostfix1(value)::</em> 
+      in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">
+  The optional <em>variables</em> is of the form
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"definitions" : [</span>
+    <span class="optional">{</span>
+      <span class="obligatory">"name" : &lt;string&gt;,</span>
+      <span class="obligatory">"value": &lt;string&gt;,</span>
+      <span class="optional">"expansion" : &lt;<a data-tab="expansion">expansion</a>&gt;</span>
+    <span class="optional">},...</span>
+  <span class="obligatory">],</span>  
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'kwic' - 'variables'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value": "[::exampleFieldMtasWordPrefix(prefix)::=$1]",
+                    "variables" : {
+                      "definitions" : [{
+                        "name": "1",
+                        "value": "::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::",
+                        "expansion": {
+                          "type": "explode"
+                        }
+                      }]
+                    }},
+          "response": 
+            { "documents": { "start":
+              0, "rows": 2, "fields": [ "::uniqueKey::", "::exampleFieldText(fieldName)::" ] },
+              "mtas": { 
+                "kwic" : [{
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "query": {
+                    "type": "cql", 
+                    "value": "[::exampleFieldMtasWordPrefix(prefix)::=$1]",
+                    "variables" : {
+                      "definitions" : [{
+                        "name": "1",
+                        "value": "::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::",
+                        "expansion": {
+                          "type": "explode"
+                        }
+                      }]
+                    }
+                  },
+                  "start": 0,
+                  "number": 2,
+                  "left": 1,
+                  "right": 2,
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix1)::,::exampleFieldMtasLemmaPrefix(prefix2)::,::exampleFieldMtasPosPrefix(prefix3)::",
+                  "output" : "hit"  
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get kwic of type <em>hit</em> 
+      with prefixes <em>::exampleFieldMtasWordPrefix(prefix1)::</em>, <em>::exampleFieldMtasLemmaPrefix(prefix2)::</em> and <em>::exampleFieldMtasPosPrefix(prefix3)::</em> 
+      for <em>[::exampleFieldMtasWordPrefix(prefix)::=$1]</em> in the field <em>::exampleFieldMtas(fieldName)::</em> 
+      with variable <em>$1</em> defined by the explode expansion 
+      of <em>::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,38 @@
+<div class="title">Introduction</div>
+
+<div class="text">Each search request to the broker is of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"configuration" : &lt;string&gt;,</span>
+  <span class="optional">"filter" : &lt;filter&gt;,</span>
+  <span class="optional">"condition" : &lt;condition&gt;,</span>
+  <span class="obligatory">"response" : &lt;response&gt;,</span>        
+  <span class="optional">"sort" : [ &lt;sortitem&gt;, &lt;sortitem&gt;,... ],</span>
+  <span class="optional">"debug" : &lt;string&gt;,</span>
+  <span class="optional">"cache" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Here only <a data-tab="response">response</a> is obligatory, 
+  <a data-tab="configuration">configuration</a>, <a data-tab="filter">filter</a>, 
+  <a data-tab="condition">condition</a>, <a data-tab="sort">sort</a>,
+  <em>debug</em> and <em>cache</em>
+  are optional.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Basic example</button>
+        <div class="json">{ "response": { "documents": { "start":
+          0, "rows": 10, "fields": [ "::uniqueKey::" ] }} }</div>
+      </td>
+      <td class="text">Get unique key <em>::uniqueKey::</em> for
+        the first 10 documents.
+      </td>
+    </tr>
+  </table>   
+</div>
