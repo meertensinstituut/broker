@@ -5,7 +5,7 @@
 A Docker image is available. To build and run
 
 ```console
-docker build -t mtas https://raw.githubusercontent.com/meertensinstituut/broker/master/docker/Dockerfile
+docker build -t docker https://raw.githubusercontent.com/meertensinstituut/broker/master/docker/Dockerfile
 docker run -t -i -p 8080:80 --name broker broker
 ```
 
