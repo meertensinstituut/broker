@@ -17,7 +17,7 @@ class Cache {
         $this->filename = tempnam ( sys_get_temp_dir (), "cache" );
       }
     }
-    $this->configuration = $configuration;    
+    $this->configuration = $configuration;
     $this->init ();
   }
   private function init() {
@@ -53,7 +53,7 @@ class Cache {
     // insert
     $sql = "INSERT OR IGNORE INTO \"cache\"
     (hash, configuration, url, request, response, numberOfChecks, created, used, expires)
-    VALUES (:hash, :configuration, :url, :request, :response, 1, datetime('now'), datetime('now'), datetime('now', '+".intval($this->lifetime)." minutes'))";
+    VALUES (:hash, :configuration, :url, :request, :response, 1, datetime('now'), datetime('now'), datetime('now', '+" . intval ( $this->lifetime ) . " minutes'))";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":hash", $hash );
     $query->bindValue ( ":configuration", $configuration );
@@ -64,20 +64,24 @@ class Cache {
     unset ( $query );
   }
   public function get($hash) {
-    $sql = "SELECT
+    try {
+      $sql = "SELECT    
     id, hash, configuration, url, request, response, numberOfChecks,
     datetime(created, 'localtime') as created,
     datetime(used, 'localtime') as used,
     datetime(expires, 'localtime') as expires
     FROM \"cache\"
     WHERE hash IS :hash";
-    $query = $this->database->prepare ( $sql );
-    $query->bindValue ( ":hash", $hash );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      return $result;
-    } else {
+      $query = $this->database->prepare ( $sql );
+      $query->bindValue ( ":hash", $hash );
+      if ($query->execute ()) {
+        $result = $query->fetch ( \PDO::FETCH_ASSOC );
+        unset ( $query );
+        return $result;
+      } else {
+        return null;
+      }
+    } catch ( PDOException $exception ) {
       return null;
     }
   }
@@ -101,44 +105,58 @@ class Cache {
     if ($query->execute ()) {
       $result = $query->fetch ( \PDO::FETCH_ASSOC );
       unset ( $query );
-      if ($result && $result["id"]) {
+      if ($result && $result ["id"]) {
         // update
         $sql = "UPDATE \"cache\" SET
           numberOfChecks = numberOfChecks + 1,    
           used = datetime('now'),   
-          expires = datetime('now', '+".intval($this->lifetime)." minutes')          
+          expires = datetime('now', '+" . intval ( $this->lifetime ) . " minutes')          
         WHERE id IS :id;";
         $query = $this->database->prepare ( $sql );
-        $query->bindValue ( ":id", $result["id"] );
+        $query->bindValue ( ":id", $result ["id"] );
         $query->execute ();
         unset ( $query );
-        //return response        
-        return array($result["id"], $result["response"]);
+        // return response
+        return array (
+            $result ["id"],
+            $result ["response"] 
+        );
       } else {
-        return array(null, null);
+        return array (
+            null,
+            null 
+        );
       }
     } else {
-      return array(null, null);
+      return array (
+          null,
+          null 
+      );
     }
   }
   public function number(): int {
-    $sql = "SELECT COUNT(*) AS number
-    FROM \"cache\";";
-    $query = $this->database->prepare ( $sql );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result ["number"] );
+    try {
+      $sql = "SELECT COUNT(*) AS number
+      FROM \"cache\";";
+      $query = $this->database->prepare ( $sql );
+      if ($query->execute ()) {
+        $result = $query->fetch ( \PDO::FETCH_ASSOC );
+        unset ( $query );
+        if ($result) {
+          return intval ( $result ["number"] );
+        } else {
+          return 0;
+        }
       } else {
         return 0;
       }
-    } else {
+    } catch ( PDOException $exception ) {
       return 0;
     }
   }
   public function list(int $start, int $number) {
-    $sql = "SELECT
+    try {
+      $sql = "SELECT    
         id, hash, configuration, numberOfChecks,
         datetime(created, 'localtime') as created,
         datetime(used, 'localtime') as used,
@@ -146,18 +164,21 @@ class Cache {
     FROM \"cache\"
     ORDER BY expires DESC
     LIMIT :start,:number;";
-    $query = $this->database->prepare ( $sql );
-    $query->bindValue ( ":start", $start );
-    $query->bindValue ( ":number", $number );
-    if ($query->execute ()) {
-      $result = $query->fetchAll ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return ( array ) $result;
+      $query = $this->database->prepare ( $sql );
+      $query->bindValue ( ":start", $start );
+      $query->bindValue ( ":number", $number );
+      if ($query->execute ()) {
+        $result = $query->fetchAll ( \PDO::FETCH_ASSOC );
+        unset ( $query );
+        if ($result) {
+          return ( array ) $result;
+        } else {
+          return null;
+        }
       } else {
         return null;
       }
-    } else {
+    } catch ( PDOException $exception ) {
       return null;
     }
   }
@@ -168,11 +189,12 @@ class Cache {
     unset ( $query );
   }
   public function reset() {
-    //$sql = "DROP TABLE IF EXISTS \"cache\";";
-    //$query = $this->database->prepare ( $sql );
-    //$query->execute ();
-    //unset ( $query );
-    @unlink($this->filename);
+    // $sql = "DROP TABLE IF EXISTS \"cache\";";
+    // $query = $this->database->prepare ( $sql );
+    // $query->execute ();
+    // unset ( $query );
+    @unlink ( $this->filename );
+    $this->database = null;
     $this->init ();
   }
   private static function createHash(string $configuration, string $url, string $request): string {

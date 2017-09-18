@@ -30,6 +30,7 @@ RUN service apache2 stop && \
     chmod 755 /start.sh
     
 RUN svn export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html/broker && \
+    chmod 777 /var/www/html/broker/cache && \
     composer install -d /var/www/html/broker/
     
 
