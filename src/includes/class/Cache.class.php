@@ -22,6 +22,7 @@ class Cache {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
+    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"cache\" (
@@ -38,6 +39,7 @@ class Cache {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->database->commit();
     unset ( $query );
   }
   public function create(string $configuration, string $url, string $request, $response) {
@@ -64,24 +66,20 @@ class Cache {
     unset ( $query );
   }
   public function get($hash) {
-    try {
-      $sql = "SELECT    
+    $sql = "SELECT    
     id, hash, configuration, url, request, response, numberOfChecks,
     datetime(created, 'localtime') as created,
     datetime(used, 'localtime') as used,
     datetime(expires, 'localtime') as expires
     FROM \"cache\"
     WHERE hash IS :hash";
-      $query = $this->database->prepare ( $sql );
-      $query->bindValue ( ":hash", $hash );
-      if ($query->execute ()) {
-        $result = $query->fetch ( \PDO::FETCH_ASSOC );
-        unset ( $query );
-        return $result;
-      } else {
-        return null;
-      }
-    } catch ( PDOException $exception ) {
+    $query = $this->database->prepare ( $sql );
+    $query->bindValue ( ":hash", $hash );
+    if ($query->execute ()) {
+      $result = $query->fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      return $result;
+    } else {
       return null;
     }
   }
@@ -135,28 +133,23 @@ class Cache {
     }
   }
   public function number(): int {
-    try {
-      $sql = "SELECT COUNT(*) AS number
+    $sql = "SELECT COUNT(*) AS number
       FROM \"cache\";";
-      $query = $this->database->prepare ( $sql );
-      if ($query->execute ()) {
-        $result = $query->fetch ( \PDO::FETCH_ASSOC );
-        unset ( $query );
-        if ($result) {
-          return intval ( $result ["number"] );
-        } else {
-          return 0;
-        }
+    $query = $this->database->prepare ( $sql );
+    if ($query->execute ()) {
+      $result = $query->fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result ["number"] );
       } else {
         return 0;
       }
-    } catch ( PDOException $exception ) {
+    } else {
       return 0;
     }
   }
   public function list(int $start, int $number) {
-    try {
-      $sql = "SELECT    
+    $sql = "SELECT    
         id, hash, configuration, numberOfChecks,
         datetime(created, 'localtime') as created,
         datetime(used, 'localtime') as used,
@@ -164,37 +157,34 @@ class Cache {
     FROM \"cache\"
     ORDER BY expires DESC
     LIMIT :start,:number;";
-      $query = $this->database->prepare ( $sql );
-      $query->bindValue ( ":start", $start );
-      $query->bindValue ( ":number", $number );
-      if ($query->execute ()) {
-        $result = $query->fetchAll ( \PDO::FETCH_ASSOC );
-        unset ( $query );
-        if ($result) {
-          return ( array ) $result;
-        } else {
-          return null;
-        }
+    $query = $this->database->prepare ( $sql );
+    $query->bindValue ( ":start", $start );
+    $query->bindValue ( ":number", $number );
+    if ($query->execute ()) {
+      $result = $query->fetchAll ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
       } else {
         return null;
       }
-    } catch ( PDOException $exception ) {
+    } else {
       return null;
     }
   }
   public function clean() {
+    $this->database->beginTransaction();
     $sql = "DELETE FROM \"cache\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->database->commit();
     unset ( $query );
   }
   public function reset() {
-    // $sql = "DROP TABLE IF EXISTS \"cache\";";
-    // $query = $this->database->prepare ( $sql );
-    // $query->execute ();
-    // unset ( $query );
-    @unlink ( $this->filename );
-    $this->database = null;
+    $sql = "DROP TABLE IF EXISTS \"cache\";";
+    $query = $this->database->prepare ( $sql );
+    $query->execute ();
+    unset ( $query );
     $this->init ();
   }
   private static function createHash(string $configuration, string $url, string $request): string {
