@@ -74,7 +74,31 @@ class Session implements \SessionHandlerInterface {
     $query->bindValue ( ":sid", $session_id );
     $query->bindValue ( ":data", $session_data );
     return $query->execute ();
-  }  
+  } 
+  public function number(): int {
+    $sql = "SELECT COUNT(*) AS number
+    FROM \"sessions\";";
+    $query = $this->database->prepare ( $sql );
+    if ($query->execute ()) {
+      $result = $query->fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result ["number"] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  public function reset() {
+    //$sql = "DROP TABLE IF EXISTS \"sessions\";";
+    //$query = $this->database->prepare ( $sql );
+    //$query->execute ();
+    //unset ( $query );
+    @unlink($this->filename);
+    $this->init ();
+  }
 }
 
 ?>

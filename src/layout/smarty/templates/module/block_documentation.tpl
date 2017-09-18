@@ -13,14 +13,10 @@
   </ul>  
 </div>
 
-<br />
-
 <div class="info">
   See the <a href="{$_configuration->url("search",null)}">examples</a>, 
   Solr documention and also <a href="https://meertensinstituut.github.io/mtas/" target="_blank">Mtas documentation</a> for more information.
 </div>
-
-<br />
 
 <div class="info">
   <b>Basic usage</b><br/>
@@ -35,8 +31,6 @@
   More detailed information is available with the method described below.
 </div>
 
-<br />
-
 <div class="info">
   <b>Advanced usage</b><br/>
   To get more information about parsing and processing of the JSON request:
@@ -49,9 +43,6 @@
   </ul>    
 </div>
 
-<br />
-
-
 
 <div class="info">
   <b>Access</b><br/>
@@ -60,7 +51,7 @@
     <li>User access can be provided based on IP or by authentication with username/password.</li>
     <li>Access for services can be provided based on IP or by a authentication key <em>X-Broker-key</em> that has to be sent with each request.</li>
   </ul>
-  Configuration is set in the configuration file.  
+  Configuration is set in the file <em>{$_SITE_ROOT_DIR|escape:html}config/config.inc.php</em>.  
 </div>
 
 <br />

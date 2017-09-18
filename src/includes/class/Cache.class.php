@@ -168,10 +168,11 @@ class Cache {
     unset ( $query );
   }
   public function reset() {
-    $sql = "DROP TABLE IF EXISTS \"cache\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
+    //$sql = "DROP TABLE IF EXISTS \"cache\";";
+    //$query = $this->database->prepare ( $sql );
+    //$query->execute ();
+    //unset ( $query );
+    @unlink($this->filename);
     $this->init ();
   }
   private static function createHash(string $configuration, string $url, string $request): string {

@@ -19,13 +19,11 @@
       
       {if isset($smarty.post.solrUrl)}      
       
-      <div class="block">
+      <div class="info">
         Create a file <em>config.inc.php</em> in <em>{$_SITE_ROOT_DIR|escape:html}config/</em> of the form
       </div>
       
-      <br />
-      
-      <div class="block">
+      <div class="info">
         <button onclick="location.href='{$_SITE_LOCATION|escape:javascript}';">Reset</button>
       </div>
       
@@ -108,16 +106,14 @@
       
       {else}
       
-      <div class="block">
+      <div class="info">
         No <em>config.inc.php</em> found in <em>{$_SITE_ROOT_DIR|escape:html}config/</em>
       </div>
-      
-      <br />
       
       <form action="" method="post">
       
       <b>Solr</b>
-      <div class="block">  
+      <div class="info">  
         <table>
           <tr>
             <td><input name="solrUrl" placeholder="url solr" type="url" required="true" /></td>
@@ -125,10 +121,8 @@
         </table>
       </div>
       
-      <br />
-      
       <b>Administrator</b>
-      <div class="block">  
+      <div class="info">  
         <table>
           <tr>
             <td><input name="adminName" placeholder="name" required="true" /></td>
@@ -142,9 +136,7 @@
         </table>
       </div>         
       
-      <br />
-      
-      <div class="block">
+      <div class="info">
         <button type="submit">Create 'config.inc.php'</button>
       </div>
       

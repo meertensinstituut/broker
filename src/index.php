@@ -23,12 +23,7 @@ header ( "Content-Type: text/html; charset=utf-8" );
 $smarty->assign ( "_SITE_LOCATION", SITE_LOCATION );
 $smarty->assign ( "_LAYOUT_DIR", LAYOUT_DIR );
 
-if ($configuration->installed ()) {
-  
-  // session
-  session_set_save_handler ( new \Broker\Session ( SITE_CACHE_DATABASE_DIR ) );
-  session_name ( "broker" );
-  session_start ();
+if ($configuration->installed ()) {  
   
   // authentication
   $authentication = new \Broker\Authentication ( $configuration->getConfig ( "authentication" ) );

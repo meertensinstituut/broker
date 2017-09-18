@@ -1,5 +1,5 @@
 <?php
-if (! $authentication->accessBasedOnLogin ()) {
+if (! $authentication->accessWithAdminPrivileges ()) {
   $authentication->logout ();
   header ( "Location: " . $configuration->url ( "login", "collections" ) );
   exit();

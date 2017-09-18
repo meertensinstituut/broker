@@ -18,7 +18,7 @@ class ExpansionCache {
     }
     $this->init ();
   }
-  private function init(): void {
+  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
@@ -82,7 +82,7 @@ class ExpansionCache {
       return null;
     }
   }
-  public function delete(string $hash): void {
+  public function delete(string $hash) {
     $sql = "DELETE FROM \"expansion\" WHERE hash IS :hash;";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":hash", $hash );
@@ -176,17 +176,18 @@ class ExpansionCache {
       return null;
     }
   }
-  public function clean(): void {
+  public function clean() {
     $sql = "DELETE FROM \"expansion\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );        
   }
-  public function reset(): void {
-    $sql = "DROP TABLE IF EXISTS \"expansion\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
+  public function reset() {
+    //$sql = "DROP TABLE IF EXISTS \"expansion\";";
+    //$query = $this->database->prepare ( $sql );
+    //$query->execute ();
+    //unset ( $query );
+    @unlink($this->filename);
     $this->init ();
   }
   private static function createHash(string $module, string $value, string $parameters): string {

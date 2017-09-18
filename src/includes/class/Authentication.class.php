@@ -14,17 +14,24 @@ class Authentication {
     } else {
       $this->configuration = array ();
     }
-    $this->reset ();
-  }
-  public function reset() {
-    $this->accessBasedOnIP = $this->validateIP ( $_SERVER ["REMOTE_ADDR"] );    
-    $this->accessBasedOnLogin = isset ( $_SESSION ["login"] ) && $_SESSION ["login"] ? true : false;
-    $this->accessWithAdminPrivileges = isset ( $_SESSION ["admin"] ) && $_SESSION ["admin"] ? true : false;
     if(isset($_SERVER["HTTP_X_BROKER_KEY"])) {
       $this->accessBasedOnKey = $this->validateKey ( $_SERVER["HTTP_X_BROKER_KEY"] );  
     } else {
       $this->accessBasedOnKey = false;
     }
+    if(!$this->accessBasedOnKey) {
+      // session
+      session_set_save_handler ( new \Broker\Session ( SITE_CACHE_DATABASE_DIR ) );
+      session_name ( "broker" );
+      session_start ();
+      //checks
+      $this->accessBasedOnIP = $this->validateIP ( $_SERVER ["REMOTE_ADDR"] );
+      $this->accessBasedOnLogin = isset ( $_SESSION ["login"] ) && $_SESSION ["login"] ? true : false;
+      $this->accessWithAdminPrivileges = isset ( $_SESSION ["admin"] ) && $_SESSION ["admin"] ? true : false;
+    }        
+  }
+  public function reset() {
+    
   }
   public function access() {
     return $this->accessBasedOnIP || $this->accessBasedOnKey || $this->accessBasedOnLogin;
@@ -91,7 +98,7 @@ class Authentication {
         if (filter_var ( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
           $ip = ip2long ( $ip );
           foreach ( $list as $item ) {
-            if(isset($item["ip"])) {
+            if(isset($item["ip"]) && is_string($item["ip"])) {
               if (preg_match ( "/\//", $item["ip"] )) {
                 list ( $filterIP, $filterRange ) = explode ( "/", $item["ip"], 2 );
               } else {
@@ -103,9 +110,9 @@ class Authentication {
                 $filterIP = ip2long ( $filterIP );
                 if ($filterRange != null && $filterRange != "" && (intval ( $filterRange ) > 0)) {
                   $filterRange = intval ( $filterRange );
-                  $min = long2ip ( ($filterIP) & ((- 1 << (32 - $filterRange))) );
-                  $max = long2ip ( (ip2long ( $min )) + pow ( 2, (32 - $filterRange) ) - 1 );
-                  if($filterIP>=$min && $filterIP<=$max) {
+                  $min =  ( ($filterIP) & ((- 1 << (32 - $filterRange))) );
+                  $max =  ( ( ( $min )) + pow ( 2, (32 - $filterRange) ) - 1 );
+                  if($ip>=$min && $ip<=$max) {
                     return true;
                   }
                   //die ( long2ip ( $filterIP ) . "/" . $filterRange . " : " . $min . " - " . $max );

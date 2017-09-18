@@ -21,7 +21,7 @@ class Collection {
     $this->configuration = $configuration;
     $this->init ();
   }
-  private function init(): void {
+  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
@@ -125,7 +125,7 @@ class Collection {
       return "";
     }
   }
-  public function delete(string $key): void {
+  public function delete(string $key) {
     $this->clean ();
     $sql = "DELETE FROM \"collection\" WHERE key IS :key;";
     $query = $this->database->prepare ( $sql );
@@ -254,7 +254,7 @@ class Collection {
     }
     return $result;
   }
-  public function setInitialised(string $key, $configuration, string $solrUrl, string $solrCreateRequest, string $solrCheckRequest, string $solrShards, string $collectionIds): void {
+  public function setInitialised(string $key, $configuration, string $solrUrl, string $solrCreateRequest, string $solrCheckRequest, string $solrShards, string $collectionIds) {
     $sql = "UPDATE \"collection\" SET
         initialised = 1,
         configuration = :configuration,
@@ -279,7 +279,7 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUninitialised(string $key): void {
+  public function setUninitialised(string $key) {
     $sql = "UPDATE \"collection\" SET
         initialised = 0,
         configuration = null,
@@ -298,7 +298,7 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setCreated(string $key, string $solrCreateStatus): void {
+  public function setCreated(string $key, string $solrCreateStatus) {
     $sql = "UPDATE \"collection\" SET
         solrCreateStatus = :solrCreateStatus,
         numberOfCreates = numberOfCreates + 1,
@@ -313,7 +313,7 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUncreated(string $key, string $solrCreateStatus): void {
+  public function setUncreated(string $key, string $solrCreateStatus) {
     $sql = "UPDATE \"collection\" SET        
         solrCreateStatus = :solrCreateStatus,
         solrCheckStatus = null,
@@ -327,7 +327,7 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setChecked(string $key, string $solrCheckStatus): void {
+  public function setChecked(string $key, string $solrCheckStatus) {
     $sql = "UPDATE \"collection\" SET
         solrCheckStatus = :solrCheckStatus,
         numberOfChecks = numberOfChecks + 1,
@@ -341,7 +341,7 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUnchecked(string $key, string $solrCheckStatus = null): void {
+  public function setUnchecked(string $key, string $solrCheckStatus = null) {
     $sql = "UPDATE \"collection\" SET
         solrCheckStatus = :solrCheckStatus,
         checked = null,
@@ -598,17 +598,18 @@ class Collection {
       return null;
     }
   }
-  public function clean(): void {
+  public function clean() {
     $sql = "DELETE FROM \"collection\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
   }
-  public function reset(): void {
-    $sql = "DROP TABLE IF EXISTS \"collection\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
+  public function reset() {    
+    //$sql = "DROP TABLE IF EXISTS \"collection\";";
+    //$query = $this->database->prepare ( $sql );
+    //$query->execute ();
+    //unset ( $query );
+    @unlink($this->filename);
     $this->init ();
   }
   private function generateKey(int $length = 20): string {

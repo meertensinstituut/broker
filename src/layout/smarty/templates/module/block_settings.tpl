@@ -2,9 +2,51 @@
 
 
 <div class="info">
+  <b>Configuration</b><br />
+  Last update configuration: {$_configurationDate|date_format:"Y-m-d H:i:s"|escape:html}<br />
+</div>  
+
+<div class="info">
+  <b>Databases and caches</b><br />
+  Content databases and caches<br />
+  <table>
+    <tr class="title">
+      <td width="20%">Cache</td>      
+      <td width="20%">Status</td>
+      <td width="20%">Collection</td>
+      <td width="20%">ExpansionCache</td>    
+      <td width="20%">Session</td>              
+    </tr> 
+    <tr>
+      <td>{$_cacheNumber|intval}x</td>
+      <td>{$_statusNumber|intval}x</td>
+      <td>{$_collectionNumber|intval}x</td>
+      <td>{$_expansionCacheNumber|intval}x</td>
+      <td>{$_sessionNumber|intval}x</td>
+    </tr>
+  </table>  
+  <br />
+  Last update automaticly parsing Solr schema: {$_solrDate|date_format:"Y-m-d H:i:s"|escape:html}<br />
+  {if $_authentication->accessWithAdminPrivileges()}   
+  <br />
+  Click for more info about <a href="{$_configuration->url("status",null)|escape:javascript}">status</a>,
+  <a href="{$_configuration->url("collections",null)|escape:javascript}">collections</a>,
+  <a href="{$_configuration->url("cache",null)|escape:javascript}">cache</a> or
+  <a href="{$_configuration->url("expansion",null)|escape:javascript}">expansionCache</a>.<br />
+  <br />
+  To reset all databases and caches:<br />
+  <br />
+  <form action="" method="post">
+    <button type="submit" name="reset">Reset all</button>
+  </form>
+  {/if}
+</div>
+
+
+<div class="info">
 
   {if $_configuration->config && $_configuration->config["solr"]} 
-    <div class="block">      
+    <div class="info">      
       <b>Configurations</b><br />
       List of available configurations<br />              
       <table>
@@ -37,7 +79,7 @@
 
   {if $_authentication->accessWithAdminPrivileges()}     
     {if $_configuration->config && $_configuration->config["authentication"]} 
-      <div class="block">      
+      <div class="info">      
         <b>Users</b><br />
         List of users with access<br />        
         {if $_configuration->config["authentication"]["login"]}
@@ -87,7 +129,7 @@
     
       <br />
     
-      <div class="block">
+      <div class="info">
         <b>Key</b><br />
         List of keys with access<br />        
         {if $_configuration->config["authentication"]["key"]}

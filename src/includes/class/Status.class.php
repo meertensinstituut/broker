@@ -25,7 +25,7 @@ class Status {
     $this->cache = $cache;
     $this->init();
   }
-  private function init(): void {
+  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute(\PDO::ATTR_TIMEOUT, 5000);
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
@@ -305,7 +305,7 @@ class Status {
     }
     return $response;
   }
-  public function delete(string $key): void {
+  public function delete(string $key) {
     $sql = "DELETE FROM \"status\" WHERE key IS :key;";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":key", $key );
@@ -355,17 +355,18 @@ class Status {
       return null;
     }
   }
-  public function clean():void {
+  public function clean() {
     $sql = "DELETE FROM status WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset($query);
   }
-  public function reset(): void {
-    $sql = "DROP TABLE IF EXISTS \"status\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset($query);    
+  public function reset() {
+    //$sql = "DROP TABLE IF EXISTS \"status\";";
+    //$query = $this->database->prepare ( $sql );
+    //$query->execute ();
+    //unset($query);
+    @unlink($this->filename);
     $this->init ();
   }
   public function getCollection() {

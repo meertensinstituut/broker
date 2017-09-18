@@ -38,7 +38,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
         }
       } else {
         if (isset ( $response ["response"] )) {
-          if (strpos ( $_SERVER ["HTTP_ACCEPT_ENCODING"], "gzip" ) !== false) {
+          if (isset($_SERVER ["HTTP_ACCEPT_ENCODING"]) && strpos ( $_SERVER ["HTTP_ACCEPT_ENCODING"], "gzip" ) !== false) {
             header ( "Content-Encoding: gzip" );
             $content = gzencode ( json_encode ( $response ["response"] ) );
           } else {
@@ -73,7 +73,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
     }
     exit ();
   } else {
-    if (! $authentication->accessBasedOnLogin ()) {
+    if (! $authentication->accessWithAdminPrivileges ()) {
       $authentication->logout ();
       header ( "Location: " . $configuration->url ( "login", "status" ) );
       exit();
@@ -130,7 +130,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
     }
   }
 } else {
-  if (! $authentication->accessBasedOnLogin ()) {
+  if (! $authentication->accessWithAdminPrivileges ()) {
     $authentication->logout ();
     header ( "Location: " . $configuration->url ( "login", "status" ) );
   } else {

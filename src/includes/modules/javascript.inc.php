@@ -11,6 +11,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
     $directory = SITE_LAYOUT_DIR."examples".DIRECTORY_SEPARATOR;
     if (is_dir($directory)) {
       if ($dh = opendir($directory)) {
+        $tmp_sort = array();
         while (($file = readdir($dh)) !== false) {
           if(is_file($directory.$file) && preg_match("/^([0-9]+[0-9a-z_]*\.)?([a-z0-9\_]+)\.(html|php)$/i",$file,$match)) {
             $name = str_replace("_"," ",$match[2]);
@@ -20,9 +21,11 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
               $code = "";
             }
             $output["examples"][] = array("title"=>trim($name), "code" => $code, "url"=>SITE_LOCATION.LAYOUT_DIR."/examples/".$file);
+            $tmp_sort[] = $code;
           }
         }
         closedir($dh);
+        array_multisort($tmp_sort, $output["examples"]);
       }
     }
     //collect expansions

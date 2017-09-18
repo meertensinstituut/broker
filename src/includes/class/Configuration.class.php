@@ -1,15 +1,35 @@
 <?php
-
+/**
+ * Broker
+ */
 namespace Broker;
 
+
+/**
+ * Configuration
+ */
 class Configuration {
   var $config;
+  var $solr;
+  var $file;
+  var $configTimestamp;  
+  var $solrTimestamp;  
+  /**
+   * Create configuration
+   * 
+   * @param String $file configuration file
+   */
   public function __construct($file) {
+    $this->file = $file;
     if (file_exists ( $file ) && is_readable ( $file )) {
       $this->load ( $file );
       $this->getSolrConfiguration ( md5 ( $file ), filectime ( $file ) );
     } else {
+      $this->file = null;
       $this->config = null;
+      $this->solr = null;
+      $this->configTimestamp = null;
+      $this->solrTimestamp = null;
     }
   }
   public function installed(): bool {
@@ -70,12 +90,25 @@ class Configuration {
     }
     return $list;
   }
+  public function getConfigTimestamp() {
+    return $this->configTimestamp;
+  }
+  public function getSolrTimestamp() {
+    return $this->solrTimestamp;
+  }
+  public function reset() {
+    unlink(SITE_CACHE_CONFIGURATION_DIR . "solr.json");
+    if (file_exists ( $this->file ) && is_readable ( $this->file )) {
+      $this->getSolrConfiguration ( md5 ( $file ), filectime ( $file ) );
+    }  
+  }
   private function load($file) {
     $old = array ();
-    $old = get_defined_vars ();
+    $old = get_defined_vars ();    
     include ($file);
     $new = get_defined_vars ();
     $this->config = array ();
+    $this->configTimestamp = filemtime($file);
     foreach ( $new as $key => $value ) {
       if (! isset ( $old [$key] )) {
         $this->config [$key] = $value;
@@ -87,6 +120,7 @@ class Configuration {
     if (file_exists ( $filename )) {
       $data = file_get_contents ( $filename );
       $this->solr = json_decode ( $data, true );
+      $this->solrTimestamp = filemtime($filename);
       if ($this->solr && json_last_error () == JSON_ERROR_NONE) {
         if (! isset ( $this->solr ["_md5hash"] ) || $this->solr ["_md5hash"] != $md5hash) {
           unlink ( $filename );
