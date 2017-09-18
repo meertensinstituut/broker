@@ -21,7 +21,6 @@ class Session implements \SessionHandlerInterface {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS sessions(
           id INTEGER PRIMARY KEY ASC,
@@ -31,7 +30,6 @@ class Session implements \SessionHandlerInterface {
           updated TEXT NOT NULL);";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
-    $this->database->commit();
     unset($query);
   }
   public function __destruct() {

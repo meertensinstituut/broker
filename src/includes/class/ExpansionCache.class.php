@@ -21,7 +21,6 @@ class ExpansionCache {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"expansion\" (
@@ -38,7 +37,6 @@ class ExpansionCache {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );    
     $query->execute ();
-    $this->database->commit();
     unset ( $query );    
   }
   public function create(string $module, $value, $parameters, $result) {

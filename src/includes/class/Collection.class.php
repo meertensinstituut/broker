@@ -23,7 +23,6 @@ class Collection {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"collection\" (
@@ -53,7 +52,6 @@ class Collection {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
-    $this->database->commit();
     unset ( $query );
   }
   public function create($configuration, $filter, $condition, $field): string {
@@ -66,7 +64,6 @@ class Collection {
     $this->clean ();
     // create strings
     list ( $hash, $brokerConfiguration, $brokerFilter, $brokerCondition, $brokerField, $sourceCollectionId ) = $this->createHash ( $configuration, $filter, $condition, $field, $collectionId );
-    $this->database->beginTransaction();
     // insert
     $sql = "INSERT OR IGNORE INTO \"collection\" 
     (key, hash, initialised, brokerConfiguration, brokerFilter, brokerCondition, brokerField, sourceCollectionId,
@@ -100,7 +97,6 @@ class Collection {
     $query->bindValue ( ":brokerField", $brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
-    $this->database->commit();
     unset ( $query );
     // get key
     $sql = "SELECT key FROM \"collection\" 
