@@ -4,6 +4,7 @@ namespace Broker;
 
 class ExpansionCache {
   private $lifetime = 3000;
+  private $filename;
   public function __construct($directory) {
     if (file_exists ( $directory ) && is_file ( $directory )) {
       $this->filename = $directory;
@@ -20,6 +21,7 @@ class ExpansionCache {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
+    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"expansion\" (
@@ -36,6 +38,7 @@ class ExpansionCache {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );    
     $query->execute ();
+    $this->database->commit();
     unset ( $query );    
   }
   public function create(string $module, $value, $parameters, $result) {
@@ -183,11 +186,10 @@ class ExpansionCache {
     unset ( $query );        
   }
   public function reset() {
-    //$sql = "DROP TABLE IF EXISTS \"expansion\";";
-    //$query = $this->database->prepare ( $sql );
-    //$query->execute ();
-    //unset ( $query );
-    @unlink($this->filename);
+    $sql = "DROP TABLE IF EXISTS \"expansion\";";
+    $query = $this->database->prepare ( $sql );
+    $query->execute ();
+    unset ( $query );
     $this->init ();
   }
   private static function createHash(string $module, string $value, string $parameters): string {

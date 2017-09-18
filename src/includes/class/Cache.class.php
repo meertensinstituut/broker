@@ -5,6 +5,7 @@ namespace Broker;
 class Cache {
   private $configuration;
   private $lifetime = 3000;
+  private $filename;
   public function __construct($directory, $configuration) {
     if (file_exists ( $directory ) && is_file ( $directory )) {
       $this->filename = $directory;

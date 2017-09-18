@@ -23,6 +23,7 @@ class Collection {
   }
   private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
+    $this->database->beginTransaction();
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
     $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"collection\" (
@@ -52,6 +53,7 @@ class Collection {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->database->commit();
     unset ( $query );
   }
   public function create($configuration, $filter, $condition, $field): string {
@@ -64,6 +66,7 @@ class Collection {
     $this->clean ();
     // create strings
     list ( $hash, $brokerConfiguration, $brokerFilter, $brokerCondition, $brokerField, $sourceCollectionId ) = $this->createHash ( $configuration, $filter, $condition, $field, $collectionId );
+    $this->database->beginTransaction();
     // insert
     $sql = "INSERT OR IGNORE INTO \"collection\" 
     (key, hash, initialised, brokerConfiguration, brokerFilter, brokerCondition, brokerField, sourceCollectionId,
@@ -97,6 +100,7 @@ class Collection {
     $query->bindValue ( ":brokerField", $brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
+    $this->database->commit();
     unset ( $query );
     // get key
     $sql = "SELECT key FROM \"collection\" 
@@ -605,11 +609,10 @@ class Collection {
     unset ( $query );
   }
   public function reset() {    
-    //$sql = "DROP TABLE IF EXISTS \"collection\";";
-    //$query = $this->database->prepare ( $sql );
-    //$query->execute ();
-    //unset ( $query );
-    @unlink($this->filename);
+    $sql = "DROP TABLE IF EXISTS \"collection\";";
+    $query = $this->database->prepare ( $sql );
+    $query->execute ();
+    unset ( $query );
     $this->init ();
   }
   private function generateKey(int $length = 20): string {
