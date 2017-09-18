@@ -19,12 +19,12 @@ class Collection {
       }
     }
     $this->configuration = $configuration;
-    $this->init ();
-  }
-  private function init() {
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this->init (false);
+  }
+  private function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"collection\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"key\" TEXT NOT NULL,

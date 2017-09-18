@@ -17,12 +17,12 @@ class ExpansionCache {
         $this->filename = tempnam ( sys_get_temp_dir (), "expansion" );
       }
     }
+    $this->database = new \PDO ( "sqlite:" . $this->filename );
+    $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $this->init ();
   }
   private function init() {
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"expansion\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"hash\" TEXT NOT NULL,

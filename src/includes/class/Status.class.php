@@ -23,12 +23,12 @@ class Status {
     }
     $this->configuration = $configuration;
     $this->cache = $cache;
+    $this->database = new \PDO ( "sqlite:" . $this->filename );
+    $this->database->setAttribute(\PDO::ATTR_TIMEOUT, 5000);
+    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $this->init();
   }
   private function init() {
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute(\PDO::ATTR_TIMEOUT, 5000);
-    $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS \"status\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"key\" TEXT NOT NULL,

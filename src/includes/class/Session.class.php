@@ -17,11 +17,11 @@ class Session implements \SessionHandlerInterface {
         $this->filename = tempnam ( sys_get_temp_dir (), "session" );
       }
     }
+    $this->database = new \PDO ( "sqlite:" . $this->filename );
+    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $this->init();
   }
   private function init() {
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $sql = "CREATE TABLE IF NOT EXISTS sessions(
           id INTEGER PRIMARY KEY ASC,
           sid TEXT NOT NULL UNIQUE,
