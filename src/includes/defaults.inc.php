@@ -3,7 +3,7 @@
  * Defaults
  * @package Broker
  */
-define ( "SITE_LOCATION", rtrim($dirname ( $_SERVER ["SCRIPT_NAME"] ), "DIRECTORY_SEPARATOR") . DIRECTORY_SEPARATOR );
+define ( "SITE_LOCATION", rtrim(dirname ( $_SERVER ["SCRIPT_NAME"] ), "DIRECTORY_SEPARATOR") . DIRECTORY_SEPARATOR );
 define ( "SITE_ROOT_DIR", rtrim(realpath ( dirname ( dirname ( __FILE__ ) ) ), "DIRECTORY_SEPARATOR") . DIRECTORY_SEPARATOR );
 define ( "CONFIG_DIR", "config" );
 define ( "CONFIG_MODULES_DIR", "modules" );
