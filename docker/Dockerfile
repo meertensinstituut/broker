@@ -28,7 +28,7 @@ RUN service apache2 stop && \
     printf "service apache2 start\n" >> /start.sh && \
     chmod 755 /start.sh
     
-RUN svn export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html && \
+RUN svn --force export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html && \
     chmod 777 /var/www/html/cache && \
     composer install -d /var/www/html/
     
