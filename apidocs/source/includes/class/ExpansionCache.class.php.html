@@ -1,0 +1,330 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Cache for expansion modules
+ */
+class ExpansionCache {
+  /**
+   * Lifetime
+   *
+   * @var number
+   */
+  private $lifetime = 3000;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   */
+  public function __construct($directory) {
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;expansion&quot; );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . &quot;expansion&quot;;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;expansion&quot; );
+      }
+    }
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ();
+  }
+  /**
+   * Initialize
+   */
+  private function init() {
+    $sql = &quot;CREATE TABLE IF NOT EXISTS \&quot;expansion\&quot; (
+          \&quot;id\&quot; INTEGER PRIMARY KEY ASC,
+          \&quot;hash\&quot; TEXT NOT NULL,
+          \&quot;module\&quot; TEXT NOT NULL,
+          \&quot;value\&quot; TEXT NOT NULL,
+          \&quot;parameters\&quot; TEXT NOT NULL,
+          \&quot;result\&quot; TEXT NOT NULL,
+          \&quot;numberOfChecks\&quot; INTEGER,
+          \&quot;created\&quot; TEXT NOT NULL,
+          \&quot;used\&quot; TEXT NOT NULL,          
+          \&quot;expires\&quot; TEXT NOT NULL,
+          UNIQUE(\&quot;hash\&quot;));&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Create
+   *
+   * @param string $module          
+   * @param string|array $value          
+   * @param unknown $parameters          
+   * @param unknown $result          
+   */
+  public function create(string $module, $value, $parameters, $result) {
+    $this-&gt;clean ();
+    $value = is_null ( $value ) ? &quot;&quot; : serialize ( $value );
+    $parameters = is_null ( $parameters ) ? &quot;&quot; : serialize ( $parameters );
+    $result = is_null ( $result ) ? &quot;&quot; : serialize ( $result );
+    // hash
+    $hash = $this-&gt;createHash ( $module, $value, $parameters );
+    // delete
+    $sql = &quot;DELETE FROM \&quot;expansion\&quot; WHERE hash IS :hash;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;execute ();
+    unset ( $query );
+    // insert
+    $sql = &quot;INSERT OR IGNORE INTO \&quot;expansion\&quot;
+    (hash, module, value, parameters, result, numberOfChecks, created, used, expires)
+    VALUES (:hash, :module, :value, :parameters, :result, 1, datetime('now'), datetime('now'), datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes'))&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:module&quot;, $module );
+    $query-&gt;bindValue ( &quot;:value&quot;, $value );
+    $query-&gt;bindValue ( &quot;:parameters&quot;, $parameters );
+    $query-&gt;bindValue ( &quot;:result&quot;, $result );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Get
+   *
+   * @param string $hash          
+   * @return unknown
+   */
+  public function get($hash) {
+    $sql = &quot;SELECT
+    id, hash, module, value, parameters, result, numberOfChecks,
+    datetime(created, 'localtime') as created,
+    datetime(used, 'localtime') as used,
+    datetime(expires, 'localtime') as expires
+    FROM \&quot;expansion\&quot;
+    WHERE hash IS :hash&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      return $result;
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Delete
+   *
+   * @param string $hash          
+   */
+  public function delete($hash) {
+    $sql = &quot;DELETE FROM \&quot;expansion\&quot; WHERE hash IS :hash;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Check
+   *
+   * @param string $module          
+   * @param string|array $value          
+   * @param unknown $parameters          
+   * @return array
+   */
+  public function check($module, $value, $parameters) {
+    $this-&gt;clean ();
+    $value = is_null ( $value ) ? &quot;&quot; : serialize ( $value );
+    $parameters = is_null ( $parameters ) ? &quot;&quot; : serialize ( $parameters );
+    // hash
+    $hash = $this-&gt;createHash ( $module, $value, $parameters );
+    // get info
+    $sql = &quot;SELECT
+        id, result
+    FROM \&quot;expansion\&quot;
+    WHERE hash IS :hash
+    AND module IS :module
+    AND value IS :value
+    AND parameters IS :parameters;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:module&quot;, $module );
+    $query-&gt;bindValue ( &quot;:value&quot;, $value );
+    $query-&gt;bindValue ( &quot;:parameters&quot;, $parameters );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result &amp;&amp; $result [&quot;id&quot;]) {
+        // update
+        $sql = &quot;UPDATE \&quot;expansion\&quot; SET
+          numberOfChecks = numberOfChecks + 1,    
+          used = datetime('now'),   
+          expires = datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes')          
+        WHERE id IS :id;&quot;;
+        $query = $this-&gt;database-&gt;prepare ( $sql );
+        $query-&gt;bindValue ( &quot;:id&quot;, $result [&quot;id&quot;] );
+        $query-&gt;execute ();
+        unset ( $query );
+        // return response
+        if ($result [&quot;result&quot;]) {
+          $result [&quot;result&quot;] = unserialize ( $result [&quot;result&quot;] );
+        } else {
+          $result [&quot;result&quot;] = null;
+        }
+        return array (
+            $result [&quot;id&quot;],
+            $result [&quot;result&quot;] 
+        );
+      } else {
+        return array (
+            null,
+            null 
+        );
+      }
+    } else {
+      return array (
+          null,
+          null 
+      );
+    }
+  }
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+    FROM \&quot;expansion\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * Get list
+   *
+   * @param int $start          
+   * @param int $number          
+   * @return array
+   */
+  public function getList($start, $number) {
+    $sql = &quot;SELECT
+        id, hash, module, value, parameters, numberOfChecks,
+        datetime(created, 'localtime') as created,
+        datetime(used, 'localtime') as used,
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;expansion\&quot;
+    ORDER BY expires DESC
+    LIMIT :start,:number;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:start&quot;, $start );
+    $query-&gt;bindValue ( &quot;:number&quot;, $number );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetchAll ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Clean
+   */
+  public function clean() {
+    $sql = &quot;DELETE FROM \&quot;expansion\&quot; WHERE expires &lt; datetime('now');&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;expansion\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+    $this-&gt;init ();
+  }
+  /**
+   * Create hash
+   *
+   * @param string $module          
+   * @param string $value          
+   * @param string $parameters          
+   * @return string
+   */
+  private static function createHash($module, $value, $parameters) {
+    $base = trim ( $module ) . &quot;\n&quot; . trim ( $value ) . &quot;\n&quot; . trim ( $parameters );
+    return hash ( &quot;md5&quot;, $base );
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

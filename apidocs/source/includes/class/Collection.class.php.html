@@ -1,0 +1,880 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Collection
+ */
+class Collection {
+  /**
+   * Database
+   *
+   * @var \PDO
+   */
+  private $database;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   * @param string $configuration          
+   */
+  public function __construct($directory, $configuration) {
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;collection&quot; );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . &quot;collection&quot;;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;collection&quot; );
+      }
+    }
+    $this-&gt;configuration = $configuration;
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ( false );
+  }
+  /**
+   * Initialize
+   */
+  private function init() {
+    $sql = &quot;CREATE TABLE IF NOT EXISTS \&quot;collection\&quot; (
+          \&quot;id\&quot; INTEGER PRIMARY KEY ASC,
+          \&quot;key\&quot; TEXT NOT NULL,
+          \&quot;hash\&quot; TEXT NOT NULL,
+          \&quot;initialised\&quot; INTEGER,
+          \&quot;brokerConfiguration\&quot; TEXT NULL,
+          \&quot;brokerFilter\&quot; TEXT NULL,
+          \&quot;brokerCondition\&quot; TEXT NULL,
+          \&quot;brokerField\&quot; TEXT NULL,
+          \&quot;sourceCollectionId\&quot; TEXT NULL,
+          \&quot;configuration\&quot; TEXT,
+          \&quot;collectionIds\&quot; TEXT,
+          \&quot;solrUrl\&quot; TEXT,
+          \&quot;solrCreateRequest\&quot; TEXT,
+          \&quot;solrCheckRequest\&quot; TEXT,
+          \&quot;solrShards\&quot; TEXT,
+          \&quot;solrCreateStatus\&quot; TEXT,
+          \&quot;solrCheckStatus\&quot; TEXT,
+          \&quot;numberOfCreates\&quot; INTEGER,
+          \&quot;numberOfChecks\&quot; INTEGER,
+          \&quot;created\&quot; TEXT NOT NULL,
+          \&quot;checked\&quot; TEXT NULL,          
+          \&quot;expires\&quot; TEXT NOT NULL,
+          UNIQUE(\&quot;key\&quot;),
+          UNIQUE(\&quot;hash\&quot;));&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Create
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param string $field          
+   * @return string
+   */
+  public function create($configuration, $filter, $condition, $field) {
+    return $this-&gt;_create ( $configuration, $filter, $condition, $field, null );
+  }
+  /**
+   * Create from collection
+   *
+   * @param unknown $configuration          
+   * @param string $collectionId          
+   * @return string
+   */
+  public function createFromCollection($configuration, $collectionId) {
+    return $this-&gt;_create ( $configuration, null, null, null, $collectionId );
+  }
+  /**
+   * Create
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param string $field          
+   * @param string $collectionId          
+   * @return string
+   */
+  private function _create($configuration, $filter, $condition, $field, $collectionId) {
+    $this-&gt;clean ();
+    // create strings
+    list ( $hash, $brokerConfiguration, $brokerFilter, $brokerCondition, $brokerField, $sourceCollectionId ) = $this-&gt;createHash ( $configuration, $filter, $condition, $field, $collectionId );
+    // insert
+    $sql = &quot;INSERT OR IGNORE INTO \&quot;collection\&quot; 
+    (key, hash, initialised, brokerConfiguration, brokerFilter, brokerCondition, brokerField, sourceCollectionId,
+    configuration, collectionIds, solrUrl, solrCreateRequest, solrCheckRequest, solrShards, solrCreateStatus, solrCheckStatus, 
+    numberOfCreates, numberOfChecks, created, checked, expires)
+    VALUES (:key, :hash, 0, :brokerConfiguration, :brokerFilter, :brokerCondition, :brokerField, :sourceCollectionId,
+        null, null, null, null, null, null, null, null, 0, 0, datetime('now'), null, datetime('now', '+60 minutes'))&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $this-&gt;generateKey () );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
+    $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
+    $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
+    $query-&gt;execute ();
+    unset ( $query );
+    // update (if already existed)
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET expires = datetime('now', '+60 minutes')
+    WHERE hash IS :hash 
+    AND brokerConfiguration IS :brokerConfiguration 
+    AND brokerFilter IS :brokerFilter 
+    AND brokerCondition IS :brokerCondition
+    AND brokerField IS :brokerField
+    AND sourceCollectionId IS :sourceCollectionId;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
+    $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
+    $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
+    $query-&gt;execute ();
+    unset ( $query );
+    // get key
+    $sql = &quot;SELECT key FROM \&quot;collection\&quot; 
+    WHERE hash IS :hash 
+    AND brokerConfiguration IS :brokerConfiguration 
+    AND brokerFilter IS :brokerFilter 
+    AND brokerCondition IS :brokerCondition
+    AND brokerField IS :brokerField
+    AND sourceCollectionId IS :sourceCollectionId;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
+    $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
+    $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( string ) $result [&quot;key&quot;];
+      } else {
+        return &quot;&quot;;
+      }
+    } else {
+      return &quot;&quot;;
+    }
+  }
+  /**
+   * Delete
+   *
+   * @param string $key          
+   */
+  public function delete($key) {
+    $this-&gt;clean ();
+    $sql = &quot;DELETE FROM \&quot;collection\&quot; WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Check
+   *
+   * @param string $key          
+   * @param number $recheckTime          
+   * @return array
+   */
+  public function check($key, $recheckTime = 60) {
+    // update expiration
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key
+    AND initialised = 1;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+    // get info
+    $sql = &quot;SELECT key, configuration, initialised,
+        (case when checked IS null then 1 else (case when checked &lt; datetime('now','-&quot; . $recheckTime . &quot; seconds') then 1 else 0 end) end) as \&quot;check\&quot; 
+            FROM \&quot;collection\&quot;
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Get
+   *
+   * @param string $key          
+   * @return array
+   */
+  public function get(string $key) {
+    $this-&gt;clean ();
+    // update expiration
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+    // get info
+    $sql = &quot;SELECT 
+        key, initialised, brokerConfiguration, brokerFilter, 
+        brokerCondition, brokerField, sourceCollectionId, configuration, collectionIds,
+        solrUrl, solrCreateRequest, solrCheckRequest, solrShards, 
+        solrCreateStatus, solrCheckStatus, 
+        numberOfCreates, numberOfChecks,
+        datetime(created, 'localtime') as created, 
+        datetime(checked, 'localtime') as checked, 
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;collection\&quot; 
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Get with dependencies
+   *
+   * @param array $keys          
+   * @return array
+   */
+  public function getWithDependencies(array $keys) {
+    $result = array ();
+    $result [&quot;data&quot;] = array ();
+    $result [&quot;dependencies&quot;] = array ();
+    $result [&quot;missing&quot;] = array ();
+    while ( $key = array_shift ( $keys ) ) {
+      $subResult = array ();
+      $subResult [&quot;data&quot;] = array ();
+      $subResult [&quot;dependencies&quot;] = array ();
+      $subResult [&quot;missing&quot;] = array ();
+      $mainResult = $this-&gt;get ( $key );
+      if (! $mainResult) {
+        $subResult [&quot;missing&quot;] [] = $key;
+      } else {
+        if ($mainResult [&quot;collectionIds&quot;]) {
+          $collectionIds = explode ( &quot;,&quot;, $mainResult [&quot;collectionIds&quot;] );
+          while ( $collectionId = array_shift ( $collectionIds ) ) {
+            if (! in_array ( $collectionId, $result [&quot;dependencies&quot;] ) &amp;&amp; ! in_array ( $collectionId, $subResult [&quot;dependencies&quot;] )) {
+              $subCollectionIds = array ();
+              $subCollectionIds [] = $collectionId;
+              while ( $subCollectionId = array_shift ( $subCollectionIds ) ) {
+                if (! in_array ( $subCollectionId, $result [&quot;dependencies&quot;] ) &amp;&amp; ! in_array ( $subCollectionId, $subResult [&quot;dependencies&quot;] )) {
+                  $dependencyResult = $this-&gt;get ( $subCollectionId );
+                  if ($dependencyResult) {
+                    array_unshift ( $result [&quot;data&quot;], $dependencyResult );
+                    array_unshift ( $result [&quot;dependencies&quot;], $subCollectionId );
+                    if ($dependencyResult [&quot;collectionIds&quot;]) {
+                      $subSubCollectionIds = explode ( &quot;,&quot;, $dependencyResult [&quot;collectionIds&quot;] );
+                      foreach ( $subSubCollectionIds as $subSubCollectionId ) {
+                        array_unshift ( $subCollectionIds, $subSubCollectionId );
+                      }
+                    }
+                  } else {
+                    array_unshift ( $subResult [&quot;missing&quot;], $subCollectionId );
+                  }
+                }
+              }
+            }
+          }
+        }
+        $result [&quot;data&quot;] [] = $mainResult;
+        $result [&quot;dependencies&quot;] [] = $key;
+      }
+      // merge
+      foreach ( $subResult [&quot;data&quot;] as $subDataItem ) {
+        $result [&quot;data&quot;] [] = $subDataItem;
+      }
+      foreach ( $subResult [&quot;dependencies&quot;] as $subDependencyItem ) {
+        $result [&quot;dependencies&quot;] [] = $subDependencyItem;
+      }
+      foreach ( $subResult [&quot;missing&quot;] as $subMissingItem ) {
+        $result [&quot;missing&quot;] [] = $subMissingItem;
+      }
+    }
+    return $result;
+  }
+  /**
+   * Set initialised
+   *
+   * @param string $key          
+   * @param unknown $configuration          
+   * @param string $solrUrl          
+   * @param string $solrCreateRequest          
+   * @param string $solrCheckRequest          
+   * @param string $solrShards          
+   * @param string $collectionIds          
+   */
+  public function setInitialised(string $key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        initialised = 1,
+        configuration = :configuration,
+        collectionIds = :collectionIds,
+        solrUrl = :solrUrl,
+        solrCreateRequest = :solrCreateRequest,
+        solrCheckRequest = :solrCheckRequest,
+        solrShards = :solrShards,
+        solrCreateStatus = null,
+        solrCheckStatus = null,
+        checked = null,
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;bindValue ( &quot;:configuration&quot;, $configuration );
+    $query-&gt;bindValue ( &quot;:collectionIds&quot;, $collectionIds );
+    $query-&gt;bindValue ( &quot;:solrUrl&quot;, $solrUrl );
+    $query-&gt;bindValue ( &quot;:solrCreateRequest&quot;, $solrCreateRequest );
+    $query-&gt;bindValue ( &quot;:solrCheckRequest&quot;, $solrCheckRequest );
+    $query-&gt;bindValue ( &quot;:solrShards&quot;, $solrShards );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Set uninitialised
+   *
+   * @param string $key          
+   */
+  public function setUninitialised($key) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        initialised = 0,
+        configuration = null,
+        collectionIds = null,
+        solrUrl = null,
+        solrCreateRequest = null,
+        solrCheckRequest = null,
+        solrShards = null,
+        solrCreateStatus = null,
+        solrCheckStatus = null,
+        checked = null,
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Set created
+   *
+   * @param string $key          
+   * @param string $solrCreateStatus          
+   */
+  public function setCreated($key, $solrCreateStatus) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        solrCreateStatus = :solrCreateStatus,
+        numberOfCreates = numberOfCreates + 1,
+        numberOfChecks = 0,
+        checked = datetime('now'),
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key
+    AND initialised = 1;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;bindValue ( &quot;:solrCreateStatus&quot;, $solrCreateStatus );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Set uncreated
+   *
+   * @param string $key          
+   * @param string $solrCreateStatus          
+   */
+  public function setUncreated($key, $solrCreateStatus) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET        
+        solrCreateStatus = :solrCreateStatus,
+        solrCheckStatus = null,
+        checked = null,
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key
+    AND initialised = 1;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;bindValue ( &quot;:solrCreateStatus&quot;, $solrCreateStatus );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Set checked
+   *
+   * @param string $key          
+   * @param string $solrCheckStatus          
+   */
+  public function setChecked($key, $solrCheckStatus) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        solrCheckStatus = :solrCheckStatus,
+        numberOfChecks = numberOfChecks + 1,
+        checked = datetime('now'),
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key
+    AND initialised = 1;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;bindValue ( &quot;:solrCheckStatus&quot;, $solrCheckStatus );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Set unchecked
+   *
+   * @param string $key          
+   * @param string $solrCheckStatus          
+   */
+  public function setUnchecked($key, $solrCheckStatus = null) {
+    $sql = &quot;UPDATE \&quot;collection\&quot; SET
+        solrCheckStatus = :solrCheckStatus,
+        checked = null,
+        expires = datetime('now', '+60 minutes')
+    WHERE key IS :key
+    AND initialised = 1;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;bindValue ( &quot;:solrCheckStatus&quot;, $solrCheckStatus );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Do initialise
+   *
+   * @param string $key          
+   */
+  public function doInitialise($key) {
+    $localCollectionIds = array ();
+    $localWarnings = array ();
+    $localErrors = array ();
+    // get info
+    $sql = &quot;SELECT * FROM \&quot;collection\&quot;
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        if (! $result [&quot;initialised&quot;]) {
+          // create main request
+          $subRequestCreate = new \stdClass ();
+          if ($result [&quot;sourceCollectionId&quot;]) {
+            $sourceCollectionInfo = $this-&gt;get ( $result [&quot;sourceCollectionId&quot;] );
+            if ($sourceCollectionInfo &amp;&amp; ($sourceCollectionInfo [&quot;key&quot;] == $result [&quot;sourceCollectionId&quot;])) {
+              if ($sourceCollectionInfo [&quot;configuration&quot;] &amp;&amp; isset ( $this-&gt;configuration-&gt;config [&quot;solr&quot;] [$sourceCollectionInfo [&quot;configuration&quot;]] )) {
+                $url = $this-&gt;configuration-&gt;config [&quot;solr&quot;] [$sourceCollectionInfo [&quot;configuration&quot;]] [&quot;url&quot;];
+                array_unshift ( $localCollectionIds, $result [&quot;sourceCollectionId&quot;] );
+                $subRequestCreate-&gt;response = new \stdClass ();
+                $subRequestCreate-&gt;response-&gt;mtas = new \stdClass ();
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection = array ();
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0] = new \stdClass ();
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;id = $result [&quot;key&quot;];
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;action = &quot;import&quot;;
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;url = $url;
+                $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;collection = $result [&quot;sourceCollectionId&quot;];
+              } else {
+                $subRequestCreate = null;
+                $localErrors [] = &quot;collection &quot; . $key . &quot; - couldn't find url for configuration &quot; . $sourceCollectionInfo [&quot;configuration&quot;];
+              }
+            } else {
+              $subRequestCreate = null;
+              $localErrors [] = &quot;collection &quot; . $key . &quot; - couldn't find source collection &quot; . $result [&quot;sourceCollectionId&quot;];
+            }
+          } else {
+            if ($result [&quot;brokerConfiguration&quot;] != null) {
+              $subRequestCreate-&gt;configuration = json_decode ( $result [&quot;brokerConfiguration&quot;] );
+            }
+            if ($result [&quot;brokerFilter&quot;] != null) {
+              $subRequestCreate-&gt;filter = json_decode ( $result [&quot;brokerFilter&quot;] );
+            }
+            if ($result [&quot;brokerCondition&quot;] != null) {
+              $subRequestCreate-&gt;condition = json_decode ( $result [&quot;brokerCondition&quot;] );
+            }
+            $subRequestCreate-&gt;response = new \stdClass ();
+            $subRequestCreate-&gt;response-&gt;mtas = new \stdClass ();
+            $subRequestCreate-&gt;response-&gt;mtas-&gt;collection = array ();
+            $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0] = new \stdClass ();
+            $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;id = $result [&quot;key&quot;];
+            $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;action = &quot;create&quot;;
+            $subRequestCreate-&gt;response-&gt;mtas-&gt;collection [0]-&gt;field = $result [&quot;brokerField&quot;];
+          }
+          // create parser for collection
+          if ($subRequestCreate) {
+            $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this-&gt;configuration, null, $this, null );
+            // register result from parsing collection request
+            $subParserWarnings = $subCreateParser-&gt;getWarnings ();
+            $subParserErrors = $subCreateParser-&gt;getErrors ();
+            $subParserCollectionParsers = $subCreateParser-&gt;getCollectionIds ();
+            foreach ( $subParserErrors as $subParserError ) {
+              $localErrors [] = &quot;collection &quot; . $key . &quot; - &quot; . $subParserError;
+            }
+            foreach ( $subParserWarnings as $subParserWarning ) {
+              $localWarnings [] = &quot;collection &quot; . $key . &quot; - &quot; . $subParserWarning;
+            }
+            // success
+            if (count ( $subParserErrors ) == 0) {
+              foreach ( $subParserCollectionParsers as $subParserCollectionParser ) {
+                $localCollectionIds [] = $subParserCollectionParser;
+              }
+              // create check request
+              $subRequestCheck = new \stdClass ();
+              $subRequestCheck-&gt;configuration = $subCreateParser-&gt;getConfiguration ();
+              $subRequestCheck-&gt;response = new \stdClass ();
+              $subRequestCheck-&gt;response-&gt;mtas = new \stdClass ();
+              $subRequestCheck-&gt;response-&gt;mtas-&gt;collection = array ();
+              $subRequestCheck-&gt;response-&gt;mtas-&gt;collection [0] = new \stdClass ();
+              $subRequestCheck-&gt;response-&gt;mtas-&gt;collection [0]-&gt;id = $result [&quot;key&quot;];
+              $subRequestCheck-&gt;response-&gt;mtas-&gt;collection [0]-&gt;action = &quot;check&quot;;
+              // create parser for collection
+              $subCheckParser = new \Broker\Parser ( $subRequestCheck, $this-&gt;configuration, null, $this, null );
+              // initialise
+              $this-&gt;setInitialised ( $result [&quot;key&quot;], $subCreateParser-&gt;getConfiguration (), $subCreateParser-&gt;getUrl (), $subCreateParser-&gt;getRequest (), $subCheckParser-&gt;getRequest (), ($subCreateParser-&gt;getShards () != null) ? implode ( &quot;,&quot;, $subCreateParser-&gt;getShards () ) : &quot;&quot;, implode ( &quot;,&quot;, $localCollectionIds ) );
+            }
+          }
+        }
+      }
+    }
+    return array (
+        $localWarnings,
+        $localErrors 
+    );
+  }
+  /**
+   * Do check
+   *
+   * @param string $key          
+   * @param boolean $dontReintialise          
+   * @return boolean
+   */
+  public function doCheck($key, $dontReintialise = false) {
+    $sql = &quot;SELECT * FROM \&quot;collection\&quot;
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        if (! $result [&quot;initialised&quot;]) {
+          return false;
+        } else {
+          // dependency on other collections
+          $deleteableCollectionIds = array ();
+          if ($result [&quot;collectionIds&quot;]) {
+            $collectionIds = explode ( &quot;,&quot;, $result [&quot;collectionIds&quot;] );
+            foreach ( $collectionIds as $collectionId ) {
+              $checkInfo = $this-&gt;check ( $collectionId );
+              if (! $checkInfo || $checkInfo [&quot;key&quot;] != $collectionId) {
+                $deleteableCollectionIds [] = $collectionId;
+                continue;
+              } else {
+                // check if intialised
+                if (! $checkInfo [&quot;initialised&quot;]) {
+                  $this-&gt;doInitialise ( $collectionId );
+                  $checkInfo = $this-&gt;check ( $collectionId );
+                  // can't initialise
+                  if (! $checkInfo || ! $checkInfo [&quot;initialised&quot;]) {
+                    $deleteableCollectionIds [] = $collectionId;
+                    continue;
+                  }
+                }
+                // check if checked
+                if ($checkInfo [&quot;check&quot;] &amp;&amp; ! $this-&gt;doCheck ( $collectionId )) {
+                  $deleteableCollectionIds [] = $collectionId;
+                  continue;
+                }
+              }
+            }
+            // remove collections that couldn't be checked
+            foreach ( $deleteableCollectionIds as $deleteableCollectionId ) {
+              $this-&gt;delete ( $deleteableCollectionId );
+            }
+            // reinitialise
+            if (count ( $deleteableCollectionIds ) &gt; 0) {
+              // must initialise again
+              $this-&gt;setUninitialised ( $key );
+              if ($dontReintialise) {
+                return false;
+              } else {
+                $this-&gt;doInitialise ( $key );
+                return $this-&gt;doCheck ( $key );
+              }
+            }
+          }
+          // check
+          try {
+            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCheckRequest&quot;], $result [&quot;solrShards&quot;], null );
+            $solrResponse = $solr-&gt;getResponse ();
+            if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+              if (isset ( $solrResponse-&gt;mtas ) &amp;&amp; is_object ( $solrResponse-&gt;mtas )) {
+                if (isset ( $solrResponse-&gt;mtas-&gt;collection ) &amp;&amp; is_array ( $solrResponse-&gt;mtas-&gt;collection ) &amp;&amp; count ( $solrResponse-&gt;mtas-&gt;collection ) == 1) {
+                  $collectionResponse = $solrResponse-&gt;mtas-&gt;collection [0];
+                  if (is_object ( $collectionResponse )) {
+                    if (isset ( $collectionResponse-&gt;id ) &amp;&amp; $collectionResponse-&gt;id == $key) {
+                      $this-&gt;setChecked ( $key, json_encode ( $solrResponse ) );
+                      return true;
+                    }
+                  }
+                }
+              }
+            }
+          } catch ( \Exception $e ) {
+            // should not happen
+          }
+          try {
+            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCreateRequest&quot;], $result [&quot;solrShards&quot;], null );
+            $solrResponse = $solr-&gt;getResponse ();
+            if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+              if (isset ( $solrResponse-&gt;error )) {
+                $this-&gt;setUncreated ( $key, json_encode ( $solrResponse-&gt;error ) );
+              } else if (isset ( $solrResponse-&gt;responseHeader )) {
+                $this-&gt;setCreated ( $key, json_encode ( $solrResponse ) );
+                return true;
+              } else {
+                $this-&gt;setUncreated ( $key, json_encode ( $solrResponse ) );
+              }
+            } else {
+              $this-&gt;setUncreated ( $key, json_encode ( $solrResponse ) );
+            }
+          } catch ( \Broker\SolrException $se ) {
+            $this-&gt;setUncreated ( $key, $se-&gt;getMessage () );
+          } catch ( \Exception $e ) {
+            $this-&gt;setUncreated ( $key, $e-&gt;getMessage () );
+          }
+        }
+        return false;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+    FROM \&quot;collection\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * Get list
+   *
+   * @param number $start          
+   * @param number $number          
+   * @return array
+   */
+  public function getList($start, $number) {
+    $sql = &quot;SELECT
+        key, initialised, brokerConfiguration, brokerFilter, brokerCondition, brokerField,
+        configuration, collectionIds, solrUrl, solrCreateRequest, solrCheckRequest, 
+        solrShards, solrCreateStatus, solrCheckStatus,
+        numberOfCreates, numberOfChecks,
+        datetime(created, 'localtime') as created, 
+        datetime(checked, 'localtime') as checked, 
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;collection\&quot;
+    ORDER BY expires DESC
+    LIMIT :start,:number;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:start&quot;, $start );
+    $query-&gt;bindValue ( &quot;:number&quot;, $number );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetchAll ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Clean
+   */
+  public function clean() {
+    $sql = &quot;DELETE FROM \&quot;collection\&quot; WHERE expires &lt; datetime('now');&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;collection\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+    $this-&gt;init ();
+  }
+  /**
+   * Generate key
+   *
+   * @param number $length          
+   * @return string
+   */
+  private function generateKey($length = 20) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen ( $characters );
+    $randomString = '';
+    for($i = 0; $i &lt; $length; $i ++) {
+      $randomString .= $characters [rand ( 0, $charactersLength - 1 )];
+    }
+    return $randomString;
+  }
+  /**
+   * Create hash
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param unknown $field          
+   * @param unknown $collectionId          
+   * @return array
+   */
+  private static function createHash($configuration, $filter, $condition, $field, $collectionId) {
+    $base = &quot;&quot;;
+    if ($configuration != null) {
+      $brokerConfiguration = json_encode ( $configuration );
+      $base .= $brokerConfiguration;
+    } else {
+      $brokerConfiguration = null;
+    }
+    if ($collectionId != null) {
+      $sourceCollectionId = $collectionId;
+      $base .= $sourceCollectionId;
+      $brokerFilter = null;
+      $brokerCondition = null;
+      $brokerField = null;
+    } else {
+      $sourceCollectionId = null;
+      if ($filter != null) {
+        $brokerFilter = json_encode ( $filter );
+        $base .= $brokerFilter;
+      } else {
+        $brokerFilter = null;
+      }
+      if ($condition != null) {
+        $brokerCondition = json_encode ( $condition );
+        $base .= $brokerCondition;
+      } else {
+        $brokerCondition = null;
+      }
+      if ($field != null) {
+        $brokerField = $field;
+        $base .= $brokerField;
+      } else {
+        $brokerField = null;
+      }
+    }
+    return array (
+        hash ( &quot;md5&quot;, $base ),
+        $brokerConfiguration,
+        $brokerFilter,
+        $brokerCondition,
+        $brokerField,
+        $sourceCollectionId 
+    );
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

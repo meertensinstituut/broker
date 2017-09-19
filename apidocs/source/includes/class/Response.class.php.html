@@ -1,0 +1,347 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Processing response
+ */
+class Response {
+  /**
+   * Response
+   *
+   * @var unknown
+   */
+  private $response;
+  /**
+   * Response joins
+   *
+   * @var unknown
+   */
+  private $responseJoins;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration = null;
+  /**
+   * Collection
+   *
+   * @var \Broker\Collection
+   */
+  private $collection = null;
+  /**
+   * Cache
+   *
+   * @var \Broker\Cache
+   */
+  private $cache = null;
+  /**
+   * Constructor
+   *
+   * @param unknown $response          
+   * @param unknown $responseJoins          
+   * @param unknown $configuration          
+   * @param \Broker\Cache $cache          
+   * @param \Broker\Collection $collection          
+   */
+  public function __construct($response, $responseJoins, $configuration, $cache, $collection) {
+    $this-&gt;response = $response;
+    $this-&gt;configuration = $configuration;
+    $this-&gt;cache = $cache;
+    $this-&gt;collection = $collection;
+    if (isset ( $this-&gt;response [&quot;response&quot;]-&gt;responseHeader )) {
+      unset ( $this-&gt;response [&quot;response&quot;]-&gt;responseHeader );
+    }
+    $this-&gt;responseJoins = $responseJoins;
+  }
+  /**
+   * Process
+   *
+   * @return array
+   */
+  public function process() {
+    $this-&gt;processFacetFieldJoins ();
+    $this-&gt;processDocumentsJoins ();
+    return $this-&gt;response;
+  }
+  /**
+   * Process facet field joins
+   */
+  private function processFacetFieldJoins() {
+    if ($this-&gt;responseJoins &amp;&amp; is_object ( $this-&gt;responseJoins ) &amp;&amp; isset ( $this-&gt;responseJoins-&gt;facetfield )) {
+      $facetfieldJoins = $this-&gt;responseJoins-&gt;facetfield;
+      foreach ( $facetfieldJoins as $facetfieldJoin ) {
+        if (isset ( $this-&gt;response [&quot;response&quot;]-&gt;facet_counts-&gt;facet_fields-&gt;{$facetfieldJoin-&gt;key} )) {
+          $values = $this-&gt;collectFacetFieldValues ( $this-&gt;response [&quot;response&quot;]-&gt;facet_counts-&gt;facet_fields-&gt;{$facetfieldJoin-&gt;key} );
+          $updateValues = $this-&gt;collectJoinFacetFieldValues ( $values, $facetfieldJoin );
+          $this-&gt;response [&quot;response&quot;]-&gt;facet_counts-&gt;facet_fields-&gt;{$facetfieldJoin-&gt;key} = $this-&gt;updateFacetFieldValues ( $this-&gt;response [&quot;response&quot;]-&gt;facet_counts-&gt;facet_fields-&gt;{$facetfieldJoin-&gt;key}, $facetfieldJoin-&gt;to, $updateValues );
+        }
+      }
+    }
+  }
+  /**
+   * Collect facet field values
+   *
+   * @param array $list          
+   * @return array
+   */
+  private function collectFacetFieldValues($list) {
+    $values = array ();
+    for($i = 0; $i &lt; count ( $list ); $i += 2) {
+      $values [] = $list [$i];
+    }
+    return $values;
+  }
+  /**
+   * Collect join facet field values
+   *
+   * @param array $values          
+   * @param unknown $facetFieldJoin          
+   * @return array
+   */
+  private function collectJoinFacetFieldValues($values, $facetFieldJoin) {
+    $allFields = $facetFieldJoin-&gt;fields;
+    $allFields [] = $facetFieldJoin-&gt;to;
+    $subRequest = new \stdClass ();
+    $subRequest-&gt;configuration = $facetFieldJoin-&gt;configuration;
+    $subRequest-&gt;filter = new \stdClass ();
+    $subRequest-&gt;filter-&gt;condition = new \stdClass ();
+    $subRequest-&gt;filter-&gt;condition-&gt;type = &quot;equals&quot;;
+    $subRequest-&gt;filter-&gt;condition-&gt;field = $facetFieldJoin-&gt;to;
+    $subRequest-&gt;filter-&gt;condition-&gt;value = $values;
+    $subRequest-&gt;response = new \stdClass ();
+    $subRequest-&gt;response-&gt;documents = new \stdClass ();
+    $subRequest-&gt;response-&gt;documents-&gt;start = 0;
+    $subRequest-&gt;response-&gt;documents-&gt;rows = 1000000;
+    $subRequest-&gt;response-&gt;documents-&gt;fields = $allFields;
+    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null );
+    // get data
+    try {
+      $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
+      $solrResponse = $solr-&gt;getResponse ();
+      if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+        if (! isset ( $solrResponse-&gt;error ) &amp;&amp; isset ( $solrResponse-&gt;response ) &amp;&amp; isset ( $solrResponse-&gt;response-&gt;docs )) {
+          $subResponse = array ();
+          $subResponse [&quot;status&quot;] = &quot;OK&quot;;
+          $subResponse [&quot;response&quot;] = clone $solrResponse;
+          $subResponse = (new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection ))-&gt;process ();
+          return $subResponse [&quot;response&quot;]-&gt;response-&gt;docs;
+        }
+      }
+    } catch ( \Broker\SolrException $se ) {
+      // do nothing
+    } catch ( \Exception $e ) {
+      // do nothing
+    }
+    return array ();
+  }
+  /**
+   * Update facet field values
+   *
+   * @param array $list          
+   * @param string $to          
+   * @param array $updates          
+   * @return array
+   */
+  private function updateFacetFieldValues($list, $to, $updates) {
+    for($i = 0; $i &lt; count ( $list ); $i += 2) {
+      $key = $list [$i];
+      $value = array ();
+      foreach ( $updates as $update ) {
+        if (isset ( $update-&gt;{$to} ) &amp;&amp; (is_string ( $update-&gt;{$to} ) &amp;&amp; $update-&gt;{$to} == $key) || (is_array ( $update-&gt;{$to} ) &amp;&amp; in_array ( $key, $update-&gt;{$to} ))) {
+          $value [] = $update;
+        }
+      }
+      $list [$i] = array (
+          &quot;key&quot; =&gt; $key,
+          &quot;value&quot; =&gt; $value 
+      );
+    }
+    return $list;
+  }
+  /**
+   * Process documents joins
+   */
+  private function processDocumentsJoins() {
+    if ($this-&gt;responseJoins &amp;&amp; is_object ( $this-&gt;responseJoins ) &amp;&amp; isset ( $this-&gt;responseJoins-&gt;documents )) {
+      $documentsJoins = $this-&gt;responseJoins-&gt;documents;
+      foreach ( $documentsJoins as $documentsJoin ) {
+        if (isset ( $this-&gt;response [&quot;response&quot;]-&gt;response-&gt;docs )) {
+          $values = $this-&gt;collectDocumentsValues ( $this-&gt;response [&quot;response&quot;]-&gt;response-&gt;docs, $documentsJoin-&gt;from );
+          $updateValues = $this-&gt;collectJoinDocumentsValues ( $values, $documentsJoin );
+          $this-&gt;response [&quot;response&quot;]-&gt;response-&gt;docs = $this-&gt;updateDocuments ( $this-&gt;response [&quot;response&quot;]-&gt;response-&gt;docs, $documentsJoin-&gt;from, $documentsJoin-&gt;to, $documentsJoin-&gt;name, $updateValues );
+        }
+      }
+    }
+  }
+  /**
+   * Collect documents values
+   *
+   * @param array $documents          
+   * @param string $from          
+   * @return array
+   */
+  private function collectDocumentsValues($documents, $from) {
+    $values = array ();
+    foreach ( $documents as $document ) {
+      if (isset ( $document-&gt;{$from} ) &amp;&amp; is_string ( $document-&gt;{$from} )) {
+        $values [] = $document-&gt;{$from};
+      }
+    }
+    return $values;
+  }
+  /**
+   * Collect join documents values
+   *
+   * @param array $values          
+   * @param unknown $documentsJoin          
+   * @return array
+   */
+  private function collectJoinDocumentsValues($values, $documentsJoin) {
+    $allFields = $documentsJoin-&gt;fields;
+    $allFields [] = $documentsJoin-&gt;to;
+    $subRequest = new \stdClass ();
+    $subRequest-&gt;configuration = $documentsJoin-&gt;configuration;
+    $subRequest-&gt;filter = array ();
+    $filter = new \stdClass ();
+    $filter-&gt;condition = new \stdClass ();
+    $filter-&gt;condition-&gt;type = &quot;equals&quot;;
+    $filter-&gt;condition-&gt;field = $documentsJoin-&gt;to;
+    $filter-&gt;condition-&gt;value = $values;
+    $subRequest-&gt;filter [] = $filter;
+    if (isset ( $documentsJoin-&gt;filter )) {
+      $subRequest-&gt;filter [] = $documentsJoin-&gt;filter;
+    }
+    if (isset ( $documentsJoin-&gt;condition )) {
+      $subRequest-&gt;condition = $documentsJoin-&gt;condition;
+    }
+    $subRequest-&gt;response = new \stdClass ();
+    $subRequest-&gt;response-&gt;documents = new \stdClass ();
+    $subRequest-&gt;response-&gt;documents-&gt;start = 0;
+    $subRequest-&gt;response-&gt;documents-&gt;rows = 1000000;
+    $subRequest-&gt;response-&gt;documents-&gt;fields = $allFields;
+    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null );
+    // get data
+    if (count ( $subParser-&gt;getErrors () ) == 0) {
+      try {
+        $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
+        $solrResponse = $solr-&gt;getResponse ();
+        if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+          if (! isset ( $solrResponse-&gt;error ) &amp;&amp; isset ( $solrResponse-&gt;response ) &amp;&amp; isset ( $solrResponse-&gt;response-&gt;docs )) {
+            $subResponse = array ();
+            $subResponse [&quot;status&quot;] = &quot;OK&quot;;
+            $subResponse [&quot;response&quot;] = clone $solrResponse;
+            $subResponse = (new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection ))-&gt;process ();
+            return $subResponse [&quot;response&quot;]-&gt;response-&gt;docs;
+          }
+        }
+      } catch ( \Broker\SolrException $se ) {
+        // do nothing
+      } catch ( \Exception $e ) {
+        // do nothing
+      }
+    }
+    return array ();
+  }
+  /**
+   * Update documents
+   *
+   * @param array $documents          
+   * @param string $from          
+   * @param string $to          
+   * @param string $name          
+   * @param array $updates          
+   * @return array
+   */
+  private function updateDocuments($documents, $from, $to, $name, $updates) {
+    foreach ( $documents as $document ) {
+      if (is_object ( $document )) {
+        if (isset ( $document-&gt;{$from} ) &amp;&amp; (is_string ( $document-&gt;{$from} ) || is_array ( $document-&gt;{$from} ))) {
+          $key = $document-&gt;{$from};
+          if (! isset ( $document-&gt;{$name} )) {
+            $document-&gt;{$name} = array ();
+          }
+          if (is_array ( $document-&gt;{$name} )) {
+            foreach ( $updates as $update ) {
+              if (is_string ( $key )) {
+                if (isset ( $update-&gt;{$to} ) &amp;&amp; (is_string ( $update-&gt;{$to} ) &amp;&amp; $update-&gt;{$to} == $key) || (is_array ( $update-&gt;{$to} ) &amp;&amp; in_array ( $key, $update-&gt;{$to} ))) {
+                  $document-&gt;{$name} [] = $update;
+                }
+              } else if (is_array ( $key )) {
+                if (isset ( $update-&gt;{$to} ) &amp;&amp; (is_string ( $update-&gt;{$to} ) &amp;&amp; in_array ( $update-&gt;{$to}, $key )) || (is_array ( $update-&gt;{$to} ) &amp;&amp; count ( array_intersect ( $key, $update-&gt;{$to} ) ) &gt; 0)) {
+                  $document-&gt;{$name} [] = $update;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return $documents;
+  }
+  /**
+   * Create solr status
+   *
+   * @param string $id          
+   * @param string $description          
+   * @return array
+   */
+  static function createSolrStatus($id, $description) {
+    $result = array ();
+    $result [&quot;description&quot;] = $description;
+    $result [&quot;data&quot;] = array ();
+    $result [&quot;data&quot;] [$id] = date ( &quot;h:i:s&quot; ) . &quot; - &quot; . $description;
+    return $result;
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

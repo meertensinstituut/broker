@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module settings
+ */
+if (! $authentication-&gt;accessBasedOnLogin ()) {
+  $authentication-&gt;logout ();
+  header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;login&quot;, &quot;settings&quot; ) );
+  exit ();
+} else {
+  $cache = new \Broker\Cache ( SITE_CACHE_DATABASE_DIR, $configuration, null );
+  $status = new \Broker\Status ( SITE_CACHE_DATABASE_DIR, $configuration, $cache );
+  $collection = new \Broker\Collection ( SITE_CACHE_DATABASE_DIR, $configuration );
+  $expansionCache = new \Broker\ExpansionCache ( SITE_CACHE_DATABASE_DIR );
+  $session = new \Broker\Session ( SITE_CACHE_DATABASE_DIR );
+  
+  if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+    if (isset ( $_POST [&quot;reset&quot;] )) {
+      if ($authentication-&gt;accessWithAdminPrivileges ()) {
+        $collection-&gt;number ();
+        $cache-&gt;reset ();
+        $status-&gt;reset ();
+        $collection-&gt;reset ();
+        $expansionCache-&gt;reset ();
+        $session-&gt;reset ();
+        $configuration-&gt;reset ();
+      }
+    }
+    header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;settings&quot;, null ) );
+    exit ();
+  }
+  
+  $smarty-&gt;assign ( &quot;_cacheNumber&quot;, $cache-&gt;number () );
+  $smarty-&gt;assign ( &quot;_statusNumber&quot;, $status-&gt;number () );
+  $smarty-&gt;assign ( &quot;_collectionNumber&quot;, $collection-&gt;number () );
+  $smarty-&gt;assign ( &quot;_expansionCacheNumber&quot;, $expansionCache-&gt;number () );
+  $smarty-&gt;assign ( &quot;_sessionNumber&quot;, $session-&gt;number () );
+  $smarty-&gt;assign ( &quot;_configurationDate&quot;, $configuration-&gt;getConfigTimestamp () );
+  $smarty-&gt;assign ( &quot;_solrDate&quot;, $configuration-&gt;getSolrTimestamp () );
+}
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

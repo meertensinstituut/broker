@@ -1,0 +1,827 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Configuration
+ */
+class Configuration {
+  /**
+   * Configuration
+   *
+   * @var array
+   */
+  public $config;
+  /**
+   * Solr configuration
+   *
+   * @var array
+   */
+  public $solr;
+  /**
+   * Filename configuration
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Timestamp configuration file
+   *
+   * @var number
+   */
+  private $configTimestamp;
+  /**
+   * Timestamp solr configuration
+   *
+   * @var number
+   */
+  private $solrTimestamp;
+  /**
+   * Constructor
+   *
+   * @param string $file
+   *          configuration file
+   */
+  public function __construct($file) {
+    $this-&gt;filename = $file;
+    if (file_exists ( $file ) &amp;&amp; is_readable ( $file )) {
+      $this-&gt;load ( $file );
+      $this-&gt;getSolrConfiguration ( md5 ( $file ), filectime ( $file ) );
+    } else {
+      $this-&gt;filename = null;
+      $this-&gt;config = null;
+      $this-&gt;solr = null;
+      $this-&gt;configTimestamp = null;
+      $this-&gt;solrTimestamp = null;
+    }
+  }
+  /**
+   * Check if configuration is found and processed
+   *
+   * @return bool
+   */
+  public function installed() {
+    return $this-&gt;config != null;
+  }
+  /**
+   * Get configuration item
+   *
+   * @param string $name          
+   * @return unknown
+   */
+  public function getConfig($name) {
+    if ($this-&gt;config &amp;&amp; is_array ( $this-&gt;config ) &amp;&amp; isset ( $this-&gt;config [$name] ) &amp;&amp; is_array ( $this-&gt;config [$name] )) {
+      return $this-&gt;config [$name];
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Get solr configuration item
+   *
+   * @param unknown $name          
+   */
+  public function getSolrConfig($name) {
+    if ($this-&gt;solr &amp;&amp; is_array ( $this-&gt;solr ) &amp;&amp; isset ( $this-&gt;solr [$name] ) &amp;&amp; is_array ( $this-&gt;solr [$name] )) {
+      return $this-&gt;solr [$name];
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Create url based on optional operation and suboperation
+   *
+   * @param NULL|string $operation          
+   * @param NULL|string $suboperation          
+   * @return string
+   */
+  public function url($operation = null, $suboperation = null) {
+    if ($operation == null || ! $operation || ! preg_match ( &quot;/^[a-z]+$/i&quot;, $operation )) {
+      return SITE_LOCATION;
+    } else {
+      if ($suboperation == null || ! $suboperation || ! preg_match ( &quot;/^[a-z0-9]+$/i&quot;, $suboperation )) {
+        if (array_key_exists ( &quot;HTTP_MOD_REWRITE&quot;, $_SERVER )) {
+          return SITE_LOCATION . $operation . DIRECTORY_SEPARATOR;
+        } else {
+          return SITE_LOCATION . &quot;?operation=&quot; . urlencode ( $operation );
+        }
+      } else {
+        if (array_key_exists ( &quot;HTTP_MOD_REWRITE&quot;, $_SERVER )) {
+          return SITE_LOCATION . $operation . DIRECTORY_SEPARATOR . $suboperation . DIRECTORY_SEPARATOR;
+        } else {
+          return SITE_LOCATION . &quot;?operation=&quot; . urlencode ( $operation ) . &quot;&amp;suboperation=&quot; . urlencode ( $suboperation );
+        }
+      }
+    }
+  }
+  /**
+   * Get expansions
+   *
+   * @return array
+   */
+  public function getExpansions() {
+    $list = array ();
+    $directory = SITE_CONFIG_MODULES_EXPANSION_DIR;
+    if (is_dir ( $directory )) {
+      if ($dh = opendir ( $directory )) {
+        while ( ($file = readdir ( $dh )) !== false ) {
+          if (is_file ( $directory . $file ) &amp;&amp; preg_match ( &quot;/^([A-Z][A-Za-z0-9]+)Expansion\.class\.php$/&quot;, $file, $match )) {
+            $expansionName = $match [1];
+            $expansionObjectClass = &quot;\\BrokerExpansion\\&quot; . $expansionName . &quot;Expansion&quot;;
+            if (class_exists ( $expansionObjectClass, true ) &amp;&amp; in_array ( &quot;Broker\\Expansion&quot;, class_implements ( $expansionObjectClass, true ) )) {
+              $list [lcfirst ( $expansionName )] = array (
+                  &quot;cached&quot; =&gt; $expansionObjectClass::cached (),
+                  &quot;description&quot; =&gt; $expansionObjectClass::description (),
+                  &quot;parameters&quot; =&gt; $expansionObjectClass::parameters () 
+              );
+            }
+          }
+        }
+      }
+    }
+    return $list;
+  }
+  /**
+   * Get timestamp configuration file
+   *
+   * @return NULL|number
+   */
+  public function getConfigTimestamp() {
+    return $this-&gt;configTimestamp;
+  }
+  /**
+   * Get timestamp automatic solr configuration
+   *
+   * @return unknown
+   */
+  public function getSolrTimestamp() {
+    return $this-&gt;solrTimestamp;
+  }
+  /**
+   * Reset configuration
+   */
+  public function reset() {
+    unlink ( SITE_CACHE_CONFIGURATION_DIR . &quot;solr.json&quot; );
+    if (file_exists ( $this-&gt;filename ) &amp;&amp; is_readable ( $this-&gt;filename )) {
+      $this-&gt;getSolrConfiguration ( md5 ( $file ), filectime ( $file ) );
+    }
+  }
+  /**
+   * Load configuration from file
+   *
+   * @param string $file          
+   */
+  private function load($file) {
+    $old = array ();
+    $old = get_defined_vars ();
+    include ($file);
+    $new = get_defined_vars ();
+    $this-&gt;config = array ();
+    $this-&gt;configTimestamp = filemtime ( $file );
+    foreach ( $new as $key =&gt; $value ) {
+      if (! isset ( $old [$key] )) {
+        $this-&gt;config [$key] = $value;
+      }
+    }
+  }
+  /**
+   * Create solr configuration if necessary
+   *
+   * @param string $md5hash          
+   * @param number $filetime          
+   */
+  private function getSolrConfiguration($md5hash, $filetime) {
+    $filename = SITE_CACHE_CONFIGURATION_DIR . &quot;solr.json&quot;;
+    if (file_exists ( $filename )) {
+      $data = file_get_contents ( $filename );
+      $this-&gt;solr = json_decode ( $data, true );
+      $this-&gt;solrTimestamp = filemtime ( $filename );
+      if ($this-&gt;solr &amp;&amp; json_last_error () == JSON_ERROR_NONE) {
+        if (! isset ( $this-&gt;solr [&quot;_md5hash&quot;] ) || $this-&gt;solr [&quot;_md5hash&quot;] != $md5hash) {
+          unlink ( $filename );
+        } else if (! isset ( $this-&gt;solr [&quot;_filetime&quot;] ) || $this-&gt;solr [&quot;_filetime&quot;] != $filetime) {
+          unlink ( $filename );
+        } else {
+          return;
+        }
+      }
+    }
+    // reload and regenerate
+    $this-&gt;solr = array ();
+    $this-&gt;solr [&quot;_md5hash&quot;] = $md5hash;
+    $this-&gt;solr [&quot;_filetime&quot;] = $filetime;
+    if (isset ( $this-&gt;config [&quot;solr&quot;] ) &amp;&amp; is_array ( $this-&gt;config [&quot;solr&quot;] ) &amp;&amp; count ( $this-&gt;config [&quot;solr&quot;] ) &gt; 0) {
+      foreach ( $this-&gt;config [&quot;solr&quot;] as $key =&gt; $solrConfiguration ) {
+        if (! is_array ( $solrConfiguration )) {
+          die ( &quot;Invalid solr configuration '&quot; . $key . &quot;'&quot; );
+        } else if (! isset ( $solrConfiguration [&quot;url&quot;] ) || ! is_string ( $solrConfiguration [&quot;url&quot;] ) || trim ( $solrConfiguration [&quot;url&quot;] ) == &quot;&quot;) {
+          die ( &quot;Invalid or no url in solr configuration '&quot; . $key . &quot;'&quot; );
+        } else if (! preg_match ( &quot;/^[a-z0-9]+$/i&quot;, $key )) {
+          die ( &quot;Invalid name solr configuration '&quot; . $key . &quot;'&quot; );
+        } else {
+          $this-&gt;solr [$key] = array ();
+          $this-&gt;solr [$key] [&quot;fields&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;dynamicFields&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;multiValued&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;indexed&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;required&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;stored&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;mtas&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeText&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeBoolean&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeString&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeInteger&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeDate&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeLong&quot;] = array ();
+          $this-&gt;solr [$key] [&quot;typeBinary&quot;] = array ();
+          // get schema
+          $ch = curl_init ( $solrConfiguration [&quot;url&quot;] . &quot;schema?wt=json&quot; );
+          $options = array (
+              CURLOPT_HTTPHEADER =&gt; array (
+                  &quot;Content-Type: application/x-www-form-urlencoded; charset=utf-8&quot; 
+              ),
+              CURLOPT_RETURNTRANSFER =&gt; true 
+          );
+          curl_setopt_array ( $ch, $options );
+          $result = curl_exec ( $ch );
+          if ($data = json_decode ( $result, true )) {
+            if (isset ( $data [&quot;schema&quot;] ) &amp;&amp; is_array ( $data [&quot;schema&quot;] )) {
+              $queryParsers = array ();
+              $fieldTypes = array ();
+              $fieldTypes [&quot;text&quot;] = array ();
+              $fieldTypes [&quot;boolean&quot;] = array ();
+              $fieldTypes [&quot;string&quot;] = array ();
+              $fieldTypes [&quot;integer&quot;] = array ();
+              $fieldTypes [&quot;long&quot;] = array ();
+              $fieldTypes [&quot;date&quot;] = array ();
+              $fieldTypes [&quot;binary&quot;] = array ();
+              $fieldTypes [&quot;mtas&quot;] = array ();
+              if (isset ( $data [&quot;schema&quot;] [&quot;fieldTypes&quot;] ) &amp;&amp; is_array ( $data [&quot;schema&quot;] [&quot;fieldTypes&quot;] )) {
+                foreach ( $data [&quot;schema&quot;] [&quot;fieldTypes&quot;] as $item ) {
+                  if (isset ( $item [&quot;name&quot;] ) &amp;&amp; is_string ( $item [&quot;name&quot;] )) {
+                    if (isset ( $item [&quot;class&quot;] ) &amp;&amp; is_string ( $item [&quot;class&quot;] )) {
+                      if ($item [&quot;class&quot;] == &quot;solr.TextField&quot; || $item [&quot;class&quot;] == &quot;mtas.solr.schema.MtasPreAnalyzedField&quot;) {
+                        $fieldTypes [&quot;text&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.BoolField&quot;) {
+                        $fieldTypes [&quot;boolean&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.StrField&quot;) {
+                        $fieldTypes [&quot;string&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.TrieIntField&quot;) {
+                        $fieldTypes [&quot;integer&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.TrieLongField&quot;) {
+                        $fieldTypes [&quot;long&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.TrieDateField&quot;) {
+                        $fieldTypes [&quot;date&quot;] [] = $item [&quot;name&quot;];
+                      } else if ($item [&quot;class&quot;] == &quot;solr.BinaryField&quot;) {
+                        $fieldTypes [&quot;binary&quot;] [] = $item [&quot;name&quot;];
+                      }
+                    }
+                    if (isset ( $item [&quot;postingsFormat&quot;] ) &amp;&amp; is_string ( $item [&quot;postingsFormat&quot;] )) {
+                      if ($item [&quot;postingsFormat&quot;] == &quot;MtasCodec&quot;) {
+                        $fieldTypes [&quot;mtas&quot;] [] = $item [&quot;name&quot;];
+                      }
+                    }
+                  }
+                }
+              }
+              if (isset ( $data [&quot;schema&quot;] [&quot;dynamicFields&quot;] ) &amp;&amp; is_array ( $data [&quot;schema&quot;] [&quot;dynamicFields&quot;] )) {
+                foreach ( $data [&quot;schema&quot;] [&quot;dynamicFields&quot;] as $item ) {
+                  if (isset ( $item [&quot;name&quot;] ) &amp;&amp; is_string ( $item [&quot;name&quot;] ) &amp;&amp; trim ( $item [&quot;name&quot;] ) != &quot;&quot;) {
+                    $this-&gt;solr [$key] [&quot;dynamicFields&quot;] [] = $item [&quot;name&quot;];
+                  }
+                  $this-&gt;solr [$key] = $this-&gt;_processSolrConfiguration ( $item, $fieldTypes, $this-&gt;solr [$key] );
+                }
+              }
+              if (isset ( $data [&quot;schema&quot;] [&quot;fields&quot;] ) &amp;&amp; is_array ( $data [&quot;schema&quot;] [&quot;fields&quot;] )) {
+                foreach ( $data [&quot;schema&quot;] [&quot;fields&quot;] as $item ) {
+                  if (isset ( $item [&quot;name&quot;] ) &amp;&amp; is_string ( $item [&quot;name&quot;] ) &amp;&amp; trim ( $item [&quot;name&quot;] ) != &quot;&quot;) {
+                    $this-&gt;solr [$key] [&quot;fields&quot;] [] = $item [&quot;name&quot;];
+                  }
+                  $this-&gt;solr [$key] = $this-&gt;_processSolrConfiguration ( $item, $fieldTypes, $this-&gt;solr [$key] );
+                }
+              }
+              if (isset ( $data [&quot;schema&quot;] [&quot;uniqueKey&quot;] ) &amp;&amp; is_string ( $data [&quot;schema&quot;] [&quot;uniqueKey&quot;] )) {
+                $this-&gt;solr [$key] [&quot;uniqueKey&quot;] = $data [&quot;schema&quot;] [&quot;uniqueKey&quot;];
+              }
+              list ( $this-&gt;solr [$key] [&quot;exampleFieldText&quot;], $this-&gt;solr [$key] [&quot;exampleFieldTextValues&quot;] ) = $this-&gt;_findExample ( isset ( $solrConfiguration [&quot;exampleFieldText&quot;] ) ? $solrConfiguration [&quot;exampleFieldText&quot;] : null, $this-&gt;solr [$key], $solrConfiguration, array (
+                  &quot;title&quot;,
+                  &quot;name&quot; 
+              ), &quot;text&quot;, true, null, true, null, false );
+              list ( $this-&gt;solr [$key] [&quot;exampleFieldString&quot;], $this-&gt;solr [$key] [&quot;exampleFieldStringValues&quot;] ) = $this-&gt;_findExample ( isset ( $solrConfiguration [&quot;exampleFieldString&quot;] ) ? $solrConfiguration [&quot;exampleFieldString&quot;] : null, $this-&gt;solr [$key], $solrConfiguration, array (
+                  &quot;title&quot;,
+                  &quot;name&quot; 
+              ), &quot;text&quot;, true, null, true, null, false );
+              list ( $this-&gt;solr [$key] [&quot;exampleFieldInteger&quot;], $this-&gt;solr [$key] [&quot;exampleFieldIntegerValues&quot;] ) = $this-&gt;_findExample ( isset ( $solrConfiguration [&quot;exampleFieldInteger&quot;] ) ? $solrConfiguration [&quot;exampleFieldInteger&quot;] : null, $this-&gt;solr [$key], $solrConfiguration, array (
+                  &quot;year&quot; 
+              ), &quot;integer&quot;, true, null, true, null, false );
+              // list ( $this-&gt;solr [$key] [&quot;exampleFieldMtas&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasValues&quot;] ) = $this-&gt;_findExample ( isset ( $solrConfiguration [&quot;exampleFieldMtas&quot;] ) ? $solrConfiguration [&quot;exampleFieldMtas&quot;] : null, $this-&gt;solr [$key], $solrConfiguration, array (
+              // &quot;mtas&quot;
+              // ), null, true, null, null, null, true );
+              
+              list ( $this-&gt;solr [$key] [&quot;exampleFieldMtas&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasWord&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasLemma&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasPos&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasSinglePosition&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasMultiplePosition&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasSetPosition&quot;], $this-&gt;solr [$key] [&quot;exampleFieldMtasIntersecting&quot;] ) = $this-&gt;_findMtasExamples ( isset ( $solrConfiguration [&quot;exampleFieldMtas&quot;] ) ? $solrConfiguration [&quot;exampleFieldMtas&quot;] : null, $this-&gt;solr [$key], $solrConfiguration, array (
+                  &quot;mtas&quot; 
+              ) );
+            } else {
+              die ( &quot;No schema available for '&quot; . $solrConfiguration [&quot;url&quot;] . &quot;' in configuration '&quot; . $key . &quot;'&quot; );
+            }
+          } else {
+            die ( &quot;No schema available for '&quot; . $solrConfiguration [&quot;url&quot;] . &quot;' in configuration '&quot; . $key . &quot;'&quot; );
+          }
+          // get config
+          $ch = curl_init ( $solrConfiguration [&quot;url&quot;] . &quot;config?wt=json&quot; );
+          $options = array (
+              CURLOPT_HTTPHEADER =&gt; array (
+                  &quot;Content-Type: application/x-www-form-urlencoded; charset=utf-8&quot; 
+              ),
+              CURLOPT_RETURNTRANSFER =&gt; true 
+          );
+          curl_setopt_array ( $ch, $options );
+          $result = curl_exec ( $ch );
+          if ($data = json_decode ( $result, true )) {
+            if (isset ( $data [&quot;config&quot;] ) &amp;&amp; is_array ( $data [&quot;config&quot;] )) {
+              if (isset ( $data [&quot;config&quot;] [&quot;queryParser&quot;] ) &amp;&amp; is_array ( $data [&quot;config&quot;] [&quot;queryParser&quot;] )) {
+                foreach ( $data [&quot;config&quot;] [&quot;queryParser&quot;] as $queryParserName =&gt; $queryParserConfig ) {
+                  if (is_array ( $queryParserConfig ) &amp;&amp; isset ( $queryParserConfig [&quot;class&quot;] ) &amp;&amp; $queryParserConfig [&quot;class&quot;] == &quot;mtas.solr.search.MtasSolrCQLQParserPlugin&quot;) {
+                    if (isset ( $queryParserConfig [&quot;name&quot;] ) &amp;&amp; is_string ( $queryParserConfig [&quot;name&quot;] )) {
+                      $this-&gt;solr [$key] [&quot;queryParserCql&quot;] = $queryParserConfig [&quot;name&quot;];
+                    }
+                  } else if (is_array ( $queryParserConfig ) &amp;&amp; isset ( $queryParserConfig [&quot;class&quot;] ) &amp;&amp; $queryParserConfig [&quot;class&quot;] == &quot;mtas.solr.search.MtasSolrJoinQParserPlugin&quot;) {
+                    if (isset ( $queryParserConfig [&quot;name&quot;] ) &amp;&amp; is_string ( $queryParserConfig [&quot;name&quot;] )) {
+                      $this-&gt;solr [$key] [&quot;queryParserJoin&quot;] = $queryParserConfig [&quot;name&quot;];
+                    }
+                  }
+                }
+              }
+            } else {
+              die ( &quot;No configuration available for '&quot; . $solrConfiguration [&quot;url&quot;] . &quot;' in configuration '&quot; . $key . &quot;'&quot; );
+            }
+          } else {
+            die ( &quot;No configuration available for '&quot; . $solrConfiguration [&quot;url&quot;] . &quot;' in configuration '&quot; . $key . &quot;'&quot; );
+          }
+        }
+      }
+    } else {
+      die ( &quot;No (valid) solr configuration&quot; );
+    }
+    file_put_contents ( $filename, json_encode ( $this-&gt;solr ) );
+  }
+  /**
+   * Process solr configuration
+   *
+   * @param array $item          
+   * @param array $fieldTypes          
+   * @param array $configuration          
+   * @return unknown
+   */
+  private function _processSolrConfiguration($item, $fieldTypes, $configuration) {
+    if (isset ( $item [&quot;multiValued&quot;] ) &amp;&amp; is_bool ( $item [&quot;multiValued&quot;] ) &amp;&amp; $item [&quot;multiValued&quot;] == true) {
+      $configuration [&quot;multiValued&quot;] [] = $item [&quot;name&quot;];
+    }
+    if (isset ( $item [&quot;indexed&quot;] ) &amp;&amp; is_bool ( $item [&quot;indexed&quot;] ) &amp;&amp; $item [&quot;indexed&quot;] == true) {
+      $configuration [&quot;indexed&quot;] [] = $item [&quot;name&quot;];
+    }
+    if (isset ( $item [&quot;required&quot;] ) &amp;&amp; is_bool ( $item [&quot;required&quot;] ) &amp;&amp; $item [&quot;required&quot;] == true) {
+      $configuration [&quot;required&quot;] [] = $item [&quot;name&quot;];
+    }
+    if (isset ( $item [&quot;stored&quot;] ) &amp;&amp; is_bool ( $item [&quot;stored&quot;] ) &amp;&amp; $item [&quot;stored&quot;] == true) {
+      $configuration [&quot;stored&quot;] [] = $item [&quot;name&quot;];
+    }
+    if (isset ( $item [&quot;type&quot;] ) &amp;&amp; is_string ( $item [&quot;type&quot;] )) {
+      if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;mtas&quot;] )) {
+        $configuration [&quot;mtas&quot;] [] = $item [&quot;name&quot;];
+      }
+      if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;text&quot;] )) {
+        $configuration [&quot;typeText&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;boolean&quot;] )) {
+        $configuration [&quot;typeBoolean&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;string&quot;] )) {
+        $configuration [&quot;typeString&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;integer&quot;] )) {
+        $configuration [&quot;typeInteger&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;long&quot;] )) {
+        $configuration [&quot;typeLong&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;date&quot;] )) {
+        $configuration [&quot;typeDate&quot;] [] = $item [&quot;name&quot;];
+      } else if (in_array ( $item [&quot;type&quot;], $fieldTypes [&quot;binary&quot;] )) {
+        $configuration [&quot;typeBinary&quot;] [] = $item [&quot;name&quot;];
+      }
+    }
+    return $configuration;
+  }
+  /**
+   * Check field
+   *
+   * @param string $field          
+   * @param array $configuration          
+   * @param string $type          
+   * @param boolean $indexed          
+   * @param boolean $required          
+   * @param boolean $stored          
+   * @param boolean $multivalued          
+   * @param boolean $mtas          
+   */
+  private function _checkField($field, $configuration, $type = null, $indexed = null, $required = null, $stored = null, $multivalued = null, $mtas = null) {
+    if ($field &amp;&amp; is_string ( $field )) {
+      $checkFields = array ();
+      if (in_array ( $field, $configuration [&quot;fields&quot;] )) {
+        $checkFields [] = $field;
+      } else {
+        foreach ( $configuration [&quot;dynamicFields&quot;] as $dynamicField ) {
+          $pattern = &quot;/&quot; . str_replace ( &quot;\*&quot;, &quot;.*&quot;, preg_quote ( $dynamicField ) ) . &quot;/&quot;;
+          if (preg_match ( $pattern, $field )) {
+            $checkFields [] = $dynamicField;
+          }
+        }
+      }
+      foreach ( $checkFields as $checkField ) {
+        if ($type !== null) {
+          switch ($type) {
+            case &quot;string&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeString&quot;] )) {
+                continue 2;
+              }
+              break;
+            case &quot;boolean&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeBoolean&quot;] )) {
+                continue 2;
+              }
+              break;
+            case &quot;text&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeText&quot;] )) {
+                continue 2;
+              }
+              break;
+            case &quot;integer&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeInteger&quot;] )) {
+                continue 2;
+              }
+              break;
+            case &quot;date&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeDate&quot;] )) {
+                continue 2;
+              }
+              break;
+            case &quot;long&quot; :
+              if (! in_array ( $checkField, $configuration [&quot;typeLong&quot;] )) {
+                continue 2;
+              }
+              break;
+            default :
+              return false;
+          }
+        }
+        if ($indexed !== null) {
+          if ($indexed !== in_array ( $checkField, $configuration [&quot;indexed&quot;] )) {
+            continue;
+          }
+        }
+        if ($required !== null) {
+          if ($required !== in_array ( $checkField, $configuration [&quot;required&quot;] )) {
+            continue;
+          }
+        }
+        if ($stored !== null) {
+          if ($stored !== in_array ( $checkField, $configuration [&quot;stored&quot;] )) {
+            continue;
+          }
+        }
+        if ($multivalued !== null) {
+          if ($multivalued !== in_array ( $checkField, $configuration [&quot;multivalued&quot;] )) {
+            continue;
+          }
+        }
+        if ($mtas !== null) {
+          if ($mtas !== in_array ( $checkField, $configuration [&quot;mtas&quot;] )) {
+            continue;
+          }
+        }
+        return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Sort items by levenshtein distance
+   *
+   * @param array $items          
+   * @param array $list          
+   */
+  private function _sortLevenshtein($items, $list) {
+    usort ( $items, function ($a, $b) use ($list) {
+      $p1 = 1;
+      $p2 = 1;
+      $p3 = 1;
+      $p4 = 10;
+      $d_a = null;
+      $d_b = null;
+      $a = strtolower ( $a );
+      $b = strtolower ( $b );
+      foreach ( $list as $item ) {
+        $item = strtolower ( $item );
+        $lev_a = levenshtein ( $item, $a, $p1, $p2, $p3 ) + ((strpos ( $a, $item ) === false) ? $p4 : 0);
+        $lev_b = levenshtein ( $item, $b, $p1, $p2, $p3 ) + ((strpos ( $b, $item ) === false) ? $p4 : 0);
+        $d_a = ($d_a == null) ? $lev_a : min ( $d_a, $lev_a );
+        $d_b = ($d_b == null) ? $lev_b : min ( $d_b, $lev_b );
+      }
+      return $d_a === $d_b ? 0 : ($d_a &gt; $d_b ? 1 : - 1);
+    } );
+    return $items;
+  }
+  /**
+   * Find Mtas examples
+   *
+   * @param string $configSuggestion          
+   * @param array $configuration          
+   * @param array $solrConfiguration          
+   * @param array $hints          
+   */
+  private function _findMtasExamples($configSuggestion, $configuration, $solrConfiguration, $hints) {
+    $field = null;
+    $word = null;
+    $lemma = null;
+    $pos = null;
+    $singlePosition = null;
+    $multiplePosition = null;
+    $setPosition = null;
+    $intersecting = null;
+    if ($configSuggestion != null &amp;&amp; $this-&gt;_checkField ( $configSuggestion, $configuration, null, true, null, null, null, true )) {
+      $field = $configSuggestion;
+    } else {
+      $field = null;
+      $fields = $configuration [&quot;fields&quot;];
+      if ($hints != null &amp;&amp; is_array ( $hints ) &amp;&amp; count ( $hints ) &gt; 0) {
+        $fields = $this-&gt;_sortLevenshtein ( $fields, $hints );
+      }
+      foreach ( $fields as $optionalField ) {
+        if ($this-&gt;_checkField ( $optionalField, $configuration, null, true, null, null, null, true )) {
+          $field = $optionalField;
+          break;
+        }
+      }
+    }
+    if ($field) {
+      // get prefixes
+      $request = &quot;wt=json&amp;rows=0&amp;q=*:*&amp;mtas=true&amp;mtas.prefix=true&amp;mtas.prefix.0.field=&quot; . urlencode ( $field );
+      if (isset ( $solrConfiguration [&quot;shards&quot;] ) &amp;&amp; count ( $solrConfiguration [&quot;shards&quot;] ) &gt; 0) {
+        $shards = implode ( &quot;,&quot;, $solrConfiguration [&quot;shards&quot;] );
+      } else {
+        $shards = null;
+      }
+      $solr = new \Broker\Solr ( &quot;[configuration]&quot;, isset ( $solrConfiguration [&quot;url&quot;] ) ? $solrConfiguration [&quot;url&quot;] : null, &quot;select&quot;, $request, $shards, null );
+      $response = $solr-&gt;getResponse ();
+      if (is_object ( $response ) &amp;&amp; isset ( $response-&gt;mtas ) &amp;&amp; isset ( $response-&gt;mtas-&gt;prefix )) {
+        $number = 10;
+        $singlePosition = isset ( $response-&gt;mtas-&gt;prefix [0]-&gt;singlePosition ) ? $response-&gt;mtas-&gt;prefix [0]-&gt;singlePosition : array ();
+        $multiplePosition = isset ( $response-&gt;mtas-&gt;prefix [0]-&gt;multiplePosition ) ? $response-&gt;mtas-&gt;prefix [0]-&gt;multiplePosition : array ();
+        $setPosition = isset ( $response-&gt;mtas-&gt;prefix [0]-&gt;setPosition ) ? $response-&gt;mtas-&gt;prefix [0]-&gt;setPosition : array ();
+        $intersecting = isset ( $response-&gt;mtas-&gt;prefix [0]-&gt;intersecting ) ? $response-&gt;mtas-&gt;prefix [0]-&gt;intersecting : array ();
+        
+        if (count ( $singlePosition ) &gt; 0) {
+          // get word
+          if (isset ( $solrConfiguration [&quot;exampleMtasPrefixWord&quot;] ) &amp;&amp; is_string ( $solrConfiguration [&quot;exampleMtasPrefixWord&quot;] )) {
+            $hints = array (
+                $solrConfiguration [&quot;exampleMtasPrefixWord&quot;] 
+            );
+          } else {
+            $hints = array (
+                &quot;t&quot;,
+                &quot;t_lc&quot;,
+                &quot;word&quot; 
+            );
+          }
+          $singlePosition = $this-&gt;_sortLevenshtein ( $singlePosition, $hints );
+          $word = array (
+              $singlePosition [0] 
+          );
+          $word [] = $this-&gt;_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $word [0], $number );
+          // get lemma
+          if (isset ( $solrConfiguration [&quot;exampleMtasPrefixLemma&quot;] ) &amp;&amp; is_string ( $solrConfiguration [&quot;exampleMtasPrefixLemma&quot;] )) {
+            $hints = array (
+                $solrConfiguration [&quot;exampleMtasPrefixLemma&quot;] 
+            );
+          } else {
+            $hints = array (
+                &quot;lemma&quot; 
+            );
+          }
+          $singlePosition = $this-&gt;_sortLevenshtein ( $singlePosition, $hints );
+          $lemma = array (
+              $singlePosition [0] 
+          );
+          $lemma [] = $this-&gt;_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $lemma [0], $number );
+          // get pos
+          if (isset ( $solrConfiguration [&quot;exampleMtasPrefixPos&quot;] ) &amp;&amp; is_string ( $solrConfiguration [&quot;exampleMtasPrefixPos&quot;] )) {
+            $hints = array (
+                $solrConfiguration [&quot;exampleMtasPrefixPos&quot;] 
+            );
+          } else {
+            $hints = array (
+                &quot;pos&quot; 
+            );
+          }
+          $singlePosition = $this-&gt;_sortLevenshtein ( $singlePosition, $hints );
+          $pos = array (
+              $singlePosition [0] 
+          );
+          $pos [] = $this-&gt;_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $pos [0], $number );
+        }
+        sort ( $singlePosition );
+        sort ( $multiplePosition );
+        sort ( $setPosition );
+        sort ( $intersecting );
+      }
+    }
+    return array (
+        $field,
+        $word,
+        $lemma,
+        $pos,
+        $singlePosition,
+        $multiplePosition,
+        $setPosition,
+        $intersecting 
+    );
+  }
+  /**
+   * Find Mtas examples termvector
+   *
+   * @param array $solrConfiguration          
+   * @param string $field          
+   * @param array $shards          
+   * @param string $prefix          
+   * @param int $number          
+   * @return array
+   */
+  private function _findMtasExamplesTermvector($solrConfiguration, $field, $shards, string $prefix, int $number): array {
+    $values = array ();
+    $request = &quot;wt=json&amp;rows=0&amp;q=*:*&amp;mtas=true&amp;mtas.termvector=true&quot;;
+    $request .= &quot;&amp;mtas.termvector.0.field=&quot; . urlencode ( $field );
+    $request .= &quot;&amp;mtas.termvector.0.prefix=&quot; . urlencode ( $prefix );
+    $request .= &quot;&amp;mtas.termvector.0.number=&quot; . intval ( $number );
+    $request .= &quot;&amp;mtas.termvector.0.type=sum&quot;;
+    $request .= &quot;&amp;mtas.termvector.0.sort.type=sum&quot;;
+    $request .= &quot;&amp;mtas.termvector.0.sort.direction=desc&quot;;
+    $solr = new \Broker\Solr ( &quot;[configuration]&quot;, isset ( $solrConfiguration [&quot;url&quot;] ) ? $solrConfiguration [&quot;url&quot;] : null, &quot;select&quot;, $request, $shards, null );
+    $tvresponse = $solr-&gt;getResponse ();
+    if (is_object ( $tvresponse ) &amp;&amp; isset ( $tvresponse-&gt;mtas ) &amp;&amp; isset ( $tvresponse-&gt;mtas-&gt;termvector )) {
+      $tmpList = $tvresponse-&gt;mtas-&gt;termvector [0]-&gt;list;
+      foreach ( $tmpList as $tmpListItem ) {
+        $values [] = $tmpListItem-&gt;key;
+      }
+    }
+    return $values;
+  }
+  /**
+   * Find example
+   *
+   * @param string $configSuggestion          
+   * @param array $configuration          
+   * @param array $solrConfiguration          
+   * @param array $hints          
+   * @param string $type          
+   * @param boolean $indexed          
+   * @param boolean $required          
+   * @param boolean $stored          
+   * @param boolean $multivalued          
+   * @param boolean $mtas          
+   */
+  private function _findExample($configSuggestion, $configuration, $solrConfiguration, $hints = null, $type = null, $indexed = null, $required = null, $stored = null, $multivalued = null, $mtas = null) {
+    if ($configSuggestion != null &amp;&amp; $this-&gt;_checkField ( $configSuggestion, $configuration, $type, $indexed, $required, $stored, $multivalued, $mtas )) {
+      $field = $configSuggestion;
+    } else {
+      $field = null;
+      $fields = $configuration [&quot;fields&quot;];
+      if ($hints != null &amp;&amp; is_array ( $hints ) &amp;&amp; count ( $hints ) &gt; 0) {
+        $fields = $this-&gt;_sortLevenshtein ( $fields, $hints );
+      }
+      foreach ( $fields as $optionalField ) {
+        if ($this-&gt;_checkField ( $optionalField, $configuration, $type, $indexed, $required, $stored, $multivalued, $mtas )) {
+          $field = $optionalField;
+          break;
+        }
+      }
+    }
+    // get values
+    if ($field != null) {
+      $request = &quot;wt=json&amp;terms.fl=&quot; . urlencode ( $field );
+      if (isset ( $solrConfiguration [&quot;shards&quot;] ) &amp;&amp; count ( $solrConfiguration [&quot;shards&quot;] ) &gt; 0) {
+        $shards = implode ( &quot;,&quot;, $solrConfiguration [&quot;shards&quot;] );
+        $request .= &quot;&amp;shards.qt=terms&quot;;
+      } else {
+        $shards = null;
+      }
+      $solr = new \Broker\Solr ( &quot;[configuration]&quot;, isset ( $solrConfiguration [&quot;url&quot;] ) ? $solrConfiguration [&quot;url&quot;] : null, &quot;terms&quot;, $request, $shards, null );
+      $response = $solr-&gt;getResponse ();
+      if (is_object ( $response ) &amp;&amp; isset ( $response-&gt;terms ) &amp;&amp; isset ( $response-&gt;terms-&gt;{$field} )) {
+        if (is_object ( $response-&gt;terms-&gt;{$field} )) {
+          $values = array_keys ( get_object_vars ( $response-&gt;terms-&gt;{$field} ) );
+        } else if (is_array ( $response-&gt;terms-&gt;{$field} )) {
+          $values = $response-&gt;terms-&gt;{$field};
+          foreach ( $values as $key =&gt; $value ) {
+            if ($key &amp; 1) {
+              unset ( $values [$key] );
+            }
+          }
+          $values = array_values ( $values );
+        } else {
+          $values = null;
+        }
+      } else {
+        $values = null;
+      }
+    } else {
+      $values = null;
+    }
+    return array (
+        $field,
+        $values 
+    );
+  }
+  /**
+   * Validate, check existence directories
+   */
+  public static function validate() {
+    \Broker\Configuration::validatePath ( &quot;Layout-directory&quot;, SITE_LAYOUT_DIR, false, false );
+    \Broker\Configuration::validatePath ( &quot;Layout-directory Smarty&quot;, SITE_LAYOUT_SMARTY_DIR, false, false );
+    \Broker\Configuration::validatePath ( &quot;Layout-directory Smarty - Config&quot;, SITE_LAYOUT_SMARTY_CONFIG_DIR, false, false );
+    \Broker\Configuration::validatePath ( &quot;Layout-directory Smarty - Templates&quot;, SITE_LAYOUT_SMARTY_TEMPLATES_DIR, false, false );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory&quot;, SITE_CACHE_DIR, true, true );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory Configuration&quot;, SITE_CACHE_CONFIGURATION_DIR, true, true );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory Database&quot;, SITE_CACHE_DATABASE_DIR, true, true );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory Smarty&quot;, SITE_CACHE_SMARTY_DIR, true, true );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory Smarty - Cache&quot;, SITE_CACHE_SMARTY_CACHE_DIR, true, true );
+    \Broker\Configuration::validatePath ( &quot;Cache-directory Smarty - Templates&quot;, SITE_CACHE_SMARTY_TEMPLATESC_DIR, true, true );
+  }
+  /**
+   * Validate, check existence
+   *
+   * @param string $name          
+   * @param string $path          
+   * @param boolean $writeable          
+   * @param boolean $autocreate          
+   */
+  private static function validatePath($name, $path, $writeable, $autocreate) {
+    // check if exists, try to make
+    if (! file_exists ( $path ) &amp;&amp; (! $autocreate || ! @mkdir ( $path ))) {
+      die ( $name . &quot; : &quot; . $path . &quot; does not exist&quot; );
+    }
+    // check access
+    if (! is_readable ( $path )) {
+      die ( $name . &quot; : &quot; . $path . &quot; not readable&quot; );
+    } else if ($writeable &amp;&amp; ! is_writeable ( $path )) {
+      die ( $name . &quot; : &quot; . $path . &quot; not writeable&quot; );
+    }
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

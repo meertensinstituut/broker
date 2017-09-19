@@ -1,0 +1,143 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker expansion
+ * @package Broker
+ * @subpackage Expansion
+ */
+namespace BrokerExpansion;
+
+/**
+ * ExplodeExpansion
+ */
+class ExplodeExpansion implements \Broker\Expansion {
+  /**
+   * Value
+   * @var array|string
+   */
+  private $value;
+  /**
+   * Split string
+   * @var string
+   */
+  private $split = &quot;,&quot;;
+  /**
+   * Trim
+   * @var boolean
+   */
+  private $trim = true;
+  
+  /**
+   * Explode expansion
+   * 
+   * @param string|array $value          
+   * @param unknown $configuration          
+   */
+  public function __construct($value, $configuration) {
+    $this-&gt;value = $value;
+    if ($configuration &amp;&amp; is_object ( $configuration )) {
+      if (isset ( $configuration-&gt;parameters ) &amp;&amp; is_object ( $configuration-&gt;parameters )) {
+        if (isset ( $configuration-&gt;parameters-&gt;split ) &amp;&amp; is_string ( $configuration-&gt;parameters-&gt;split )) {
+          $this-&gt;split = $configuration-&gt;parameters-&gt;split;
+        }
+        if (isset ( $configuration-&gt;parameters-&gt;trim )) {
+          if ($configuration-&gt;parameters-&gt;trim) {
+            $this-&gt;trim = true;
+          } else {
+            $this-&gt;trim = false;
+          }
+        }
+      }
+    }
+  }
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::cached()
+   */
+  public static function cached() {
+    return false;
+  }
+  
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::description()
+   */
+  public static function description() {
+    return &quot;split value&quot;;
+  }
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::parameters()
+   */
+  public static function parameters() {
+    return array (
+        &quot;split&quot; =&gt; &quot;optional, default using \&quot;,\&quot;&quot;,
+        &quot;trim&quot; =&gt; &quot;optional, default true&quot; 
+    );
+  }
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::getValues()
+   */
+  public function getValues() {
+    $list = explode ( $this-&gt;split, $this-&gt;value );
+    if ($this-&gt;trim) {
+      $list = array_map ( &quot;trim&quot;, $list );
+    }
+    return $list;
+  }
+  /**
+   * 
+   * {@inheritDoc}
+   * @see \Broker\Expansion::getErrors()
+   */
+  public function getErrors() {
+    return null;
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

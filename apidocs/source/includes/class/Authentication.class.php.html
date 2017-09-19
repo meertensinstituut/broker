@@ -1,0 +1,334 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Handle authentication based on IP, key or login/password
+ */
+class Authentication {
+  /**
+   * Access based on IP
+   *
+   * @var boolean
+   */
+  private $accessBasedOnIP;
+  /**
+   * Access based on key
+   *
+   * @var boolean
+   */
+  private $accessBasedOnKey;
+  /**
+   * Access based on login
+   *
+   * @var boolean
+   */
+  private $accessBasedOnLogin;
+  /**
+   * Access with admin privileges
+   *
+   * @var boolean
+   */
+  private $accessWithAdminPrivileges;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration;
+  /**
+   * Constructor
+   *
+   * @param unknown $configuration          
+   */
+  public function __construct($configuration) {
+    if ($configuration &amp;&amp; is_array ( $configuration )) {
+      $this-&gt;configuration = $configuration;
+    } else {
+      $this-&gt;configuration = array ();
+    }
+    if (isset ( $_SERVER [&quot;HTTP_X_BROKER_KEY&quot;] )) {
+      $this-&gt;accessBasedOnKey = $this-&gt;validateKey ( $_SERVER [&quot;HTTP_X_BROKER_KEY&quot;] );
+    } else {
+      $this-&gt;accessBasedOnKey = false;
+    }
+    if (! $this-&gt;accessBasedOnKey) {
+      // session
+      session_set_save_handler ( new \Broker\Session ( SITE_CACHE_DATABASE_DIR ) );
+      session_name ( &quot;broker&quot; );
+      session_start ();
+      // checks
+      $this-&gt;accessBasedOnIP = $this-&gt;validateIP ( $_SERVER [&quot;REMOTE_ADDR&quot;] );
+      $this-&gt;accessBasedOnLogin = isset ( $_SESSION [&quot;login&quot;] ) &amp;&amp; $_SESSION [&quot;login&quot;] ? true : false;
+      $this-&gt;accessWithAdminPrivileges = isset ( $_SESSION [&quot;admin&quot;] ) &amp;&amp; $_SESSION [&quot;admin&quot;] ? true : false;
+    }
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+  }
+  /**
+   * Check for access
+   *
+   * @return boolean
+   */
+  public function access() {
+    return $this-&gt;accessBasedOnIP || $this-&gt;accessBasedOnKey || $this-&gt;accessBasedOnLogin;
+  }
+  /**
+   * Check for access based on IP
+   *
+   * @return boolean
+   */
+  public function accessBasedOnIP() {
+    return $this-&gt;accessBasedOnIP;
+  }
+  /**
+   * Check for access based on key
+   *
+   * @return boolean
+   */
+  public function accessBasedOnKey() {
+    return $this-&gt;accessBasedOnKey;
+  }
+  /**
+   * Check for access based on login
+   *
+   * @return boolean
+   */
+  public function accessBasedOnLogin() {
+    return $this-&gt;accessBasedOnLogin;
+  }
+  /**
+   * Check for access with admin privileges
+   *
+   * @return boolean
+   */
+  public function accessWithAdminPrivileges() {
+    return $this-&gt;accessBasedOnLogin &amp;&amp; $this-&gt;accessWithAdminPrivileges;
+  }
+  /**
+   * Get ip
+   *
+   * @return string
+   */
+  public function getIP() {
+    return $_SERVER [&quot;REMOTE_ADDR&quot;];
+  }
+  /**
+   * Get login
+   *
+   * @return string|boolean
+   */
+  public function getLogin() {
+    if ($this-&gt;accessBasedOnLogin) {
+      return isset ( $_SESSION [&quot;login&quot;] ) ? $_SESSION [&quot;login&quot;] : null;
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Get name
+   *
+   * @return string|boolean
+   */
+  public function getName() {
+    if ($this-&gt;accessBasedOnLogin) {
+      return isset ( $_SESSION [&quot;name&quot;] ) ? $_SESSION [&quot;name&quot;] : null;
+    } else {
+      return false;
+    }
+  }
+  /**
+   * Logout
+   */
+  public function logout() {
+    $this-&gt;accessBasedOnLogin = false;
+    if (isset ( $_SESSION [&quot;login&quot;] ) || isset ( $_SESSION [&quot;name&quot;] )) {
+      $_SESSION [&quot;login&quot;] = null;
+      $_SESSION [&quot;admin&quot;] = null;
+      $_SESSION [&quot;name&quot;] = null;
+      unset ( $_SESSION [&quot;login&quot;] );
+      unset ( $_SESSION [&quot;admin&quot;] );
+      unset ( $_SESSION [&quot;name&quot;] );
+    }
+  }
+  /**
+   * Login
+   *
+   * @param string $login          
+   * @param string $name          
+   * @param boolean $admin          
+   */
+  private function login($login, $name, $admin) {
+    if (! $login || ! is_string ( $login )) {
+      $this-&gt;logout ();
+    } else {
+      $this-&gt;accessBasedOnLogin = true;
+      $_SESSION [&quot;login&quot;] = $login;
+      if ($admin &amp;&amp; is_bool ( $admin )) {
+        $_SESSION [&quot;admin&quot;] = $login;
+      } else {
+        $_SESSION [&quot;admin&quot;] = null;
+      }
+      $_SESSION [&quot;name&quot;] = $name &amp;&amp; is_string ( $name ) ? $name : $login;
+    }
+  }
+  /**
+   * Validate IP
+   *
+   * @param string $ip          
+   * @return boolean
+   */
+  private function validateIP($ip) {
+    if (isset ( $this-&gt;configuration [&quot;ip&quot;] ) &amp;&amp; is_array ( $this-&gt;configuration [&quot;ip&quot;] )) {
+      $list = $this-&gt;configuration [&quot;ip&quot;];
+      $ip = preg_replace ( &quot;/\b0+(?=\d)/&quot;, &quot;&quot;, $ip );
+      if (filter_var ( $ip, FILTER_VALIDATE_IP )) {
+        if (filter_var ( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
+          $ip = ip2long ( $ip );
+          foreach ( $list as $item ) {
+            if (isset ( $item [&quot;ip&quot;] ) &amp;&amp; is_string ( $item [&quot;ip&quot;] )) {
+              if (preg_match ( &quot;/\//&quot;, $item [&quot;ip&quot;] )) {
+                list ( $filterIP, $filterRange ) = explode ( &quot;/&quot;, $item [&quot;ip&quot;], 2 );
+              } else {
+                $filterIP = $item [&quot;ip&quot;];
+                $filterRange = &quot;&quot;;
+              }
+              $filterIP = preg_replace ( &quot;/\b0+(?=\d)/&quot;, &quot;&quot;, $filterIP );
+              if (filter_var ( $filterIP, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
+                $filterIP = ip2long ( $filterIP );
+                if ($filterRange != null &amp;&amp; $filterRange != &quot;&quot; &amp;&amp; (intval ( $filterRange ) &gt; 0)) {
+                  $filterRange = intval ( $filterRange );
+                  $min = (($filterIP) &amp; ((- 1 &lt;&lt; (32 - $filterRange))));
+                  $max = ((($min)) + pow ( 2, (32 - $filterRange) ) - 1);
+                  if ($ip &gt;= $min &amp;&amp; $ip &lt;= $max) {
+                    return true;
+                  }
+                  // die ( long2ip ( $filterIP ) . &quot;/&quot; . $filterRange . &quot; : &quot; . $min . &quot; - &quot; . $max );
+                } else if ($ip == $filterIP) {
+                  return true;
+                }
+              }
+            }
+          }
+        } else if (filter_var ( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 )) {
+          foreach ( $list as $item ) {
+            if (preg_match ( &quot;/\//&quot;, $item )) {
+              list ( $filterIP, $filterRange ) = explode ( &quot;/&quot;, $item, 2 );
+            } else {
+              $filterIP = $item;
+              $filterRange = &quot;&quot;;
+            }
+            $filterIP = preg_replace ( &quot;/\b0+(?=\d)/&quot;, &quot;&quot;, $filterIP );
+            if (filter_var ( $filterIP, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 )) {
+              if ($filterRange != null &amp;&amp; $filterRange != &quot;&quot; &amp;&amp; (intval ( $filterRange ) &gt; 0)) {
+                $filterRange = intval ( $filterRange );
+                // todo: not supported for now
+              } else if (inet_pton ( $ip ) == inet_pton ( $filterIP )) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+  /**
+   * Validate key
+   *
+   * @param string $key          
+   * @return bool
+   */
+  private function validateKey($key) {
+    if ($key &amp;&amp; is_string ( $key )) {
+      if (isset ( $this-&gt;configuration [&quot;key&quot;] ) &amp;&amp; is_array ( $this-&gt;configuration [&quot;key&quot;] )) {
+        foreach ( $this-&gt;configuration [&quot;key&quot;] as $item ) {
+          if (isset ( $item [&quot;key&quot;] ) &amp;&amp; is_string ( $item [&quot;key&quot;] ) &amp;&amp; ($item [&quot;key&quot;] == $key)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+  /**
+   * Validate login
+   *
+   * @param string $login          
+   * @param string $password          
+   * @return boolean
+   */
+  public function validateLogin($login, $password) {
+    if ($login &amp;&amp; is_string ( $login ) &amp;&amp; $password &amp;&amp; is_string ( $password )) {
+      if (isset ( $this-&gt;configuration [&quot;login&quot;] ) &amp;&amp; is_array ( $this-&gt;configuration [&quot;login&quot;] )) {
+        $list = $this-&gt;configuration [&quot;login&quot;];
+        $login = mb_strtolower ( $login );
+        foreach ( $list as $item ) {
+          if (is_array ( $item ) &amp;&amp; isset ( $item [&quot;login&quot;] ) &amp;&amp; is_string ( $item [&quot;login&quot;] ) &amp;&amp; ($login == mb_strtolower ( $item [&quot;login&quot;] ))) {
+            if (isset ( $item [&quot;password&quot;] ) &amp;&amp; is_string ( $item [&quot;password&quot;] ) &amp;&amp; hash_equals ( $item [&quot;password&quot;], @crypt ( $password, $item [&quot;password&quot;] ) )) {
+              $this-&gt;accessBasedOnLogin = true;
+              if (isset ( $item [&quot;admin&quot;] ) &amp;&amp; $item [&quot;admin&quot;]) {
+                $this-&gt;login ( $item [&quot;login&quot;], $item [&quot;name&quot;], true );
+              } else {
+                $this-&gt;login ( $item [&quot;login&quot;], $item [&quot;name&quot;], false );
+              }
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

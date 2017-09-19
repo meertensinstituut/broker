@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module javascript 
+ */
+header ( &quot;Content-Type: text/javascript; charset=utf-8&quot; );
+header ( &quot;Access-Control-Allow-Origin: *&quot; );
+header ( &quot;Access-Control-Allow-Headers: content-type&quot; );
+
+if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; trim ( $_GET [&quot;suboperation&quot;] ) != &quot;&quot;) {
+  if ($_GET [&quot;suboperation&quot;] == &quot;examples&quot;) {
+    $output = array ();
+    // collect examples
+    $output [&quot;examples&quot;] = array ();
+    $directory = SITE_LAYOUT_DIR . &quot;examples&quot; . DIRECTORY_SEPARATOR;
+    if (is_dir ( $directory )) {
+      if ($dh = opendir ( $directory )) {
+        $tmp_sort = array ();
+        while ( ($file = readdir ( $dh )) !== false ) {
+          if (is_file ( $directory . $file ) &amp;&amp; preg_match ( &quot;/^([0-9]+[0-9a-z_]*\.)?([a-z0-9\_]+)\.(html|php)$/i&quot;, $file, $match )) {
+            $name = str_replace ( &quot;_&quot;, &quot; &quot;, $match [2] );
+            if (preg_match ( &quot;/^(([0-9]+)(_[0-9a-z]+)?(_[0-9a-z]+)?)\.$/i&quot;, $match [1], $submatches )) {
+              $code = $submatches [1];
+            } else {
+              $code = &quot;&quot;;
+            }
+            $output [&quot;examples&quot;] [] = array (
+                &quot;title&quot; =&gt; trim ( $name ),
+                &quot;code&quot; =&gt; $code,
+                &quot;url&quot; =&gt; SITE_LOCATION . LAYOUT_DIR . &quot;/examples/&quot; . $file 
+            );
+            $tmp_sort [] = $code;
+          }
+        }
+        closedir ( $dh );
+        array_multisort ( $tmp_sort, $output [&quot;examples&quot;] );
+      }
+    }
+    // collect expansions
+    $output [&quot;expansion&quot;] = $configuration-&gt;getExpansions ();
+    // collect configurations
+    $output [&quot;solr&quot;] = array ();
+    foreach ( $configuration-&gt;solr as $key =&gt; $value ) {
+      if (preg_match ( &quot;/^[a-z0-9]+$/i&quot;, $key )) {
+        $output [&quot;solr&quot;] [$key] = $value;
+      }
+    }
+    echo (json_encode ( $output ));
+  }
+}
+exit ();
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

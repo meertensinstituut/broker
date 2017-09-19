@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module login
+ */
+if (! $authentication-&gt;accessBasedOnLogin ()) {
+  if (isset ( $_POST ) &amp;&amp; isset ( $_POST [&quot;login&quot;] ) &amp;&amp; isset ( $_POST [&quot;password&quot;] )) {
+    if ($authentication-&gt;validateLogin ( $_POST [&quot;login&quot;], $_POST [&quot;password&quot;] )) {
+      if (isset ( $_GET [&quot;operation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;operation&quot;] ) &amp;&amp; preg_match ( &quot;/^[a-z]+$/i&quot;, $_GET [&quot;operation&quot;] )) {
+        if ($_GET [&quot;operation&quot;] != &quot;login&quot;) {
+          if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; preg_match ( &quot;/^[a-z]+$/i&quot;, $_GET [&quot;suboperation&quot;] )) {
+            header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( $_GET [&quot;operation&quot;], $_GET [&quot;suboperation&quot;] ) );
+          } else {
+            header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( $_GET [&quot;operation&quot;], null ) );
+          }
+        } else if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; preg_match ( &quot;/^[a-z]+$/i&quot;, $_GET [&quot;suboperation&quot;] )) {
+          header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( $_GET [&quot;suboperation&quot;], null ) );
+        } else {
+          header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( null, null ) );
+        }
+      } else {
+        header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( null, null ) );
+      }
+    } else {
+      header ( &quot;refresh:2;url=&quot; . $configuration-&gt;url ( &quot;login&quot;, null ) );
+    }
+  }
+} else {
+  header ( &quot;Location: &quot; . $configuration-&gt;url ( null, null ) );
+}
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

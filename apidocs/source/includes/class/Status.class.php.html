@@ -1,0 +1,548 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Status
+ */
+class Status {
+  /**
+   * Database
+   *
+   * @var \PDO
+   */
+  private $database;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Collection
+   *
+   * @var \Broker\Collection
+   */
+  private $collection;
+  /**
+   * Cache
+   *
+   * @var \Broker\Cache
+   */
+  private $cache;
+  /**
+   * Timeout
+   *
+   * @var number
+   */
+  private $timeout = 10;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   * @param unknown $configuration          
+   * @param \Broker\Cache $cache          
+   */
+  public function __construct($directory, $configuration, $cache) {
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;status&quot; );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . &quot;status&quot;;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;status&quot; );
+      }
+    }
+    $this-&gt;configuration = $configuration;
+    $this-&gt;cache = $cache;
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ();
+  }
+  /**
+   * Init
+   */
+  private function init() {
+    $sql = &quot;CREATE TABLE IF NOT EXISTS \&quot;status\&quot; (
+          \&quot;id\&quot; INTEGER PRIMARY KEY ASC,
+          \&quot;key\&quot; TEXT NOT NULL,
+          \&quot;brokerRequest\&quot; TEXT NOT NULL,
+          \&quot;collectionIds\&quot; TEXT,
+          \&quot;cache\&quot; INTEGER,
+          \&quot;configuration\&quot; TEXT,
+          \&quot;solrUrl\&quot; TEXT,
+          \&quot;solrRequest\&quot; TEXT,
+          \&quot;solrShards\&quot; TEXT,
+          \&quot;solrStatus\&quot; TEXT,
+          \&quot;responseJoins\&quot; TEXT,
+          \&quot;created\&quot; TEXT NOT NULL,
+          \&quot;started\&quot; TEXT NULL,
+          \&quot;updated\&quot; TEXT NULL,
+          \&quot;finished\&quot; TEXT NULL,
+          \&quot;expires\&quot; TEXT NOT NULL,
+          UNIQUE(\&quot;key\&quot;));&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Create status
+   *
+   * @param string $brokerRequest          
+   * @return array
+   */
+  public function create($brokerRequest) {
+    $this-&gt;clean ();
+    $response = array ();
+    $response [&quot;status&quot;] = &quot;ERROR&quot;;
+    if ($brokerRequest &amp;&amp; trim ( $brokerRequest != &quot;&quot; )) {
+      try {
+        $parser = new \Broker\Parser ( $brokerRequest, $this-&gt;configuration, $this-&gt;cache, null, null );
+        $key = $this-&gt;generateKey ();
+        $collectionIds = $parser-&gt;getCollectionIds ();
+        $parserConfiguration = $parser-&gt;getConfiguration ();
+        $solrUrl = $parser-&gt;getUrl ();
+        $solrRequest = $parser-&gt;getRequest ();
+        $solrShards = $parser-&gt;getShards ();
+        $cache = $parser-&gt;getCache ();
+        $responseJoins = $parser-&gt;getResponseJoins ();
+        if ($solrRequest != null) {
+          $response [&quot;solrRequest&quot;] = array (
+              &quot;description&quot; =&gt; null,
+              &quot;data&quot; =&gt; array () 
+          );
+          $dependencies = $parser-&gt;getCollection ()-&gt;getWithDependencies ( $collectionIds );
+          for($i = 0; $i &lt; count ( $dependencies [&quot;missing&quot;] ); $i ++) {
+            $response [&quot;solrRequest&quot;] [&quot;data&quot;] [&quot;collection&quot; . $i] = &quot;collection &quot; . $dependencies [&quot;missing&quot;] [$i] . &quot; is not available&quot;;
+          }
+          for($i = 0; $i &lt; count ( $dependencies [&quot;data&quot;] ); $i ++) {
+            $response [&quot;solrRequest&quot;] [&quot;data&quot;] [&quot;collection&quot; . ($i + count ( $dependencies [&quot;missing&quot;] ))] = &quot;collection &quot; . $dependencies [&quot;data&quot;] [$i] [&quot;key&quot;] . &quot; on &quot; . $dependencies [&quot;data&quot;] [$i] [&quot;configuration&quot;] . &quot;: &quot; . $dependencies [&quot;data&quot;] [$i] [&quot;solrCreateRequest&quot;];
+          }
+          $response [&quot;solrRequest&quot;] [&quot;data&quot;] [&quot;main&quot;] = &quot;main request on &quot; . $parserConfiguration . &quot;: &quot; . $solrRequest;
+        }
+        if (count ( $parser-&gt;getWarnings () ) &gt; 0) {
+          $response [&quot;brokerWarnings&quot;] = array (
+              &quot;data&quot; =&gt; $parser-&gt;getWarnings () 
+          );
+        }
+        if (count ( $parser-&gt;getErrors () ) &gt; 0) {
+          $response [&quot;brokerErrors&quot;] = array (
+              &quot;data&quot; =&gt; $parser-&gt;getErrors () 
+          );
+          $response [&quot;solrStatus&quot;] = array (
+              &quot;description&quot; =&gt; &quot;request couldn't be parsed by broker&quot;,
+              &quot;data&quot; =&gt; array (
+                  &quot;broker&quot; =&gt; &quot;request couldn't be parsed by broker&quot; 
+              ) 
+          );
+        } else {
+          $infoList = array ();
+          $infoList [&quot;broker_0&quot;] = &quot;request successfully parsed by broker&quot;;
+          $infoList [&quot;broker_1&quot;] = &quot;solr configuration '&quot; . $parser-&gt;getConfiguration () . &quot;' used&quot;;
+          if (($shards = $parser-&gt;getShards ()) == null) {
+            $infoList [&quot;broker_2&quot;] = &quot;request for single core&quot;;
+          } else {
+            $infoList [&quot;broker_2&quot;] = &quot;request for &quot; . count ( $shards ) . &quot; shard&quot; . (count ( $shards ) &gt; 1 ? &quot;s&quot; : &quot;&quot;);
+          }
+          $response [&quot;solrStatus&quot;] = array (
+              &quot;description&quot; =&gt; &quot;request parsed by broker&quot;,
+              &quot;data&quot; =&gt; $infoList 
+          );
+          // delete key (always insert)
+          $sql = &quot;DELETE FROM status WHERE key = :key&quot;;
+          $query = $this-&gt;database-&gt;prepare ( $sql );
+          $query-&gt;bindValue ( &quot;:key&quot;, $key );
+          $query-&gt;execute ();
+          unset ( $query );
+          // create status
+          $sql = &quot;INSERT INTO status (key, brokerRequest, collectionIds, cache, configuration, solrUrl, solrRequest, solrShards, responseJoins, created, expires)
+                                             VALUES (:key, :brokerRequest, :collectionIds, :cache, 
+                                             :configuration, :solrUrl, :solrRequest, :solrShards, 
+                                             :responseJoins, datetime('now'), datetime('now', '+&quot; . intval ( $this-&gt;timeout ) . &quot; minutes'))&quot;;
+          $query = $this-&gt;database-&gt;prepare ( $sql );
+          $query-&gt;bindValue ( &quot;:key&quot;, $key );
+          $query-&gt;bindValue ( &quot;:brokerRequest&quot;, $brokerRequest );
+          $query-&gt;bindValue ( &quot;:collectionIds&quot;, count ( $collectionIds ) &gt; 0 ? json_encode ( $collectionIds ) : &quot;&quot; );
+          $query-&gt;bindValue ( &quot;:cache&quot;, $cache != null ? 1 : 0 );
+          $query-&gt;bindValue ( &quot;:configuration&quot;, $parserConfiguration );
+          $query-&gt;bindValue ( &quot;:solrUrl&quot;, $solrUrl );
+          $query-&gt;bindValue ( &quot;:solrRequest&quot;, $solrRequest );
+          $query-&gt;bindValue ( &quot;:solrShards&quot;, $solrShards ? implode ( &quot;,&quot;, $solrShards ) : null );
+          $query-&gt;bindValue ( &quot;:responseJoins&quot;, count ( $responseJoins ) &gt; 0 ? json_encode ( $responseJoins ) : null );
+          if ($query-&gt;execute ()) {
+            $response [&quot;id&quot;] = $this-&gt;database-&gt;lastInsertId ();
+            $response [&quot;key&quot;] = $key;
+            $response [&quot;status&quot;] = &quot;OK&quot;;
+          } else {
+            $response [&quot;error&quot;] = &quot;couldn't create status&quot;;
+          }
+          unset ( $query );
+        }
+      } catch ( \Exception $e ) {
+        $response [&quot;error&quot;] = $e-&gt;getMessage ();
+      }
+    } else {
+      $response [&quot;error&quot;] = &quot;no request&quot;;
+    }
+    return $response;
+  }
+  /**
+   * Get status
+   *
+   * @param string $key          
+   * @return array
+   */
+  public function get($key) {
+    // update expiration
+    $sql = &quot;UPDATE \&quot;status\&quot; SET
+        expires = datetime('now', '+&quot; . intval ( $this-&gt;timeout ) . &quot; minutes')
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+    // get info
+    $sql = &quot;SELECT
+        key, 
+        brokerRequest,
+        collectionIds,
+        cache,
+        solrUrl,
+        solrRequest,
+        solrShards,
+        solrStatus,        
+        responseJoins,        
+        datetime(created, 'localtime') as created, 
+        datetime(started, 'localtime') as started, 
+        datetime(updated, 'localtime') as updated, 
+        datetime(finished, 'localtime') as finished, 
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;status\&quot;
+    WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Start
+   *
+   * @param string $key          
+   * @return array
+   */
+  public function start($key) {
+    $response = array ();
+    $response [&quot;status&quot;] = &quot;ERROR&quot;;
+    $sql = &quot;SELECT * FROM status 
+            WHERE key = :key AND started IS NULL 
+            AND expires &gt; datetime('now')&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $status = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($status) {
+        $sql = &quot;UPDATE status SET started = datetime('now'), 
+                expires = datetime('now', '+&quot; . intval ( $this-&gt;timeout ) . &quot; minutes')
+                WHERE key = :key AND started IS NULL&quot;;
+        $query = $this-&gt;database-&gt;prepare ( $sql );
+        $query-&gt;bindValue ( &quot;:key&quot;, $key );
+        if ($query-&gt;execute ()) {
+          unset ( $query );
+          if ($status [&quot;collectionIds&quot;]) {
+            $collectionIds = json_decode ( $status [&quot;collectionIds&quot;], true );
+            $this-&gt;getCollection ();
+            foreach ( $collectionIds as $collectionId ) {
+              $checkInfo = $this-&gt;collection-&gt;check ( $collectionId );
+              if (! $checkInfo) {
+                $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; not found&quot;;
+                return $response;
+              } else if (! $checkInfo [&quot;initialised&quot;]) {
+                $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; not initialised&quot;;
+                return $response;
+              } else if ($checkInfo [&quot;check&quot;]) {
+                if (! $this-&gt;collection-&gt;doCheck ( $collectionId )) {
+                  $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; couldn't be checked&quot;;
+                  return $response;
+                }
+              }
+            }
+          }
+          try {
+            $solr = new \Broker\Solr ( $status [&quot;configuration&quot;], $status [&quot;solrUrl&quot;], &quot;select&quot;, $status [&quot;solrRequest&quot;], $status [&quot;solrShards&quot;], $status [&quot;cache&quot;] ? $this-&gt;getCache () : null );
+            $solrResponse = $solr-&gt;getResponse ();
+            if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+              if (isset ( $solrResponse-&gt;error )) {
+                $response [&quot;error&quot;] = $solrResponse-&gt;error;
+              } else if (isset ( $solrResponse-&gt;response )) {
+                $response [&quot;status&quot;] = &quot;OK&quot;;
+                $response [&quot;response&quot;] = clone $solrResponse;
+                $responseJoins = $status [&quot;responseJoins&quot;] ? json_decode ( $status [&quot;responseJoins&quot;] ) : null;
+                $response = (new \Broker\Response ( $response, $responseJoins, $this-&gt;configuration, $status [&quot;cache&quot;] ? $this-&gt;getCache () : null, $this-&gt;collection ))-&gt;process ();
+              } else {
+                $response [&quot;error&quot;] = clone $solrResponse;
+              }
+            } else {
+              $response [&quot;error&quot;] = $solrResponse;
+            }
+          } catch ( \Broker\SolrException $se ) {
+            $response [&quot;error&quot;] = $se-&gt;getMessage ();
+          } catch ( \Exception $e ) {
+            $response [&quot;error&quot;] = $solr-&gt;getResponse ();
+          }
+          // register finish
+          $sql = &quot;UPDATE status SET finished = datetime('now'),
+                expires = datetime('now', '+&quot; . intval ( $this-&gt;timeout ) . &quot; minutes')
+                WHERE key = :key AND finished IS NULL&quot;;
+          $query = $this-&gt;database-&gt;prepare ( $sql );
+          $query-&gt;bindValue ( &quot;:key&quot;, $key );
+          $query-&gt;execute ();
+          unset ( $query );
+        } else {
+          $response [&quot;error&quot;] = &quot;couldn't start from status&quot;;
+        }
+      } else {
+        $response [&quot;error&quot;] = &quot;status not found&quot;;
+      }
+    } else {
+      $response [&quot;error&quot;] = &quot;status not found&quot;;
+    }
+    return $response;
+  }
+  /**
+   * Update
+   *
+   * @param string $key          
+   * @return array
+   */
+  public function update($key) {
+    $response = array ();
+    $response [&quot;status&quot;] = &quot;ERROR&quot;;
+    // select
+    $sql = &quot;SELECT id,updated,started,solrStatus FROM status
+            WHERE key = :key 
+            AND expires &gt; datetime('now')&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    if ($query-&gt;execute ()) {
+      $status = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($status &amp;&amp; $status [&quot;id&quot;]) {
+        // update
+        $sql = &quot;UPDATE status SET updated = datetime('now'),
+                expires = datetime('now', '+&quot; . intval ( $this-&gt;timeout ) . &quot; minutes')
+                WHERE key = :key&quot;;
+        $query = $this-&gt;database-&gt;prepare ( $sql );
+        $query-&gt;bindValue ( &quot;:key&quot;, $key );
+        $query-&gt;execute ();
+        unset ( $query );
+        // create response;
+        $response [&quot;status&quot;] = &quot;OK&quot;;
+        $response [&quot;updated&quot;] = $status [&quot;updated&quot;];
+        $response [&quot;started&quot;] = $status [&quot;started&quot;];
+        $response [&quot;solrStatus&quot;] = array (
+            &quot;description&quot; =&gt; &quot;sent to solr&quot;,
+            &quot;data&quot; =&gt; array (
+                &quot;solr&quot; =&gt; $status [&quot;solrStatus&quot;] 
+            ) 
+        );
+      } else {
+        $response [&quot;error&quot;] = &quot;status not found&quot;;
+      }
+    } else {
+      $response [&quot;error&quot;] = &quot;status not found&quot;;
+    }
+    return $response;
+  }
+  /**
+   * Delete
+   *
+   * @param string $key          
+   */
+  public function delete($key) {
+    $sql = &quot;DELETE FROM \&quot;status\&quot; WHERE key IS :key;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:key&quot;, $key );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Get number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+    FROM \&quot;status\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * List
+   *
+   * @param int $start          
+   * @param int $number          
+   * @return array
+   */
+  public function getList($start, $number) {
+    $sql = &quot;SELECT
+        key, 
+        cache, 
+        datetime(created, 'localtime') as created, 
+        datetime(started, 'localtime') as started, 
+        datetime(updated, 'localtime') as updated, 
+        datetime(finished, 'localtime') as finished, 
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;status\&quot;
+    ORDER BY expires DESC
+    LIMIT :start,:number;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:start&quot;, $start );
+    $query-&gt;bindValue ( &quot;:number&quot;, $number );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetchAll ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Clean
+   */
+  public function clean() {
+    $sql = &quot;DELETE FROM status WHERE expires &lt; datetime('now');&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;status\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+    $this-&gt;init ();
+  }
+  /**
+   * Get (or create) collection
+   *
+   * @return \Broker\Collection
+   */
+  public function getCollection() {
+    if ($this-&gt;collection == null) {
+      $this-&gt;collection = new \Broker\Collection ( SITE_CACHE_DATABASE_DIR, $this-&gt;configuration );
+    }
+    return $this-&gt;collection;
+  }
+  /**
+   * Get (or create) cache
+   *
+   * @return \Broker\Cache
+   */
+  private function getCache() {
+    if (! $this-&gt;cache) {
+      $this-&gt;cache = new \Broker\Cache ( SITE_CACHE_DATABASE_DIR, $this-&gt;configuration );
+    }
+    return $this-&gt;cache;
+  }
+  /**
+   * Generate key
+   *
+   * @param number $length          
+   * @return string
+   */
+  private function generateKey($length = 20) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen ( $characters );
+    $randomString = '';
+    for($i = 0; $i &lt; $length; $i ++) {
+      $randomString .= $characters [rand ( 0, $charactersLength - 1 )];
+    }
+    return $randomString;
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

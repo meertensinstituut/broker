@@ -1,0 +1,125 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module collections
+ */
+if (! $authentication-&gt;accessWithAdminPrivileges ()) {
+  $authentication-&gt;logout ();
+  header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;login&quot;, &quot;collections&quot; ) );
+  exit ();
+} else {
+  
+  $collection = new \Broker\Collection ( SITE_CACHE_DATABASE_DIR, $configuration );
+  
+  if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; trim ( $_GET [&quot;suboperation&quot;] ) != &quot;&quot;) {
+    if (preg_match ( &quot;/^list([0-9]*)$/&quot;, $_GET [&quot;suboperation&quot;], $match )) {
+      $smarty-&gt;assign ( &quot;_collectionsType&quot;, &quot;list&quot; );
+      $page = intval ( $match [1] );
+      if (strtolower ( $_SERVER [&quot;REQUEST_METHOD&quot;] ) == &quot;post&quot;) {
+        if (isset ( $_POST [&quot;key&quot;] ) &amp;&amp; is_string ( $_POST [&quot;key&quot;] ) &amp;&amp; trim ( $_POST [&quot;key&quot;] ) != &quot;&quot;) {
+          $key = $_POST [&quot;key&quot;];
+          if (isset ( $_POST [&quot;action&quot;] ) &amp;&amp; is_string ( $_POST [&quot;action&quot;] ) &amp;&amp; trim ( $_POST [&quot;action&quot;] ) != &quot;&quot;) {
+            $action = $_POST [&quot;action&quot;];
+            if ($action == &quot;delete&quot;) {
+              $collection-&gt;delete ( $key );
+              header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, &quot;list&quot; ) );
+              exit ();
+            } else if ($action == &quot;view&quot;) {
+              $smarty-&gt;assign ( &quot;_collectionsType&quot;, &quot;view&quot; );
+              $smarty-&gt;assign ( &quot;_collectionsData&quot;, $collection-&gt;get ( $key ) );
+            } else if ($action == &quot;uncheck&quot;) {
+              $collection-&gt;setUnchecked ( $key );
+              header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, &quot;list&quot; ) );
+              exit ();
+            } else if ($action == &quot;check&quot;) {
+              if ($collection-&gt;doCheck ( $key )) {
+                header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, &quot;list&quot; ) );
+                exit ();
+              } else {
+                die ( &quot;ERROR&quot; );
+              }
+            } else {
+              header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, &quot;list&quot; ) );
+              exit ();
+            }
+          } else {
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, &quot;list&quot; ) );
+            exit ();
+          }
+        } else if (isset ( $_POST [&quot;action&quot;] ) &amp;&amp; is_string ( $_POST [&quot;action&quot;] )) {
+          if ($_POST [&quot;action&quot;] == &quot;clean&quot;) {
+            $collection-&gt;clean ();
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, null ) );
+            exit ();
+          } else if ($_POST [&quot;action&quot;] == &quot;reset&quot;) {
+            $collection-&gt;reset ();
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, null ) );
+            exit ();
+          } else {
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, null ) );
+            exit ();
+          }
+        } else {
+          header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, null ) );
+          exit ();
+        }
+      } else {
+        $number = 100;
+        $smarty-&gt;assign ( &quot;_collectionsPage&quot;, $page );
+        $smarty-&gt;assign ( &quot;_collectionsNumber&quot;, $number );
+        $smarty-&gt;assign ( &quot;_collectionsTotal&quot;, $collection-&gt;number () );
+        $smarty-&gt;assign ( &quot;_collectionsList&quot;, $collection-&gt;getList ( $page * $number, $number ) );
+      }
+    } else {
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;collections&quot;, null ) );
+      exit ();
+    }
+  } else {
+    $smarty-&gt;assign ( &quot;_collectionsType&quot;, null );
+    $smarty-&gt;assign ( &quot;_collectionsTotal&quot;, $collection-&gt;number () );
+  }
+}
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

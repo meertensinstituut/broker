@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Example configuration
+ * @package Broker
+ */
+$authentication = array (
+    // access based on ip
+    &quot;ip&quot; =&gt; array (
+        array(
+          &quot;ip&quot; =&gt; &quot;127.0.0.1/24&quot;,
+           &quot;name&quot; =&gt; &quot;Access from localhost&quot;,
+        ),
+    ),
+    // access based on login/password
+    &quot;login&quot; =&gt; array (
+        array (
+            &quot;name&quot; =&gt; &quot;Matthijs Brouwer&quot;,
+            &quot;login&quot; =&gt; &quot;matthijs&quot;,
+            &quot;password&quot; =&gt; null, // crypt(&quot;testpassword&quot;, &quot;\$6\$rounds=5000\$saltstring\$&quot;);
+            &quot;admin&quot; =&gt; true,
+        ), 
+    ),
+    // access based on key
+    &quot;key&quot; =&gt; array (
+        array(
+          &quot;name&quot; =&gt; &quot;Test Service&quot;,
+          &quot;key&quot; =&gt; null,
+        ),
+    )  
+);
+
+$solr = array ( 
+    &quot;config1&quot; =&gt; array (
+        &quot;url&quot; =&gt; &quot;http://localhost:8983/solr/core1/&quot;,
+        &quot;shards&quot; =&gt; array ( 
+            &quot;http://localhost:8983/solr/core2/&quot;,
+            &quot;http://localhost:8983/solr/core3/&quot;,
+            &quot;http://localhost:8983/solr/core4/&quot; 
+        ),
+        &quot;exampleFieldText&quot;=&gt; &quot;title&quot;,  
+        &quot;exampleFieldInteger&quot;=&gt; &quot;year&quot;,
+        &quot;exampleFieldString&quot;=&gt; &quot;genre&quot;,
+        &quot;exampleMtasPrefixWord&quot;=&gt;&quot;t_lc&quot;,
+        &quot;exampleMtasPrefixLemma&quot;=&gt;&quot;lemma&quot;,
+        &quot;exampleMtasPrefixPos&quot;=&gt;&quot;pos&quot;
+    ),         
+);
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

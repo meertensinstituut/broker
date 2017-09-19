@@ -1,0 +1,227 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Session handler
+ */
+class Session implements \SessionHandlerInterface {
+  /**
+   * Database
+   *
+   * @var \PDO
+   */
+  private $database;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   */
+  public function __construct($directory) {
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;session&quot; );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . &quot;session&quot;;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;session&quot; );
+      }
+    }
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ();
+  }
+  /**
+   * Initialize
+   */
+  private function init() {
+    $sql = &quot;CREATE TABLE IF NOT EXISTS sessions(
+          id INTEGER PRIMARY KEY ASC,
+          sid TEXT NOT NULL UNIQUE,
+          data TEXT,
+          created TEXT NOT NULL,
+          updated TEXT NOT NULL);&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Destruct
+   */
+  public function __destruct() {
+    session_write_close ( true );
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::close()
+   */
+  public function close() {
+    $this-&gt;database = null;
+    return true;
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::destroy()
+   * @param string $session_id          
+   */
+  public function destroy($session_id) {
+    $sql = &quot;DELETE FROM sessions WHERE sid = :sid&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:sid&quot;, $session_id );
+    return $query-&gt;execute ();
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::gc()
+   * @param number $maxlifetime          
+   */
+  public function gc($maxlifetime) {
+    $sql = &quot;DELETE FROM sessions WHERE updated &lt; datetime('now', '-&quot; . intval ( $maxlifetime ) . &quot; seconds')&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    return $query-&gt;execute ();
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::open()
+   * @param string $save_path          
+   * @param string $session_name          
+   */
+  public function open($save_path, $session_name) {
+    return $this-&gt;database != null;
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::read()
+   * @param string $session_id          
+   */
+  public function read($session_id) {
+    $sql = &quot;SELECT data FROM sessions WHERE sid = :sid&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:sid&quot;, $session_id );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      if ($result) {
+        return ( string ) $result [&quot;data&quot;];
+      } else {
+        return &quot;&quot;;
+      }
+    } else {
+      return &quot;&quot;;
+    }
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see SessionHandlerInterface::write()
+   * @param string $session_id          
+   * @param unknown $session_data          
+   */
+  public function write($session_id, $session_data) {
+    $sql = &quot;INSERT OR REPLACE INTO sessions (sid, data, created, updated) 
+                                         VALUES (:sid, :data, COALESCE((SELECT created FROM sessions WHERE sid = :sid), datetime('now')), datetime('now'))&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:sid&quot;, $session_id );
+    $query-&gt;bindValue ( &quot;:data&quot;, $session_data );
+    return $query-&gt;execute ();
+  }
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+    FROM \&quot;sessions\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;sessions\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+    $this-&gt;init ();
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

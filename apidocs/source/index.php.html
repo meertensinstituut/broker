@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Main index.php
+ * @package Broker
+ */
+// settings
+require_once (&quot;includes/defaults.inc.php&quot;);
+if(!file_exists(SITE_ROOT_DIR . &quot;vendor/autoload.php&quot;)) {
+  die(&quot;run composer on &quot;.SITE_ROOT_DIR);
+} else {
+  require_once (SITE_ROOT_DIR . &quot;vendor/autoload.php&quot;);
+}  
+
+// load configuration
+$configuration = new \Broker\Configuration ( SITE_CONFIG_DIR . &quot;config.inc.php&quot; );
+
+// smarty
+$smarty = new Smarty ();
+$smarty-&gt;setTemplateDir ( SITE_LAYOUT_SMARTY_TEMPLATES_DIR );
+$smarty-&gt;setCompileDir ( SITE_CACHE_SMARTY_TEMPLATESC_DIR );
+$smarty-&gt;setCacheDir ( SITE_CACHE_SMARTY_CACHE_DIR );
+$smarty-&gt;setConfigDir ( SITE_LAYOUT_SMARTY_CONFIG_DIR );
+
+// create basic output
+header ( &quot;Content-Type: text/html; charset=utf-8&quot; );
+$smarty-&gt;assign ( &quot;_SITE_LOCATION&quot;, SITE_LOCATION );
+$smarty-&gt;assign ( &quot;_LAYOUT_DIR&quot;, LAYOUT_DIR );
+
+if ($configuration-&gt;installed ()) {  
+  
+  // authentication
+  $authentication = new \Broker\Authentication ( $configuration-&gt;getConfig ( &quot;authentication&quot; ) );
+  
+  // create output
+  header ( &quot;Content-Type: text/html; charset=utf-8&quot; );
+  $smarty-&gt;assign ( &quot;_SITE_LOCATION&quot;, SITE_LOCATION );
+  $smarty-&gt;assign ( &quot;_SITE_ROOT_DIR&quot;, SITE_ROOT_DIR );
+  $smarty-&gt;assign ( &quot;_LAYOUT_DIR&quot;, LAYOUT_DIR );
+  $smarty-&gt;assign ( &quot;_authentication&quot;, $authentication );
+  $smarty-&gt;assign ( &quot;_configuration&quot;, $configuration );
+  if ($authentication-&gt;access ()) {
+    if (isset ( $_GET [&quot;operation&quot;] ) &amp;&amp; is_string ( $operation = $_GET [&quot;operation&quot;] ) &amp;&amp; (trim ( $operation ) != &quot;&quot;)) {
+      $smarty-&gt;assign ( &quot;_smartyIncludeModule&quot;, $operation );
+      if (preg_match ( &quot;/^[a-z]+$/i&quot;, $operation )) {
+        if (file_exists ( SITE_INCLUDES_MODULES_DIR . $operation . &quot;.inc.php&quot; )) {
+          include_once (SITE_INCLUDES_MODULES_DIR . $operation . &quot;.inc.php&quot;);
+          $smarty-&gt;assign ( &quot;_smartyIncludeBlock&quot;, &quot;module/block_&quot; . $operation . &quot;.tpl&quot; );
+        } else {
+          header ( &quot;HTTP/1.0 404 Not Found&quot; );
+          $smarty-&gt;assign ( &quot;_smartyIncludeBlock&quot;, &quot;block_notfound.tpl&quot; );
+        }
+      } else {
+        header ( &quot;HTTP/1.0 404 Not Found&quot; );
+        $smarty-&gt;assign ( &quot;_smartyIncludeBlock&quot;, &quot;block_notfound.tpl&quot; );
+      }
+    } else {
+      $smarty-&gt;assign ( &quot;_smartyIncludeModule&quot;, &quot;&quot; );
+      $smarty-&gt;assign ( &quot;_smartyIncludeBlock&quot;, &quot;block_home.tpl&quot; );
+    }
+  } else {
+    if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+      if(isset ( $_GET [&quot;operation&quot;]) &amp;&amp; is_string($_GET [&quot;operation&quot;]) &amp;&amp; $_GET[&quot;operation&quot;]==&quot;search&quot;) {
+        header ( &quot;HTTP/1.0 403 Forbidden&quot; );      
+        echo (&quot;No access, please register IP or provide a (valid) key to get access&quot;);
+        exit ();
+      }  
+    }
+    if (file_exists ( SITE_INCLUDES_MODULES_DIR . &quot;login.inc.php&quot; )) {
+      include_once (SITE_INCLUDES_MODULES_DIR . &quot;login.inc.php&quot;);
+      $smarty-&gt;assign ( &quot;_smartyIncludeModule&quot;, &quot;login&quot; );
+      $smarty-&gt;assign ( &quot;_smartyIncludeBlock&quot;, &quot;module/block_login.tpl&quot; );
+    }
+  }
+  $smarty-&gt;display ( &quot;index.tpl&quot; );
+} else {
+  $smarty-&gt;assign ( &quot;_SITE_ROOT_DIR&quot;, SITE_ROOT_DIR );
+  $smarty-&gt;display ( &quot;install.tpl&quot; );
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

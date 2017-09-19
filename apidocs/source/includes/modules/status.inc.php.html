@@ -1,0 +1,189 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module status
+ */
+$status = new \Broker\Status ( SITE_CACHE_DATABASE_DIR, $configuration, null );
+
+if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; trim ( $_GET [&quot;suboperation&quot;] ) != &quot;&quot;) {
+  if ($_GET [&quot;suboperation&quot;] == &quot;create&quot;) {
+    if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+      header ( &quot;Content-Type: text/javascript; charset=utf-8&quot; );
+      header ( &quot;Access-Control-Allow-Origin: *&quot; );
+      header ( &quot;Access-Control-Allow-Headers: content-type&quot; );
+      echo (json_encode ( $status-&gt;create ( file_get_contents ( &quot;php://input&quot; ) ) ));
+    } else {
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+    }
+    exit ();
+  } else if ($_GET [&quot;suboperation&quot;] == &quot;start&quot;) {
+    if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+      header ( &quot;Content-Type: text/javascript; charset=utf-8&quot; );
+      header ( &quot;Access-Control-Allow-Origin: *&quot; );
+      header ( &quot;Access-Control-Allow-Headers: content-type&quot; );
+      $json_data = json_decode ( file_get_contents ( &quot;php://input&quot; ), true );
+      $response = array ();
+      $respons [&quot;status&quot;] = &quot;ERROR&quot;;
+      if ($json_data == null || json_last_error () !== JSON_ERROR_NONE) {
+        $response [&quot;error&quot;] = &quot;no valid json&quot;;
+      } else {
+        try {
+          $response = $status-&gt;start ( $json_data [&quot;key&quot;] );
+        } catch ( \Exception $e ) {
+          $response = array ();
+          $respons [&quot;status&quot;] = &quot;ERROR&quot;;
+          $response [&quot;error&quot;] = $e-&gt;getMessage ();
+        }
+      }
+      if ($response [&quot;status&quot;] !== &quot;OK&quot;) {
+        header ( &quot;HTTP/1.0 500 Internal Server Error&quot; );
+        if (isset ( $response [&quot;error&quot;] )) {
+          echo (json_encode ( $response [&quot;error&quot;] ));
+        }
+      } else {
+        if (isset ( $response [&quot;response&quot;] )) {
+          if (isset ( $_SERVER [&quot;HTTP_ACCEPT_ENCODING&quot;] ) &amp;&amp; strpos ( $_SERVER [&quot;HTTP_ACCEPT_ENCODING&quot;], &quot;gzip&quot; ) !== false) {
+            header ( &quot;Content-Encoding: gzip&quot; );
+            $content = gzencode ( json_encode ( $response [&quot;response&quot;] ) );
+          } else {
+            $content = json_encode ( $response [&quot;response&quot;] );
+          }
+          header ( &quot;Vary: Accept-Encoding&quot; );
+          header ( &quot;Content-Length: &quot; . strlen ( $content ) );
+          echo ($content);
+        }
+      }
+    } else {
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+    }
+    exit ();
+  } else if ($_GET [&quot;suboperation&quot;] == &quot;update&quot;) {
+    if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+      header ( &quot;Content-Type: text/javascript; charset=utf-8&quot; );
+      header ( &quot;Access-Control-Allow-Origin: *&quot; );
+      header ( &quot;Access-Control-Allow-Headers: content-type&quot; );
+      $json_data = json_decode ( file_get_contents ( &quot;php://input&quot; ), true );
+      if ($json_data == null || json_last_error () !== JSON_ERROR_NONE) {
+        $response = array (
+            &quot;status&quot; =&gt; &quot;ERROR&quot;,
+            &quot;error&quot; =&gt; &quot;no valid json&quot; 
+        );
+        echo (json_encode ( $response ));
+      } else {
+        echo (json_encode ( $status-&gt;update ( $json_data [&quot;key&quot;] ) ));
+      }
+    } else {
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+    }
+    exit ();
+  } else {
+    if (! $authentication-&gt;accessWithAdminPrivileges ()) {
+      $authentication-&gt;logout ();
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;login&quot;, &quot;status&quot; ) );
+      exit ();
+    } else if (preg_match ( &quot;/^list([0-9]*)$/&quot;, $_GET [&quot;suboperation&quot;], $match )) {
+      $smarty-&gt;assign ( &quot;_statusType&quot;, &quot;list&quot; );
+      $page = intval ( $match [1] );
+      if (strtolower ( $_SERVER [&quot;REQUEST_METHOD&quot;] ) == &quot;post&quot;) {
+        if (isset ( $_POST [&quot;key&quot;] ) &amp;&amp; is_string ( $_POST [&quot;key&quot;] ) &amp;&amp; trim ( $_POST [&quot;key&quot;] ) != &quot;&quot;) {
+          $key = $_POST [&quot;key&quot;];
+          if (isset ( $_POST [&quot;action&quot;] ) &amp;&amp; is_string ( $_POST [&quot;action&quot;] ) &amp;&amp; trim ( $_POST [&quot;action&quot;] ) != &quot;&quot;) {
+            $action = $_POST [&quot;action&quot;];
+            if ($action == &quot;delete&quot;) {
+              $status-&gt;delete ( $key );
+              header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, &quot;list&quot; ) );
+              exit ();
+            } else if ($action == &quot;view&quot;) {
+              $smarty-&gt;assign ( &quot;_statusType&quot;, &quot;view&quot; );
+              $smarty-&gt;assign ( &quot;_statusData&quot;, $status-&gt;get ( $key ) );
+            } else {
+              header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, &quot;list&quot; ) );
+              exit ();
+            }
+          } else {
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, &quot;list&quot; ) );
+            exit ();
+          }
+        } else if (isset ( $_POST [&quot;action&quot;] ) &amp;&amp; is_string ( $_POST [&quot;action&quot;] )) {
+          if ($_POST [&quot;action&quot;] == &quot;clean&quot;) {
+            $status-&gt;clean ();
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+            exit ();
+          } else if ($_POST [&quot;action&quot;] == &quot;reset&quot;) {
+            $status-&gt;reset ();
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+            exit ();
+          } else {
+            header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+            exit ();
+          }
+        } else {
+          header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+          exit ();
+        }
+      } else {
+        $number = 100;
+        $smarty-&gt;assign ( &quot;_statusPage&quot;, $page );
+        $smarty-&gt;assign ( &quot;_statusNumber&quot;, $number );
+        $smarty-&gt;assign ( &quot;_statusTotal&quot;, $status-&gt;number () );
+        $smarty-&gt;assign ( &quot;_statusList&quot;, $status-&gt;getList ( $page * $number, $number ) );
+      }
+    } else {
+      header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;status&quot;, null ) );
+      exit ();
+    }
+  }
+} else {
+  if (! $authentication-&gt;accessWithAdminPrivileges ()) {
+    $authentication-&gt;logout ();
+    header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;login&quot;, &quot;status&quot; ) );
+  } else {
+    $smarty-&gt;assign ( &quot;_statusType&quot;, null );
+    $smarty-&gt;assign ( &quot;_statusTotal&quot;, $status-&gt;number () );
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

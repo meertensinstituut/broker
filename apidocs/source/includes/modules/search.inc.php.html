@@ -1,0 +1,151 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module search
+ * @package Broker
+ */
+if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+  header ( &quot;Content-Type: text/javascript; charset=utf-8&quot; );
+  header ( &quot;Access-Control-Allow-Origin: *&quot; );
+  header ( &quot;Access-Control-Allow-Headers: content-type&quot; );
+  $brokerRequest = file_get_contents ( &quot;php://input&quot; );
+  $response = array ();
+  $response [&quot;status&quot;] = &quot;ERROR&quot;;
+  try {
+    $parser = new \Broker\Parser ( $brokerRequest, $configuration, null, null, null );
+    header ( &quot;X-Broker-errors: &quot; . count ( $parser-&gt;getErrors () ) );
+    header ( &quot;X-Broker-warnings: &quot; . count ( $parser-&gt;getWarnings () ) );
+    header ( &quot;X-Broker-shards: &quot; . count ( $parser-&gt;getShards () ) );
+    header ( &quot;X-Broker-configuration: &quot; . urlencode ( $parser-&gt;getConfiguration () ) );
+    if (count ( $parser-&gt;getErrors () ) &gt; 0) {
+      header ( &quot;HTTP/1.0 400 Bad request&quot; );
+      $response [&quot;brokerErrors&quot;] = array (
+          &quot;data&quot; =&gt; $parser-&gt;getErrors () 
+      );
+      $response [&quot;solrStatus&quot;] = \Broker\Response::createSolrStatus ( &quot;broker&quot;, &quot;request couldn't be parsed by broker&quot; );
+      if (count ( $parser-&gt;getWarnings () ) &gt; 0) {
+        $response [&quot;brokerWarnings&quot;] = array (
+            &quot;data&quot; =&gt; $parser-&gt;getWarnings () 
+        );
+      }
+      echo json_encode ( $response );
+    } else {
+      $collectionIds = $parser-&gt;getCollectionIds ();
+      if (count ( $collectionIds ) &gt; 0) {
+        $collection = $parser-&gt;getCollection ();
+        foreach ( $collectionIds as $collectionId ) {
+          $checkInfo = $collection-&gt;check ( $collectionId );
+          if (! $checkInfo) {
+            $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; not found&quot;;
+            return $response;
+          } else if (! $checkInfo [&quot;initialised&quot;]) {
+            $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; not initialised&quot;;
+            return $response;
+          } else if ($checkInfo [&quot;check&quot;]) {
+            if (! $collection-&gt;doCheck ( $collectionId )) {
+              $response [&quot;error&quot;] = &quot;collection &quot; . $collectionId . &quot; couldn't be checked&quot;;
+              return $response;
+            }
+          }
+        }
+      }
+      try {
+        $solr = new \Broker\Solr ( $parser-&gt;getConfiguration (), $parser-&gt;getUrl (), &quot;select&quot;, $parser-&gt;getRequest (), $parser-&gt;getShards () != null ? implode ( &quot;,&quot;, $parser-&gt;getShards () ) : null, $parser-&gt;getCache () );
+        $solrResponse = $solr-&gt;getResponse ();
+        if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+          if (isset ( $solrResponse-&gt;error )) {
+            $response [&quot;error&quot;] = $solrResponse-&gt;error;
+          } else if (isset ( $solrResponse-&gt;response )) {
+            $response [&quot;status&quot;] = &quot;OK&quot;;
+            $response [&quot;response&quot;] = clone $solrResponse;
+            $response = (new \Broker\Response ( $response, $parser-&gt;getResponseJoins (), $configuration, $parser-&gt;getCache (), null ))-&gt;process ();
+          } else {
+            $response [&quot;error&quot;] = $solrResponse;
+          }
+        } else {
+          $response [&quot;error&quot;] = $solrResponse;
+        }
+      } catch ( \Broker\SolrException $se ) {
+        $response [&quot;error&quot;] = $se-&gt;getMessage ();
+      } catch ( \Exception $e ) {
+        $response [&quot;error&quot;] = $solr-&gt;getResponse ();
+      }
+      if ($response [&quot;status&quot;] !== &quot;OK&quot;) {
+        header ( &quot;HTTP/1.0 500 Internal Server Error&quot; );
+        header ( &quot;X-Broker-errors: &quot; . (count ( $parser-&gt;getErrors () ) + 1) );
+        $response [&quot;solrStatus&quot;] = \Broker\Response::createSolrStatus ( &quot;broker&quot;, &quot;request parsed by broker&quot; );
+        if (count ( $parser-&gt;getWarnings () ) &gt; 0) {
+          $response [&quot;brokerWarnings&quot;] = array (
+              &quot;data&quot; =&gt; $parser-&gt;getWarnings () 
+          );
+        }
+        echo json_encode ( $response );
+      } else {
+        if (isset ( $response [&quot;response&quot;] )) {
+          if (isset ( $_SERVER [&quot;HTTP_ACCEPT_ENCODING&quot;] ) &amp;&amp; strpos ( $_SERVER [&quot;HTTP_ACCEPT_ENCODING&quot;], &quot;gzip&quot; ) !== false) {
+            header ( &quot;Content-Encoding: gzip&quot; );
+            $content = gzencode ( json_encode ( $response [&quot;response&quot;] ) );
+          } else {
+            $content = json_encode ( $response [&quot;response&quot;] );
+          }
+          header ( &quot;Vary: Accept-Encoding&quot; );
+          header ( &quot;Content-Length: &quot; . strlen ( $content ) );
+          echo $content;
+        }
+      }
+    }
+  } catch ( Exception $e ) {
+    header ( &quot;HTTP/1.0 400 Bad request&quot; );
+    $response [&quot;brokerErrors&quot;] = array (
+        &quot;data&quot; =&gt; $e-&gt;getMessage () 
+    );
+    $response [&quot;solrStatus&quot;] = \Broker\Response::createSolrStatus ( &quot;broker&quot;, &quot;request couldn't be parsed by broker&quot; );
+    echo json_encode ( $response );
+  }
+  exit ();
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

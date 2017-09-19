@@ -1,0 +1,316 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Cache
+ */
+class Cache {
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration;
+  /**
+   * Lifetime
+   *
+   * @var number
+   */
+  private $lifetime = 3000;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   * @param unknown $configuration          
+   */
+  public function __construct($directory, $configuration) {
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;cache&quot; );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . &quot;collection&quot;;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;cache&quot; );
+      }
+    }
+    $this-&gt;configuration = $configuration;
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ();
+  }
+  /**
+   * Init
+   */
+  private function init() {
+    $sql = &quot;CREATE TABLE IF NOT EXISTS \&quot;cache\&quot; (
+          \&quot;id\&quot; INTEGER PRIMARY KEY ASC,
+          \&quot;hash\&quot; TEXT NOT NULL,
+          \&quot;configuration\&quot; TEXT NULL,
+          \&quot;url\&quot; TEXT NOT NULL,
+          \&quot;request\&quot; TEXT NOT NULL,
+          \&quot;response\&quot; TEXT NOT NULL,
+          \&quot;numberOfChecks\&quot; INTEGER,
+          \&quot;created\&quot; TEXT NOT NULL,
+          \&quot;used\&quot; TEXT NOT NULL,          
+          \&quot;expires\&quot; TEXT NOT NULL,
+          UNIQUE(\&quot;hash\&quot;));&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Create
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @param unknown $response          
+   */
+  public function create($configuration, $url, $request, $response) {
+    $this-&gt;clean ();
+    // hash
+    $hash = $this-&gt;createHash ( $configuration, $url, $request );
+    // delete
+    $sql = &quot;DELETE FROM \&quot;cache\&quot; WHERE hash IS :hash;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;execute ();
+    unset ( $query );
+    // insert
+    $sql = &quot;INSERT OR IGNORE INTO \&quot;cache\&quot;
+    (hash, configuration, url, request, response, numberOfChecks, created, used, expires)
+    VALUES (:hash, :configuration, :url, :request, :response, 1, datetime('now'), datetime('now'), datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes'))&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:configuration&quot;, $configuration );
+    $query-&gt;bindValue ( &quot;:url&quot;, $url );
+    $query-&gt;bindValue ( &quot;:request&quot;, $request );
+    $query-&gt;bindValue ( &quot;:response&quot;, $response );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Get
+   *
+   * @param string $hash          
+   * @return array
+   */
+  public function get($hash) {
+    $sql = &quot;SELECT    
+    id, hash, configuration, url, request, response, numberOfChecks,
+    datetime(created, 'localtime') as created,
+    datetime(used, 'localtime') as used,
+    datetime(expires, 'localtime') as expires
+    FROM \&quot;cache\&quot;
+    WHERE hash IS :hash&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      return $result;
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Check
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @return array
+   */
+  public function check($configuration, $url, $request) {
+    $this-&gt;clean ();
+    // hash
+    $hash = $this-&gt;createHash ( $configuration, $url, $request );
+    // get info
+    $sql = &quot;SELECT
+        id, response
+    FROM \&quot;cache\&quot;
+    WHERE hash IS :hash
+    AND configuration IS :configuration
+    AND url IS :url
+    AND request IS :request;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
+    $query-&gt;bindValue ( &quot;:configuration&quot;, $configuration );
+    $query-&gt;bindValue ( &quot;:url&quot;, $url );
+    $query-&gt;bindValue ( &quot;:request&quot;, $request );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result &amp;&amp; $result [&quot;id&quot;]) {
+        // update
+        $sql = &quot;UPDATE \&quot;cache\&quot; SET
+          numberOfChecks = numberOfChecks + 1,    
+          used = datetime('now'),   
+          expires = datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes')          
+        WHERE id IS :id;&quot;;
+        $query = $this-&gt;database-&gt;prepare ( $sql );
+        $query-&gt;bindValue ( &quot;:id&quot;, $result [&quot;id&quot;] );
+        $query-&gt;execute ();
+        unset ( $query );
+        // return response
+        return array (
+            $result [&quot;id&quot;],
+            $result [&quot;response&quot;] 
+        );
+      } else {
+        return array (
+            null,
+            null 
+        );
+      }
+    } else {
+      return array (
+          null,
+          null 
+      );
+    }
+  }
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+      FROM \&quot;cache\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * Get list
+   *
+   * @param number $start          
+   * @param number $number          
+   * @return array
+   */
+  public function getList($start, $number) {
+    $sql = &quot;SELECT    
+        id, hash, configuration, numberOfChecks,
+        datetime(created, 'localtime') as created,
+        datetime(used, 'localtime') as used,
+        datetime(expires, 'localtime') as expires
+    FROM \&quot;cache\&quot;
+    ORDER BY expires DESC
+    LIMIT :start,:number;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;bindValue ( &quot;:start&quot;, $start );
+    $query-&gt;bindValue ( &quot;:number&quot;, $number );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetchAll ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return ( array ) $result;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Clean
+   */
+  public function clean() {
+    $sql = &quot;DELETE FROM \&quot;cache\&quot; WHERE expires &lt; datetime('now');&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;cache\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    unset ( $query );
+    $this-&gt;init ();
+  }
+  /**
+   * Create hash
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @return string
+   */
+  private static function createHash($configuration, $url, $request) {
+    $base = trim ( $configuration ) . &quot;\n&quot; . trim ( $url ) . &quot;\n&quot; . trim ( $request );
+    return hash ( &quot;md5&quot;, $base );
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

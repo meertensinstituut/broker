@@ -1,0 +1,157 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Handles solr requests
+ */
+class Solr {
+  /**
+   * Request
+   *
+   * @var string
+   */
+  private $request = null;
+  /**
+   * Handler
+   *
+   * @var string
+   */
+  private $handler = null;
+  /**
+   * Url
+   *
+   * @var string
+   */
+  private $url = null;
+  /**
+   * Shards
+   *
+   * @var array
+   */
+  private $shards = null;
+  /**
+   * Cache
+   *
+   * @var \Broker\Cache
+   */
+  private $cache = null;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  private $configuration = null;
+  /**
+   * Constructor
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $handler          
+   * @param string $request          
+   * @param array $shards          
+   * @param \Broker\Cache $cache          
+   */
+  public function __construct($configuration, $url, $handler, $request, $shards, $cache) {
+    $this-&gt;request = $request;
+    $this-&gt;handler = $handler;
+    $this-&gt;url = $url;
+    $this-&gt;shards = $shards;
+    $this-&gt;cache = $cache;
+    $this-&gt;configuration = $configuration;
+  }
+  /**
+   * Perform request and return response object
+   *
+   * @return unknown
+   * @throws \Broker\SolrException
+   */
+  public function getResponse() {
+    $finalRequest = $this-&gt;request;
+    if ($this-&gt;shards != null) {
+      $finalRequest = ($finalRequest ? $finalRequest . &quot;&amp;&quot; : &quot;&quot;) . &quot;shards=&quot; . urlencode ( $this-&gt;shards );
+    }
+    if ($this-&gt;cache != null) {
+      list ( $id, $response ) = $this-&gt;cache-&gt;check ( $this-&gt;configuration, $this-&gt;url . $this-&gt;handler . &quot;/&quot;, $finalRequest );
+      if ($id &amp;&amp; $response) {
+        if ($data = json_decode ( $response )) {
+          return $data;
+        } else {
+          $this-&gt;cache-&gt;del ( $id );
+        }
+      }
+    }
+    $ch = curl_init ( $this-&gt;url . $this-&gt;handler . &quot;/&quot; );
+    $options = array (
+        CURLOPT_HTTPHEADER =&gt; array (
+            &quot;Content-Type: application/x-www-form-urlencoded; charset=utf-8&quot; 
+        ),
+        CURLOPT_RETURNTRANSFER =&gt; true,
+        CURLOPT_POST =&gt; true,
+        CURLOPT_POSTFIELDS =&gt; $finalRequest 
+    );
+    curl_setopt_array ( $ch, $options );
+    $result = curl_exec ( $ch );
+    
+    if (($data = json_decode ( $result ))) {
+      // cache
+      if ($this-&gt;cache != null &amp;&amp; ! isset ( $data-&gt;error )) {
+        $this-&gt;cache-&gt;create ( $this-&gt;configuration, $this-&gt;url . $this-&gt;handler . &quot;/&quot;, $finalRequest, $result );
+      }
+      // return data
+      return $data;
+    } else {
+      throw new \Broker\SolrException ( &quot;No valid json from &quot; . $this-&gt;url, 500 );
+    }
+  }
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>
