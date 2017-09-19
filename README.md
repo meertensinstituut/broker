@@ -1,6 +1,6 @@
 # Broker
 
-<!-- See [meertensinstituut.github.io/broker/](https://meertensinstituut.github.io/broker/) for more documentation and instructions.-->
+See [meertensinstituut.github.io/broker/](https://meertensinstituut.github.io/broker/) for more documentation and instructions.
 
 A Docker image is available. To build and run
 
