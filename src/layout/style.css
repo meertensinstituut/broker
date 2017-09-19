@@ -526,4 +526,7 @@ div#content div.info button {
   height: 25px;
 }
 
+div#content div.info input.text {
+	min-width: 80%;
+}
 

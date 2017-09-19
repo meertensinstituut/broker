@@ -110,28 +110,32 @@
         No <em>config.inc.php</em> found in <em>{$_SITE_ROOT_DIR|escape:html}config/</em>
       </div>
       
+      <br />
+      
       <form action="" method="post">
       
       <b>Solr</b>
       <div class="info">  
         <table>
           <tr>
-            <td><input name="solrUrl" placeholder="url solr" type="url" required="true" /></td>
+            <td><input class="text" name="solrUrl" placeholder="url solr" type="url" required="true" /></td>
           </tr>          
         </table>
       </div>
+      
+      <br />
       
       <b>Administrator</b>
       <div class="info">  
         <table>
           <tr>
-            <td><input name="adminName" placeholder="name" required="true" /></td>
+            <td><input class="text" name="adminName" placeholder="name" required="true" /></td>
           </tr>
           <tr>
-            <td><input name="login" placeholder="login" required="true" /></td>
+            <td><input class="text" name="login" placeholder="login" required="true" /></td>
           </tr>
           <tr>
-            <td><input name="password" placeholder="password" required="true" /></td>
+            <td><input class="text" name="password" placeholder="password" required="true" /></td>
           </tr>
         </table>
       </div>         
