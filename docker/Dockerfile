@@ -22,16 +22,15 @@ RUN service apache2 stop && \
     rm -rf /var/www/html/* && \
     printf "echo\n" >> /start.sh && \
     printf "echo \"=============================== BROKER ================================\"\n" >> /start.sh && \
-    printf "echo \"  Timestamp ${timestamp}\"\n" >> /start.sh && \
     printf "echo \"  See https://meertensinstituut.github.io/broker/ for more information\"\n" >> /start.sh && \
     printf "echo \"=======================================================================\"\n" >> /start.sh && \
     printf "echo\n" >> /start.sh && \
     printf "service apache2 start\n" >> /start.sh && \
     chmod 755 /start.sh
     
-RUN svn export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html/broker && \
-    chmod 777 /var/www/html/broker/cache && \
-    composer install -d /var/www/html/broker/
+RUN svn export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html && \
+    chmod 777 /var/www/html/cache && \
+    composer install -d /var/www/html/
     
 
 CMD bash -C '/start.sh'; 'bash'

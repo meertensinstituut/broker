@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Main index.php
+ * @package Broker
+ */
 // settings
 require_once ("includes/defaults.inc.php");
 if(!file_exists(SITE_ROOT_DIR . "vendor/autoload.php")) {

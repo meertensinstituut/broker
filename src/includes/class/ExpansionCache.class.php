@@ -1,10 +1,32 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
+/**
+ * Cache for expansion modules
+ */
 class ExpansionCache {
+  /**
+   * Lifetime
+   *
+   * @var number
+   */
   private $lifetime = 3000;
+  /**
+   * Filename
+   *
+   * @var string
+   */
   private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   */
   public function __construct($directory) {
     if (file_exists ( $directory ) && is_file ( $directory )) {
       $this->filename = $directory;
@@ -19,9 +41,12 @@ class ExpansionCache {
     }
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $this->init ();
   }
+  /**
+   * Initialize
+   */
   private function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"expansion\" (
           \"id\" INTEGER PRIMARY KEY ASC,
@@ -35,15 +60,23 @@ class ExpansionCache {
           \"used\" TEXT NOT NULL,          
           \"expires\" TEXT NOT NULL,
           UNIQUE(\"hash\"));";
-    $query = $this->database->prepare ( $sql );    
+    $query = $this->database->prepare ( $sql );
     $query->execute ();
-    unset ( $query );    
+    unset ( $query );
   }
+  /**
+   * Create
+   *
+   * @param string $module          
+   * @param string|array $value          
+   * @param unknown $parameters          
+   * @param unknown $result          
+   */
   public function create(string $module, $value, $parameters, $result) {
     $this->clean ();
-    $value = is_null($value)?"":serialize($value);
-    $parameters = is_null($parameters)?"":serialize($parameters);
-    $result = is_null($result)?"":serialize($result);
+    $value = is_null ( $value ) ? "" : serialize ( $value );
+    $parameters = is_null ( $parameters ) ? "" : serialize ( $parameters );
+    $result = is_null ( $result ) ? "" : serialize ( $result );
     // hash
     $hash = $this->createHash ( $module, $value, $parameters );
     // delete
@@ -55,7 +88,7 @@ class ExpansionCache {
     // insert
     $sql = "INSERT OR IGNORE INTO \"expansion\"
     (hash, module, value, parameters, result, numberOfChecks, created, used, expires)
-    VALUES (:hash, :module, :value, :parameters, :result, 1, datetime('now'), datetime('now'), datetime('now', '+".intval($this->lifetime)." minutes'))";
+    VALUES (:hash, :module, :value, :parameters, :result, 1, datetime('now'), datetime('now'), datetime('now', '+" . intval ( $this->lifetime ) . " minutes'))";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":hash", $hash );
     $query->bindValue ( ":module", $module );
@@ -65,6 +98,12 @@ class ExpansionCache {
     $query->execute ();
     unset ( $query );
   }
+  /**
+   * Get
+   *
+   * @param string $hash          
+   * @return unknown
+   */
   public function get($hash) {
     $sql = "SELECT
     id, hash, module, value, parameters, result, numberOfChecks,
@@ -83,17 +122,30 @@ class ExpansionCache {
       return null;
     }
   }
-  public function delete(string $hash) {
+  /**
+   * Delete
+   *
+   * @param string $hash          
+   */
+  public function delete($hash) {
     $sql = "DELETE FROM \"expansion\" WHERE hash IS :hash;";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":hash", $hash );
     $query->execute ();
-    unset($query);
+    unset ( $query );
   }
-  public function check(string $module, $value, $parameters): array {
+  /**
+   * Check
+   *
+   * @param string $module          
+   * @param string|array $value          
+   * @param unknown $parameters          
+   * @return array
+   */
+  public function check($module, $value, $parameters) {
     $this->clean ();
-    $value = is_null($value)?"":serialize($value);
-    $parameters = is_null($parameters)?"":serialize($parameters);
+    $value = is_null ( $value ) ? "" : serialize ( $value );
+    $parameters = is_null ( $parameters ) ? "" : serialize ( $parameters );
     // hash
     $hash = $this->createHash ( $module, $value, $parameters );
     // get info
@@ -112,32 +164,46 @@ class ExpansionCache {
     if ($query->execute ()) {
       $result = $query->fetch ( \PDO::FETCH_ASSOC );
       unset ( $query );
-      if ($result && $result["id"]) {
+      if ($result && $result ["id"]) {
         // update
         $sql = "UPDATE \"expansion\" SET
           numberOfChecks = numberOfChecks + 1,    
           used = datetime('now'),   
-          expires = datetime('now', '+".intval($this->lifetime)." minutes')          
+          expires = datetime('now', '+" . intval ( $this->lifetime ) . " minutes')          
         WHERE id IS :id;";
         $query = $this->database->prepare ( $sql );
-        $query->bindValue ( ":id", $result["id"] );
+        $query->bindValue ( ":id", $result ["id"] );
         $query->execute ();
         unset ( $query );
-        //return response        
-        if($result["result"]) {
-          $result["result"] = unserialize($result["result"]);
+        // return response
+        if ($result ["result"]) {
+          $result ["result"] = unserialize ( $result ["result"] );
         } else {
-          $result["result"] = null;
+          $result ["result"] = null;
         }
-        return array($result["id"], $result["result"]);
+        return array (
+            $result ["id"],
+            $result ["result"] 
+        );
       } else {
-        return array(null, null);
+        return array (
+            null,
+            null 
+        );
       }
     } else {
-      return array(null, null);
+      return array (
+          null,
+          null 
+      );
     }
   }
-  public function number(): int {
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
     $sql = "SELECT COUNT(*) AS number
     FROM \"expansion\";";
     $query = $this->database->prepare ( $sql );
@@ -153,7 +219,14 @@ class ExpansionCache {
       return 0;
     }
   }
-  public function list(int $start, int $number) {
+  /**
+   * Get list
+   *
+   * @param int $start          
+   * @param int $number          
+   * @return array
+   */
+  public function getList($start, $number) {
     $sql = "SELECT
         id, hash, module, value, parameters, numberOfChecks,
         datetime(created, 'localtime') as created,
@@ -177,12 +250,18 @@ class ExpansionCache {
       return null;
     }
   }
+  /**
+   * Clean
+   */
   public function clean() {
     $sql = "DELETE FROM \"expansion\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
-    unset ( $query );        
+    unset ( $query );
   }
+  /**
+   * Reset
+   */
   public function reset() {
     $sql = "DROP TABLE IF EXISTS \"expansion\";";
     $query = $this->database->prepare ( $sql );
@@ -190,7 +269,15 @@ class ExpansionCache {
     unset ( $query );
     $this->init ();
   }
-  private static function createHash(string $module, string $value, string $parameters): string {
+  /**
+   * Create hash
+   *
+   * @param string $module          
+   * @param string $value          
+   * @param string $parameters          
+   * @return string
+   */
+  private static function createHash($module, $value, $parameters) {
     $base = trim ( $module ) . "\n" . trim ( $value ) . "\n" . trim ( $parameters );
     return hash ( "md5", $base );
   }

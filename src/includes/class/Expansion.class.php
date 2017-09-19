@@ -1,12 +1,50 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
-interface Expansion { 
+/**
+ * Interface for expansion modules
+ */
+interface Expansion {
+  /**
+   * Constructor
+   *
+   * @param string|array $value          
+   * @param unknown $configuration          
+   */
   public function __construct($value, $configuration);
-  public static function cached() : bool;
-  public static function description() : string;
-  public static function parameters() : array;
-  public function getValues(): array;  
+  /**
+   * Check cache status
+   *
+   * @return boolean
+   */
+  public static function cached();
+  /**
+   * Description
+   *
+   * @return string
+   */
+  public static function description();
+  /**
+   * Parameters
+   *
+   * @return array
+   */
+  public static function parameters();
+  /**
+   * Get values
+   *
+   * @return array
+   */
+  public function getValues();
+  /**
+   * Get errors
+   *
+   * @return array
+   */
   public function getErrors();
 }

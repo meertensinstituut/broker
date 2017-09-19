@@ -1,33 +1,70 @@
 <?php 
-
+/**
+ * Broker expansion
+ * @package Broker
+ * @subpackage Expansion
+ */
 namespace BrokerExpansion;
 
+/**
+ * IdentityExpansion
+ */
 class IdentityExpansion implements \Broker\Expansion {
   
+  /**
+   * Value
+   * @var string|array
+   */
   private $value;
+  /**
+   * Configuration
+   * @var unknown
+   */
   private $configuration;
-    
+  
+  /**
+   * IdentityExpansion
+   * @param string|array $value
+   * @param unknown $configuration
+   */
   public function __construct($value, $configuration) {
     $this->value = $value;
     $this->configuration = $configuration;
   }
-  
-  public static function cached() : bool {
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::cached()
+   */
+  public static function cached()  {
     return false;
   }
-  
-  public static function description() : string {
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::description()
+   */
+  public static function description() {
     return "expansion returning only the provided value for test purposes";
   }
-
-  public static function parameters() : array {
+  /**
+   * {@inheritDoc}
+   * @see \Broker\Expansion::parameters()
+   */
+  public static function parameters() {
     return array();
   }
-  
-  public function getValues(): array {
+  /**
+   * 
+   * {@inheritDoc}
+   * @see \Broker\Expansion::getValues()
+   */
+  public function getValues() {
     return array($this->value);      
   }
-  
+  /**
+   * 
+   * {@inheritDoc}
+   * @see \Broker\Expansion::getErrors()
+   */
   public function getErrors() {
     return null;
   }

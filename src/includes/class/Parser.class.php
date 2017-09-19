@@ -1,23 +1,115 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
+/**
+ * Parser json request
+ */
 class Parser {
+  /**
+   * Request to broker
+   *
+   * @var string
+   */
   private $brokerRequest = null;
+  /**
+   * Url solr
+   *
+   * @var string
+   */
   private $solrUrl = null;
+  /**
+   * Solr shards
+   *
+   * @var array
+   */
   private $solrShards = null;
+  /**
+   * Solr request
+   *
+   * @var string
+   */
   private $solrRequest = null;
+  /**
+   * Solr configuration
+   *
+   * @var string
+   */
   private $solrConfiguration = null;
+  /**
+   * Collection ids
+   *
+   * @var array
+   */
   private $collectionIds = array ();
+  /**
+   * Response joins
+   *
+   * @var array
+   */
   private $responseJoins = null;
+  /**
+   * Warnings
+   *
+   * @var array
+   */
   private $warnings = array ();
+  /**
+   * Errors
+   *
+   * @var errors
+   */
   private $errors = array ();
+  /**
+   * Cache
+   *
+   * @var \Broker\Cache
+   */
   private $cache = null;
+  /**
+   * Cache enables
+   *
+   * @var boolean
+   */
   private $cacheEnabled = true;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
   private $configuration = null;
+  /**
+   * Expansion cache
+   *
+   * @var \Broker\ExpansionCache
+   */
   private $expansionCache = null;
+  /**
+   * Configurations
+   *
+   * @var array
+   */
   private $__configurations = array ();
+  /**
+   * Collection
+   *
+   * @var \Broker\Collection
+   */
   private $collection = null;
+  /**
+   * Constructor
+   *
+   * @param unknown $request          
+   * @param array $configuration          
+   * @param \Broker\Cache $cache          
+   * @param \Broker\Collection $collection          
+   * @param \Broker\ExpansionCache $expansionCache          
+   * @throws \Exception
+   */
   public function __construct($request, $configuration, $cache, $collection, $expansionCache) {
     if ($collection != null) {
       $this->collection = $collection;
@@ -32,6 +124,11 @@ class Parser {
       throw new \Exception ( "Could not parse request: invalid or empty json" );
     }
   }
+  /**
+   * Get solr request
+   *
+   * @return string
+   */
   public function getRequest() {
     if (count ( $this->errors ) == 0) {
       return $this->solrRequest;
@@ -39,6 +136,11 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Get solr url
+   *
+   * @return string
+   */
   public function getUrl() {
     if (count ( $this->errors ) == 0) {
       return $this->solrUrl;
@@ -46,12 +148,22 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Get (or create) cache
+   *
+   * @return \Broker\Cache
+   */
   public function getCache() {
     if ($this->cache == null && $this->cacheEnabled) {
       $this->cache = new \Broker\Cache ( SITE_CACHE_DATABASE_DIR, $this->configuration );
     }
     return $this->cache;
   }
+  /**
+   * Get shards
+   *
+   * @return array
+   */
   public function getShards() {
     if (count ( $this->errors ) == 0) {
       return $this->solrShards;
@@ -59,6 +171,11 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Get solr configuration
+   *
+   * @return array
+   */
   public function getConfiguration() {
     if (count ( $this->errors ) == 0) {
       return $this->solrConfiguration;
@@ -66,24 +183,52 @@ class Parser {
       return null;
     }
   }
-  public function getErrors(): array {
+  /**
+   * Get errors
+   *
+   * @return array
+   */
+  public function getErrors() {
     return $this->errors;
   }
-  public function getWarnings(): array {
+  /**
+   * Get warnings
+   *
+   * @return array
+   */
+  public function getWarnings() {
     return $this->warnings;
   }
+  /**
+   * Get (or create) collection
+   *
+   * @return \Broker\Collection
+   */
   public function getCollection() {
     if ($this->collection == null) {
       $this->collection = new \Broker\Collection ( SITE_CACHE_DATABASE_DIR, $this->configuration );
     }
     return $this->collection;
   }
-  public function getCollectionIds(): array {
+  /**
+   * Get collection ids
+   *
+   * @return array
+   */
+  public function getCollectionIds() {
     return $this->collectionIds;
   }
-  public function getResponseJoins(): \stdClass {
+  /**
+   * Get response joins
+   *
+   * @return unknown
+   */
+  public function getResponseJoins() {
     return $this->responseJoins;
   }
+  /**
+   * parse
+   */
   private function parse() {
     $this->solrConfiguration = null;
     $__facetQueries = array ();
@@ -180,6 +325,12 @@ class Parser {
     $requestList [] = "echoParams=none";
     $this->solrRequest = implode ( "&", $requestList );
   }
+  /**
+   * Check cache in request
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkCache($object) {
     if (is_bool ( $object )) {
       $this->cacheEnabled = $object;
@@ -189,6 +340,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check debug in request
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkDebug($object) {
     if ($object && is_string ( $object )) {
       return $object;
@@ -197,6 +354,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check sort in request
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkSort($object) {
     if ($object && is_array ( $object ) && count ( $object ) > 0) {
       for($i = 0; $i < count ( $object ); $i ++) {
@@ -208,6 +371,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check sortItem in sort
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkSortitem($object) {
     if ($object && is_object ( $object )) {
       if (isset ( $object->field ) && is_string ( $object->field )) {
@@ -243,6 +412,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check response in request
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponse($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -264,6 +439,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check documents in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseDocuments($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -322,6 +503,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check documents join in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseDocumentsJoin($object) {
     if (is_object ( $object ) && isset ( $object->type ) && is_string ( $object->type ) && $object->type == "join") {
       if (! isset ( $object->name ) || ! is_string ( $object->name )) {
@@ -362,6 +549,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check facets in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseFacets($object) {
     if (($object && is_object ( $object ))) {
       $facetFieldKeyList = array ();
@@ -442,7 +635,13 @@ class Parser {
       return null;
     }
   }
-  private function checkResponseFacetFields(array $facetfields, array $keyList) {
+  /**
+   * Check facet fields in response
+   *
+   * @param array $facetfields          
+   * @param array $keyList          
+   */
+  private function checkResponseFacetFields($facetfields, $keyList) {
     if (count ( $facetfields ) > 0) {
       for($i = 0; $i < count ( $facetfields ); $i ++) {
         list ( $facetfields [$i], $keyList ) = $this->checkResponseFacetField ( $facetfields [$i], $keyList );
@@ -453,7 +652,14 @@ class Parser {
         $keyList 
     );
   }
-  private function checkResponseFacetField($object, $keyList): array {
+  /**
+   * Check facet field
+   *
+   * @param unknown $object          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetField($object, $keyList) {
     if ($object && is_object ( $object )) {
       if (isset ( $object->field ) && is_string ( $object->field )) {
         $configurations = $this->getConfigurationsForField ( $object->field );
@@ -575,6 +781,12 @@ class Parser {
       );
     }
   }
+  /**
+   * Check join facet field
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseFacetFieldJoin($object) {
     if (is_object ( $object )) {
       if (! isset ( $object->to ) || ! is_string ( $object->to )) {
@@ -606,7 +818,14 @@ class Parser {
       return null;
     }
   }
-  private function checkResponseFacetQueries(array $facetqueries, array $keyList) {
+  /**
+   * Check facet queries
+   *
+   * @param array $facetqueries          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetQueries($facetqueries, $keyList) {
     if (count ( $facetqueries ) > 0) {
       for($i = 0; $i < count ( $facetqueries ); $i ++) {
         list ( $facetqueries [$i], $keyList ) = $this->checkResponseFacetQuery ( $facetqueries [$i], $keyList );
@@ -617,7 +836,14 @@ class Parser {
         $keyList 
     );
   }
-  private function checkResponseFacetQuery($object, $keyList): array {
+  /**
+   * Check facet query
+   *
+   * @param unknown $object          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetQuery($object, $keyList) {
     if ($object && is_object ( $object )) {
       // generated
       if (isset ( $object->__query ) && $object->__query && is_string ( $object->__query )) {
@@ -704,7 +930,14 @@ class Parser {
       );
     }
   }
-  private function checkResponseFacetRanges(array $facetranges, array $keyList) {
+  /**
+   * Check facet ranges
+   *
+   * @param array $facetranges          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetRanges($facetranges, $keyList) {
     if (count ( $facetranges ) > 0) {
       for($i = 0; $i < count ( $facetranges ); $i ++) {
         list ( $facetranges [$i], $keyList ) = $this->checkResponseFacetRange ( $facetranges [$i], $keyList );
@@ -715,7 +948,14 @@ class Parser {
         $keyList 
     );
   }
-  private function checkResponseFacetRange($object, $keyList): array {
+  /**
+   * Check facet range
+   *
+   * @param unknown $object          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetRange($object, $keyList) {
     if ($object && is_object ( $object )) {
       if (isset ( $object->field ) && is_string ( $object->field )) {
         $configurations = $this->getConfigurationsForField ( $object->field );
@@ -831,7 +1071,14 @@ class Parser {
       );
     }
   }
-  private function checkResponseFacetPivots(array $facetpivots, array $keyList) {
+  /**
+   * Check facet pivots
+   *
+   * @param array $facetpivots          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetPivots($facetpivots, $keyList) {
     if (count ( $facetpivots ) > 0) {
       for($i = 0; $i < count ( $facetpivots ); $i ++) {
         list ( $facetpivots [$i], $keyList ) = $this->checkResponseFacetPivot ( $facetpivots [$i], $keyList );
@@ -842,7 +1089,14 @@ class Parser {
         $keyList 
     );
   }
-  private function checkResponseFacetPivot($object, $keyList): array {
+  /**
+   * Check facet pivot
+   *
+   * @param unknown $object          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseFacetPivot($object, $keyList) {
     if ($object && is_object ( $object )) {
       if (isset ( $object->pivot ) && is_array ( $object->pivot )) {
         if (isset ( $object->__options )) {
@@ -966,6 +1220,12 @@ class Parser {
       );
     }
   }
+  /**
+   * Check stats in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseStats($object) {
     if ($object && is_object ( $object )) {
       $statsFieldKeyList = array ();
@@ -987,7 +1247,14 @@ class Parser {
       return null;
     }
   }
-  private function checkResponseStatsFields(array $statsfields, array $keyList) {
+  /**
+   * Check stats fields in response
+   *
+   * @param array $statsfields          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseStatsFields($statsfields, $keyList) {
     if (count ( $statsfields ) > 0) {
       for($i = 0; $i < count ( $statsfields ); $i ++) {
         list ( $statsfields [$i], $keyList ) = $this->checkResponseStatsField ( $statsfields [$i], $keyList );
@@ -998,7 +1265,14 @@ class Parser {
         $keyList 
     );
   }
-  private function checkResponseStatsField($object, $keyList): array {
+  /**
+   * Check stats field
+   *
+   * @param unknown $object          
+   * @param array $keyList          
+   * @return array
+   */
+  private function checkResponseStatsField($object, $keyList) {
     if ($object && is_object ( $object )) {
       if (isset ( $object->field ) && is_string ( $object->field )) {
         if (isset ( $object->__options )) {
@@ -1092,6 +1366,12 @@ class Parser {
       );
     }
   }
+  /**
+   * Check mtas in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtas($object) {
     if (($object && is_object ( $object ))) {
       foreach ( $object as $key => $value ) {
@@ -1175,6 +1455,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasStats($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1215,6 +1501,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats positions
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasStatsPositions($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1252,6 +1544,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats tokens
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasStatsTokens($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1289,6 +1587,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats spans
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasStatsSpans($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1345,6 +1649,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas documents
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasDocument($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1400,6 +1710,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas kwic and list
+   *
+   * @param string $type          
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasKwicAndList($type, $object) {
     if ($type != "list" && $type != "kwic") {
       die ( "incorrect call" );
@@ -1449,6 +1766,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas termvector
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasTermvector($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1525,6 +1848,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas facet
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasFacet($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1580,6 +1909,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas group
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasGroup($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1598,7 +1933,7 @@ class Parser {
           if (! is_string ( $value )) {
             $this->errors [] = "mtas - group - {$key} should be string";
           }
-        } else if ($key == "number" || $key=="start") {
+        } else if ($key == "number" || $key == "start") {
           if (! is_int ( $value )) {
             $this->errors [] = "mtas - group - {$key} should be integer";
           }
@@ -1626,11 +1961,11 @@ class Parser {
                         $this->errors [] = "mtas - group - {$key} - {$subKey} - {$subSubKey} should be non empty array";
                       } else {
                         for($i = 0; $i < count ( $subSubValue ); $i ++) {
-                          if(!is_object($subSubValue[$i])) {
+                          if (! is_object ( $subSubValue [$i] )) {
                             $this->errors [] = "mtas - group - {$key} - {$subKey} - {$subSubKey}[{$i}] should be an object";
-                          } else if (! isset ( $subSubValue[$i]->prefixes ) || ! is_string ( $subSubValue[$i]->prefixes )) {
+                          } else if (! isset ( $subSubValue [$i]->prefixes ) || ! is_string ( $subSubValue [$i]->prefixes )) {
                             $this->errors [] = "mtas - group - {$key} - {$subKey} - {$subSubKey}[{$i}] - prefixes should be defined (as string)";
-                          } else if (! isset ( $subSubValue[$i]->position ) || (! is_string ( $subSubValue[$i]->position ) && ! is_int ( $subSubValue[$i]->position ))) {
+                          } else if (! isset ( $subSubValue [$i]->position ) || (! is_string ( $subSubValue [$i]->position ) && ! is_int ( $subSubValue [$i]->position ))) {
                             $this->errors [] = "mtas - group - {$key} - {$subKey} - {$subSubKey}[{$i}] - position should be defined (as string or integer)";
                           } else {
                             $items ++;
@@ -1642,16 +1977,16 @@ class Parser {
                     }
                   }
                 }
-              } else if($subKey=="left" || $subKey=="right") {
+              } else if ($subKey == "left" || $subKey == "right") {
                 if (! is_array ( $subValue )) {
                   $this->errors [] = "mtas - group - {$key} - {$subKey} should be non empty array";
                 } else {
                   for($i = 0; $i < count ( $subValue ); $i ++) {
-                    if(!is_object($subValue[$i])) {
+                    if (! is_object ( $subValue [$i] )) {
                       $this->errors [] = "mtas - group - {$key} - {$subKey} [{$i}] should be an object";
-                    } else if (! isset ( $subValue[$i]->prefixes ) || ! is_string ( $subValue[$i]->prefixes )) {
+                    } else if (! isset ( $subValue [$i]->prefixes ) || ! is_string ( $subValue [$i]->prefixes )) {
                       $this->errors [] = "mtas - group - {$key} - {$subKey} [{$i}] - prefixes should be defined (as string)";
-                    } else if (! isset ( $subValue[$i]->position ) || (! is_string ( $subValue[$i]->position ) && ! is_int ( $subValue[$i]->position ))) {
+                    } else if (! isset ( $subValue [$i]->position ) || (! is_string ( $subValue [$i]->position ) && ! is_int ( $subValue [$i]->position ))) {
                       $this->errors [] = "mtas - group - {$key} - {$subKey} [{$i}] - position should be defined (as string or integer)";
                     } else {
                       $items ++;
@@ -1662,7 +1997,7 @@ class Parser {
                 $this->warnings [] = "mtas - group - {$key} - {$subKey} not expected";
               }
             }
-            if(!$items) {
+            if (! $items) {
               $this->errors [] = "mtas - group - {$key} - no (valid) groupings defined";
             }
           }
@@ -1687,6 +2022,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas prefix
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasPrefix($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1704,7 +2045,7 @@ class Parser {
         } else if ($key == "key") {
           if (! is_string ( $value )) {
             $this->errors [] = "mtas - prefix - {$key} should be string";
-          }  
+          }
         } else {
           $this->warnings [] = "mtas - prefix - {$key} not expected";
         }
@@ -1713,32 +2054,38 @@ class Parser {
         if (! isset ( $object->field )) {
           $this->errors [] = "mtas - prefix - field is obligatory";
         }
-      }      
+      }
       return $object;
     } else {
       $this->warnings [] = "mtas - prefix - unexpected type";
       return null;
     }
   }
+  /**
+   * Check mtas collection
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkResponseMtasCollection($object) {
     if ($object && is_object ( $object )) {
-      if (isset ( $object->action ) && is_string ( $object->action )) {        
-        if($object->action=="create" || $object->action=="post" || $object->action=="list" || $object->action=="check"|| $object->action=="empty"|| $object->action=="get" || $object->action=="import" || $object->action=="delete") {
-          foreach($object AS $key => $value) {
-            if($key=="action") {
-              //ignore
-            } else if($key=="key") {
-              if(!is_string ( $value )) {
+      if (isset ( $object->action ) && is_string ( $object->action )) {
+        if ($object->action == "create" || $object->action == "post" || $object->action == "list" || $object->action == "check" || $object->action == "empty" || $object->action == "get" || $object->action == "import" || $object->action == "delete") {
+          foreach ( $object as $key => $value ) {
+            if ($key == "action") {
+              // ignore
+            } else if ($key == "key") {
+              if (! is_string ( $value )) {
                 $this->errors [] = "mtas - collection - {$key} should be string";
               }
-            } else if($key=="field") {
-              if($object->action!="create") {
-                $this->warnings [] = "mtas - collection - {$key} not expected for ".$object->action;
-              } else if(!is_string ( $value )) {
+            } else if ($key == "field") {
+              if ($object->action != "create") {
+                $this->warnings [] = "mtas - collection - {$key} not expected for " . $object->action;
+              } else if (! is_string ( $value )) {
                 $this->errors [] = "mtas - collection - {$key} should be string";
               } else {
-                $fields = explode(",",$value);
-                foreach($fields AS $field) {
+                $fields = explode ( ",", $value );
+                foreach ( $fields as $field ) {
                   $configurations = $this->getConfigurationsForField ( $field );
                   if (count ( $configurations ) > 0) {
                     $this->__configurations [] = $configurations;
@@ -1747,51 +2094,51 @@ class Parser {
                   }
                 }
               }
-            } else if($key=="post") {
-              if($object->action!="post") {
-                $this->warnings [] = "mtas - collection - {$key} not expected for ".$object->action;
-              } else if(!is_array ( $value ) || count($value)==0) {
+            } else if ($key == "post") {
+              if ($object->action != "post") {
+                $this->warnings [] = "mtas - collection - {$key} not expected for " . $object->action;
+              } else if (! is_array ( $value ) || count ( $value ) == 0) {
                 $this->errors [] = "mtas - collection - {$key} should be array of strings or integers";
               } else {
-                foreach($value AS $valueItem) {
-                  if(!is_string($valueItem) && !is_int($valueItem)) {
+                foreach ( $value as $valueItem ) {
+                  if (! is_string ( $valueItem ) && ! is_int ( $valueItem )) {
                     $this->errors [] = "mtas - collection - {$key} should be array of strings or integers";
                   }
                 }
               }
-            } else if($key=="id") {
-              if($object->action!="create" && $object->action!="post" && $object->action!="delete" && $object->action!="check" && $object->action!="import" && $object->action!="get") {
-                $this->warnings [] = "mtas - collection - {$key} not expected for ".$object->action;
-              } else if(!is_string ( $value )) {
+            } else if ($key == "id") {
+              if ($object->action != "create" && $object->action != "post" && $object->action != "delete" && $object->action != "check" && $object->action != "import" && $object->action != "get") {
+                $this->warnings [] = "mtas - collection - {$key} not expected for " . $object->action;
+              } else if (! is_string ( $value )) {
                 $this->errors [] = "mtas - collection - {$key} should be string";
               }
-            } else if($key=="configuration" || $key=="collection") {
-              if($object->action!="import") {
-                $this->warnings [] = "mtas - collection - {$key} not expected for ".$object->action;
-              } else if(!is_string ( $value )) {
+            } else if ($key == "configuration" || $key == "collection") {
+              if ($object->action != "import") {
+                $this->warnings [] = "mtas - collection - {$key} not expected for " . $object->action;
+              } else if (! is_string ( $value )) {
                 $this->errors [] = "mtas - collection - {$key} should be string";
               }
             } else {
               $this->warnings [] = "mtas - collection - {$key} not expected";
             }
           }
-          if($object->action=="create") {
-            if(!isset($object->field)) {
+          if ($object->action == "create") {
+            if (! isset ( $object->field )) {
               $this->errors [] = "mtas - collection - field is obligatory for action {$object->action}";
             }
-          } else if($object->action=="post") {
-            if(!isset($object->post)) {
+          } else if ($object->action == "post") {
+            if (! isset ( $object->post )) {
               $this->errors [] = "mtas - collection - post is obligatory for action {$object->action}";
             }
-          } else if($object->action=="get" || $object->action=="delete" || $object->action=="check") {
-            if(!isset($object->id)) {
+          } else if ($object->action == "get" || $object->action == "delete" || $object->action == "check") {
+            if (! isset ( $object->id )) {
               $this->errors [] = "mtas - collection - id is obligatory for action {$object->action}";
             }
           }
           return $object;
         } else {
           $this->errors [] = "mtas - collection - no (valid) action provided";
-        }        
+        }
       } else {
         $this->errors [] = "mtas - collection - no (valid) action provided";
         return null;
@@ -1801,6 +2148,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check query mtas
+   *
+   * @param unknown $object          
+   * @param string $prefix          
+   * @return unknown
+   */
   private function checkResponseMtasQuery($object, string $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1830,6 +2184,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas base (facets)
+   *
+   * @param unknown $object          
+   * @param string $prefix          
+   * @return unknown
+   */
   private function checkResponseMtasBase($object, string $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1890,6 +2251,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas function
+   *
+   * @param unknown $object          
+   * @param string $prefix          
+   * @return unknown
+   */
   private function checkResponseMtasFunction($object, string $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -1910,6 +2278,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check condition
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkCondition($object) {
     static $availableTypes = array (
         "and",
@@ -2131,6 +2505,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check filter
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkFilter($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -2153,6 +2533,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check filters
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function checkFilters($object) {
     if ($object && is_object ( $object )) {
       return $this->checkFilter ( $object );
@@ -2166,6 +2552,14 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check variables
+   *
+   * @param unknown $object          
+   * @param unknown $fromCondition          
+   * @param string $prefixMessage          
+   * @return unknown
+   */
   private function checkVariables($object, $fromCondition, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
       $variables = array ();
@@ -2287,6 +2681,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats
+   *
+   * @param unknown $object          
+   * @param string $prefixMessage          
+   * @return unknown
+   */
   private function checkMtasStats($object, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -2316,6 +2717,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Check mtas stats functions
+   *
+   * @param unknown $object          
+   * @param string $prefixMessage          
+   * @return unknown
+   */
   private function checkMtasStatsFunction($object, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -2336,15 +2744,33 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse cache
+   *
+   * @param unknown $object          
+   * @return null
+   */
   private function parseCache($object) {
     return null;
   }
+  /**
+   * Parse debug
+   *
+   * @param unknown $object          
+   * @return string|NULL
+   */
   private function parseDebug($object) {
     if ($object && is_string ( $object ) && $object) {
       return "debug=" . urlencode ( $object );
     }
     return null;
   }
+  /**
+   * parse Sort
+   *
+   * @param unknown $object          
+   * @return string|NULL
+   */
   private function parseSort($object) {
     if ($object && is_array ( $object )) {
       $sortList = array ();
@@ -2365,6 +2791,14 @@ class Parser {
     }
     return null;
   }
+  /**
+   * Parse response
+   *
+   * @param unknown $object          
+   * @param array $facetQueries          
+   * @param array $mtasStats          
+   * @return unknown
+   */
   private function parseResponse($object, $facetQueries, $mtasStats) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2406,6 +2840,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse documents in response
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function parseResponseDocuments($object) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
@@ -2434,6 +2874,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse join in documents
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function parseResponseDocumentsJoin($object) {
     if ($object && is_object ( $object )) {
       if (! isset ( $this->responseJoins->documents )) {
@@ -2455,6 +2901,13 @@ class Parser {
     }
     return $object;
   }
+  /**
+   * Parse facets in response
+   *
+   * @param unknown $object          
+   * @param unknown $facetqueries          
+   * @return unknown
+   */
   private function parseResponseFacets($object, $facetqueries) {
     if (($object && is_object ( $object ))) {
       $requestList = array ();
@@ -2492,6 +2945,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse facet fields
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @return array
+   */
   private function parseResponseFacetFields($object, array $requestList) {
     if ($object != null && is_array ( $object )) {
       for($i = 0; $i < count ( $object ); $i ++) {
@@ -2503,6 +2963,13 @@ class Parser {
     }
     return $requestList;
   }
+  /**
+   * Parse facet field
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseFacetField($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2538,6 +3005,14 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse join facet field
+   *
+   * @param unknown $object          
+   * @param string $key          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseFacetFieldJoin($object, $key, $i) {
     if ($object && is_object ( $object )) {
       if (! isset ( $this->responseJoins->facetfield )) {
@@ -2552,6 +3027,14 @@ class Parser {
     }
     return $object;
   }
+  /**
+   * Parse facet queries
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @param array $keyListFacetQueries          
+   * @return array
+   */
   private function parseResponseFacetQueries($object, $requestList, $keyListFacetQueries) {
     if ($object != null && is_array ( $object )) {
       for($i = 0; $i < count ( $object ); $i ++) {
@@ -2567,6 +3050,14 @@ class Parser {
         $keyListFacetQueries 
     );
   }
+  /**
+   * Parse facet query
+   *
+   * @param unknown $object          
+   * @param array $keyListFacetQueries          
+   * @param number $i          
+   * @return array
+   */
   private function parseResponseFacetQuery($object, $keyListFacetQueries, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2662,7 +3153,14 @@ class Parser {
       );
     }
   }
-  private function parseResponseFacetRanges($object, array $requestList) {
+  /**
+   * Parse facet range
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @return array
+   */
+  private function parseResponseFacetRanges($object, $requestList) {
     if ($object != null && is_array ( $object )) {
       for($i = 0; $i < count ( $object ); $i ++) {
         $object [$i] = $this->parseResponseFacetRange ( $object [$i], $i );
@@ -2673,6 +3171,13 @@ class Parser {
     }
     return $requestList;
   }
+  /**
+   * Parse facet range
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseFacetRange($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2687,6 +3192,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse facet pivots
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @return array
+   */
   private function parseResponseFacetPivots($object, array $requestList) {
     if ($object != null && is_array ( $object )) {
       for($i = 0; $i < count ( $object ); $i ++) {
@@ -2698,6 +3210,13 @@ class Parser {
     }
     return $requestList;
   }
+  /**
+   * Parse facet pivot
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseFacetPivot($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2712,6 +3231,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse stats in response
+   *
+   * @param unknown $object
+   *          return unknown
+   */
   private function parseResponseStats($object) {
     if (($object && is_object ( $object ))) {
       $requestList = array ();
@@ -2729,6 +3254,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse stats fields
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @return array
+   */
   private function parseResponseStatsFields($object, array $requestList) {
     if ($object != null && is_array ( $object )) {
       for($i = 0; $i < count ( $object ); $i ++) {
@@ -2740,6 +3272,13 @@ class Parser {
     }
     return $requestList;
   }
+  /**
+   * Parse stats field
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseStatsField($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2754,6 +3293,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas in response
+   *
+   * @param unknown $object          
+   * @param array $mtasStats          
+   * @return unknown
+   */
   private function parseResponseMtas($object, $mtasStats) {
     $localErrors = array ();
     $localWarnings = array ();
@@ -2851,6 +3397,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas stats
+   *
+   * @param unknown $object          
+   * @param array $mtasStats          
+   * @return unknown
+   */
   private function parseResponseMtasStats($object, $mtasStats) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2901,6 +3454,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas stats positions
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasStatsPositions($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2925,6 +3485,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas stats tokens
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasStatsTokens($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -2949,6 +3516,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas stats spans
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasStatsSpans($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3049,6 +3623,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas documents
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasDocument($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3097,6 +3678,14 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas kwic and list
+   *
+   * @param string $type          
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasKwicAndList($type, $object, $i) {
     if ($type != "list" && $type != "kwic") {
       die ( "incorrect call" );
@@ -3162,6 +3751,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas termvector
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasTermvector($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3231,6 +3827,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas facet
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasFacet($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3327,6 +3930,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas group
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasGroup($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3342,7 +3952,7 @@ class Parser {
       if (isset ( $object->start ) && is_int ( $object->start )) {
         $requestList [] = "mtas.group." . $i . ".start=" . urlencode ( $object->start );
       }
-      if (isset ( $object->query ) && is_object ( $object->query )) {        
+      if (isset ( $object->query ) && is_object ( $object->query )) {
         if (isset ( $object->query->type ) && is_string ( $object->query->type )) {
           $requestList [] = "mtas.group." . $i . ".query.type=" . urlencode ( $object->query->type );
         }
@@ -3369,51 +3979,51 @@ class Parser {
             $requestList [] = "mtas.group." . $i . ".query.variable." . $counter . ".value=" . urlencode ( implode ( ",", $values ) );
             $counter ++;
           }
-        }                    
+        }
       }
-      if(isset($object->grouping) && is_object($object->grouping)) {
-        if(isset($object->grouping->hit) && is_object($object->grouping->hit)) {
-          if(isset($object->grouping->hit->inside) && is_string($object->grouping->hit->inside)) {
+      if (isset ( $object->grouping ) && is_object ( $object->grouping )) {
+        if (isset ( $object->grouping->hit ) && is_object ( $object->grouping->hit )) {
+          if (isset ( $object->grouping->hit->inside ) && is_string ( $object->grouping->hit->inside )) {
             $requestList [] = "mtas.group." . $i . ".grouping.hit.inside.prefixes=" . urlencode ( $object->grouping->hit->inside );
           }
-          if(isset($object->grouping->hit->insideLeft) && is_array($object->grouping->hit->insideLeft)) {
-            for($j=0;$j<count($object->grouping->hit->insideLeft);$j++) {
-              if(isset($object->grouping->hit->insideLeft[$j]->prefixes) && is_string($object->grouping->hit->insideLeft[$j]->prefixes)) {
-                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideLeft.".$j.".prefixes=" . urlencode ( $object->grouping->hit->insideLeft[$j]->prefixes );
+          if (isset ( $object->grouping->hit->insideLeft ) && is_array ( $object->grouping->hit->insideLeft )) {
+            for($j = 0; $j < count ( $object->grouping->hit->insideLeft ); $j ++) {
+              if (isset ( $object->grouping->hit->insideLeft [$j]->prefixes ) && is_string ( $object->grouping->hit->insideLeft [$j]->prefixes )) {
+                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideLeft." . $j . ".prefixes=" . urlencode ( $object->grouping->hit->insideLeft [$j]->prefixes );
               }
-              if(isset($object->grouping->hit->insideLeft[$j]->position) && (is_string($object->grouping->hit->insideLeft[$j]->position) || is_int($object->grouping->hit->insideLeft[$j]->position))) {
-                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideLeft.".$j.".position=" . urlencode ( $object->grouping->hit->insideLeft[$j]->position );
-              } 
-            }            
-          }
-          if(isset($object->grouping->hit->insideRight) && is_array($object->grouping->hit->insideRight)) {
-            for($j=0;$j<count($object->grouping->hit->insideRight);$j++) {
-              if(isset($object->grouping->hit->insideRight[$j]->prefixes) && is_string($object->grouping->hit->insideRight[$j]->prefixes)) {
-                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideRight.".$j.".prefixes=" . urlencode ( $object->grouping->hit->insideRight[$j]->prefixes );
-              }
-              if(isset($object->grouping->hit->insideRight[$j]->position) && (is_string($object->grouping->hit->insideRight[$j]->position) || is_int($object->grouping->hit->insideRight[$j]->position))) {
-                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideRight.".$j.".position=" . urlencode ( $object->grouping->hit->insideRight[$j]->position );
+              if (isset ( $object->grouping->hit->insideLeft [$j]->position ) && (is_string ( $object->grouping->hit->insideLeft [$j]->position ) || is_int ( $object->grouping->hit->insideLeft [$j]->position ))) {
+                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideLeft." . $j . ".position=" . urlencode ( $object->grouping->hit->insideLeft [$j]->position );
               }
             }
           }
-        }
-        if(isset($object->grouping->right) && is_array($object->grouping->right)) {
-          for($j=0;$j<count($object->grouping->right);$j++) {
-            if(isset($object->grouping->right[$j]->prefixes) && is_string($object->grouping->right[$j]->prefixes)) {
-              $requestList [] = "mtas.group." . $i . ".grouping.right.".$j.".prefixes=" . urlencode ( $object->grouping->right[$j]->prefixes );
-            }
-            if(isset($object->grouping->right[$j]->position) && (is_string($object->grouping->right[$j]->position) || is_int($object->grouping->right[$j]->position))) {
-              $requestList [] = "mtas.group." . $i . ".grouping.right.".$j.".position=" . urlencode ( $object->grouping->right[$j]->position );
+          if (isset ( $object->grouping->hit->insideRight ) && is_array ( $object->grouping->hit->insideRight )) {
+            for($j = 0; $j < count ( $object->grouping->hit->insideRight ); $j ++) {
+              if (isset ( $object->grouping->hit->insideRight [$j]->prefixes ) && is_string ( $object->grouping->hit->insideRight [$j]->prefixes )) {
+                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideRight." . $j . ".prefixes=" . urlencode ( $object->grouping->hit->insideRight [$j]->prefixes );
+              }
+              if (isset ( $object->grouping->hit->insideRight [$j]->position ) && (is_string ( $object->grouping->hit->insideRight [$j]->position ) || is_int ( $object->grouping->hit->insideRight [$j]->position ))) {
+                $requestList [] = "mtas.group." . $i . ".grouping.hit.insideRight." . $j . ".position=" . urlencode ( $object->grouping->hit->insideRight [$j]->position );
+              }
             }
           }
         }
-        if(isset($object->grouping->left) && is_array($object->grouping->left)) {
-          for($j=0;$j<count($object->grouping->left);$j++) {
-            if(isset($object->grouping->left[$j]->prefixes) && is_string($object->grouping->leftt[$j]->prefixes)) {
-              $requestList [] = "mtas.group." . $i . ".grouping.left.".$j.".prefixes=" . urlencode ( $object->grouping->left[$j]->prefixes );
+        if (isset ( $object->grouping->right ) && is_array ( $object->grouping->right )) {
+          for($j = 0; $j < count ( $object->grouping->right ); $j ++) {
+            if (isset ( $object->grouping->right [$j]->prefixes ) && is_string ( $object->grouping->right [$j]->prefixes )) {
+              $requestList [] = "mtas.group." . $i . ".grouping.right." . $j . ".prefixes=" . urlencode ( $object->grouping->right [$j]->prefixes );
             }
-            if(isset($object->grouping->left[$j]->position) && (is_string($object->grouping->left[$j]->position) || is_int($object->grouping->left[$j]->position))) {
-              $requestList [] = "mtas.group." . $i . ".grouping.left.".$j.".position=" . urlencode ( $object->grouping->left[$j]->position );
+            if (isset ( $object->grouping->right [$j]->position ) && (is_string ( $object->grouping->right [$j]->position ) || is_int ( $object->grouping->right [$j]->position ))) {
+              $requestList [] = "mtas.group." . $i . ".grouping.right." . $j . ".position=" . urlencode ( $object->grouping->right [$j]->position );
+            }
+          }
+        }
+        if (isset ( $object->grouping->left ) && is_array ( $object->grouping->left )) {
+          for($j = 0; $j < count ( $object->grouping->left ); $j ++) {
+            if (isset ( $object->grouping->left [$j]->prefixes ) && is_string ( $object->grouping->leftt [$j]->prefixes )) {
+              $requestList [] = "mtas.group." . $i . ".grouping.left." . $j . ".prefixes=" . urlencode ( $object->grouping->left [$j]->prefixes );
+            }
+            if (isset ( $object->grouping->left [$j]->position ) && (is_string ( $object->grouping->left [$j]->position ) || is_int ( $object->grouping->left [$j]->position ))) {
+              $requestList [] = "mtas.group." . $i . ".grouping.left." . $j . ".position=" . urlencode ( $object->grouping->left [$j]->position );
             }
           }
         }
@@ -3424,6 +4034,13 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse mtas prefix
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasPrefix($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3432,13 +4049,20 @@ class Parser {
       }
       if (isset ( $object->field ) && is_string ( $object->field )) {
         $requestList [] = "mtas.prefix." . $i . ".field=" . urlencode ( $object->field );
-      }      
+      }
       $object->__requestList = $requestList;
       return $object;
     } else {
       return null;
     }
   }
+  /**
+   * Parse mtas collection
+   *
+   * @param unknown $object          
+   * @param number $i          
+   * @return unknown
+   */
   private function parseResponseMtasCollection($object, $i) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
@@ -3455,14 +4079,14 @@ class Parser {
         $requestList [] = "mtas.collection." . $i . ".field=" . urlencode ( $object->field );
       }
       if (isset ( $object->post ) && is_array ( $object->post )) {
-        $requestList [] = "mtas.collection." . $i . ".post=" . urlencode ( json_encode($object->post) );
+        $requestList [] = "mtas.collection." . $i . ".post=" . urlencode ( json_encode ( $object->post ) );
       }
       if (isset ( $object->collection ) && is_string ( $object->collection )) {
         $requestList [] = "mtas.collection." . $i . ".collection=" . urlencode ( $object->collection );
       }
       if (isset ( $object->configuration ) && is_string ( $object->configuration )) {
-        if(isset($this->configuration->config["solr"][$object->configuration]) && isset($this->configuration->config["solr"][$object->configuration]["url"])) {
-          $requestList [] = "mtas.collection." . $i . ".url=" . urlencode ( $this->configuration->config["solr"][$object->configuration]["url"] );
+        if (isset ( $this->configuration->config ["solr"] [$object->configuration] ) && isset ( $this->configuration->config ["solr"] [$object->configuration] ["url"] )) {
+          $requestList [] = "mtas.collection." . $i . ".url=" . urlencode ( $this->configuration->config ["solr"] [$object->configuration] ["url"] );
         }
       }
       $object->__requestList = $requestList;
@@ -3471,6 +4095,12 @@ class Parser {
       return null;
     }
   }
+  /**
+   * Parse condition
+   *
+   * @param unknown $object          
+   * @return unknown
+   */
   private function parseCondition($object) {
     if ($object && is_object ( $object )) {
       // initialise
@@ -3664,6 +4294,12 @@ class Parser {
     }
     return $object;
   }
+  /**
+   * Parse filters
+   *
+   * @param unknown $object          
+   * @return array
+   */
   private function parseFilters($object) {
     $localErrors = array ();
     $localWarnings = array ();
@@ -3688,6 +4324,15 @@ class Parser {
         $mtasStats 
     );
   }
+  /**
+   * Parse filter
+   *
+   * @param unknown $object          
+   * @param array $requestList          
+   * @param array $facetQueries          
+   * @param array $mtasStats          
+   * @return array
+   */
   private function parseFilter($object, array $requestList, array $facetQueries, array $mtasStats) {
     $localErrors = array ();
     $localWarnings = array ();
@@ -3718,6 +4363,13 @@ class Parser {
         $mtasStats 
     );
   }
+  /**
+   * Create collectionId from join
+   *
+   * @param unknown $object          
+   * @param unknown $configuration          
+   * @return string
+   */
   private function createCollectionIdFromJoin($object, $configuration) {
     $collectionId = null;
     if (count ( $this->errors ) == 0) {
@@ -3744,6 +4396,13 @@ class Parser {
     }
     return $collectionId;
   }
+  /**
+   * Finish collectionId from join
+   *
+   * @param unknown $collectionId          
+   * @param unknown $configuration          
+   * @return string
+   */
   private function finishCollectionIdFromJoin($collectionId, $configuration) {
     if ($collectionId) {
       $checkInfo = $this->collection->check ( $collectionId );
@@ -3775,6 +4434,12 @@ class Parser {
     }
     return $collectionId;
   }
+  /**
+   * Create variables string
+   *
+   * @param array $variables          
+   * @return string
+   */
   private function createVariablesString($variables) {
     $result = "";
     if ($variables && is_array ( $variables )) {
@@ -3793,7 +4458,14 @@ class Parser {
     }
     return $result;
   }
-  private function createVariableCombinations(array $variables, array $combinations): array {
+  /**
+   * Create variable combinations
+   *
+   * @param array $variables          
+   * @param array $combinations          
+   * @return array
+   */
+  private function createVariableCombinations($variables, $combinations) {
     $list = array ();
     $combinationKeys = array_keys ( $combinations );
     if (count ( $combinationKeys ) == count ( $variables )) {
@@ -3813,6 +4485,12 @@ class Parser {
       }
     }
   }
+  /**
+   * Get configurations for field
+   *
+   * @param unknown $field          
+   * @return array
+   */
   private function getConfigurationsForField($field) {
     $list = array ();
     if ($this->configuration->getConfig ( "solr" ) != null) {
@@ -3830,6 +4508,14 @@ class Parser {
     }
     return array_unique ( $list );
   }
+  /**
+   * Compute expansions values
+   *
+   * @param array|string $value          
+   * @param unknown $expansion          
+   * @param string $prefixMessage          
+   * @return array
+   */
   private function computeExpansionValues($value, $expansion, string $prefixMessage = "") {
     $values = array ();
     if ($expansion && is_object ( $expansion )) {
@@ -3896,6 +4582,12 @@ class Parser {
     }
     return $values;
   }
+  /**
+   * Compute configuration
+   *
+   * @param string $config          
+   * @return unknown
+   */
   private function computeConfiguration($config) {
     $availableConfigs = array_keys ( $this->configuration->getConfig ( "solr" ) );
     if ($config != null) {
@@ -3937,6 +4629,13 @@ class Parser {
       }
     }
   }
+  /**
+   * Solr encode
+   *
+   * @param unknown $value          
+   * @param string $type          
+   * @return string
+   */
   private function solrEncode($value, $type = null) {
     if (($type == "equals") && is_bool ( $value )) {
       if ($value) {

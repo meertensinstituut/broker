@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Example configuration
+ * @package Broker
+ */
 $authentication = array (
     // access based on ip
     "ip" => array (

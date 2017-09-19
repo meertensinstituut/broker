@@ -1,8 +1,11 @@
 <?php
+/**
+ * Module collections
+ */
 if (! $authentication->accessWithAdminPrivileges ()) {
   $authentication->logout ();
   header ( "Location: " . $configuration->url ( "login", "collections" ) );
-  exit();
+  exit ();
 } else {
   
   $collection = new \Broker\Collection ( SITE_CACHE_DATABASE_DIR, $configuration );
@@ -64,7 +67,7 @@ if (! $authentication->accessWithAdminPrivileges ()) {
         $smarty->assign ( "_collectionsPage", $page );
         $smarty->assign ( "_collectionsNumber", $number );
         $smarty->assign ( "_collectionsTotal", $collection->number () );
-        $smarty->assign ( "_collectionsList", $collection->list ( $page * $number, $number ) );
+        $smarty->assign ( "_collectionsList", $collection->getList ( $page * $number, $number ) );
       }
     } else {
       header ( "Location: " . $configuration->url ( "collections", null ) );

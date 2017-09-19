@@ -1,8 +1,11 @@
 <?php
+/**
+ * Module cache
+ */
 if (! $authentication->accessWithAdminPrivileges ()) {
   $authentication->logout ();
   header ( "Location: " . $configuration->url ( "login", "cache" ) );
-  exit();
+  exit ();
 } else {
   
   $cache = new \Broker\Cache ( SITE_CACHE_DATABASE_DIR, $configuration );
@@ -53,7 +56,7 @@ if (! $authentication->accessWithAdminPrivileges ()) {
         $smarty->assign ( "_cachePage", $page );
         $smarty->assign ( "_cacheNumber", $number );
         $smarty->assign ( "_cacheTotal", $cache->number () );
-        $smarty->assign ( "_cacheList", $cache->list ( $page * $number, $number ) );
+        $smarty->assign ( "_cacheList", $cache->getList ( $page * $number, $number ) );
       }
     } else {
       header ( "Location: " . $configuration->url ( "cache", null ) );

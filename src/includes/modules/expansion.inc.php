@@ -1,8 +1,11 @@
 <?php
+/**
+ * Module expansion
+ */
 if (! $authentication->accessWithAdminPrivileges ()) {
   $authentication->logout ();
   header ( "Location: " . $configuration->url ( "login", "expansion" ) );
-  exit();
+  exit ();
 } else {
   $expansion = new \Broker\ExpansionCache ( SITE_CACHE_DATABASE_DIR, $configuration );
   
@@ -52,7 +55,7 @@ if (! $authentication->accessWithAdminPrivileges ()) {
         $smarty->assign ( "_expansionPage", $page );
         $smarty->assign ( "_expansionNumber", $number );
         $smarty->assign ( "_expansionTotal", $expansion->number () );
-        $smarty->assign ( "_expansionList", $expansion->list ( $page * $number, $number ) );
+        $smarty->assign ( "_expansionList", $expansion->getList ( $page * $number, $number ) );
       }
     } else {
       header ( "Location: " . $configuration->url ( "expansion", null ) );

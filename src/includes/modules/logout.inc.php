@@ -1,8 +1,11 @@
 <?php
+/**
+ * Module logout
+ */
 if ($authentication->accessBasedOnLogin ()) {
   $authentication->logout ();
-  header ( "refresh:2;url=" . $configuration->url (null, null) );
+  header ( "refresh:2;url=" . $configuration->url ( null, null ) );
 } else {
-  header ( "Location: " . $configuration->url ("login", null) );
+  header ( "Location: " . $configuration->url ( "login", null ) );
 }
 ?>

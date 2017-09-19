@@ -1,4 +1,7 @@
 <?php
+/**
+ * Module status
+ */
 $status = new \Broker\Status ( SITE_CACHE_DATABASE_DIR, $configuration, null );
 
 if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && trim ( $_GET ["suboperation"] ) != "") {
@@ -38,7 +41,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
         }
       } else {
         if (isset ( $response ["response"] )) {
-          if (isset($_SERVER ["HTTP_ACCEPT_ENCODING"]) && strpos ( $_SERVER ["HTTP_ACCEPT_ENCODING"], "gzip" ) !== false) {
+          if (isset ( $_SERVER ["HTTP_ACCEPT_ENCODING"] ) && strpos ( $_SERVER ["HTTP_ACCEPT_ENCODING"], "gzip" ) !== false) {
             header ( "Content-Encoding: gzip" );
             $content = gzencode ( json_encode ( $response ["response"] ) );
           } else {
@@ -76,7 +79,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
     if (! $authentication->accessWithAdminPrivileges ()) {
       $authentication->logout ();
       header ( "Location: " . $configuration->url ( "login", "status" ) );
-      exit();
+      exit ();
     } else if (preg_match ( "/^list([0-9]*)$/", $_GET ["suboperation"], $match )) {
       $smarty->assign ( "_statusType", "list" );
       $page = intval ( $match [1] );
@@ -122,7 +125,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
         $smarty->assign ( "_statusPage", $page );
         $smarty->assign ( "_statusNumber", $number );
         $smarty->assign ( "_statusTotal", $status->number () );
-        $smarty->assign ( "_statusList", $status->list ( $page * $number, $number ) );
+        $smarty->assign ( "_statusList", $status->getList ( $page * $number, $number ) );
       }
     } else {
       header ( "Location: " . $configuration->url ( "status", null ) );
@@ -136,7 +139,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
   } else {
     $smarty->assign ( "_statusType", null );
     $smarty->assign ( "_statusTotal", $status->number () );
-  }  
+  }
 }
 
 ?>

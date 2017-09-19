@@ -1,13 +1,54 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
+/**
+ * Processing response
+ */
 class Response {
+  /**
+   * Response
+   *
+   * @var unknown
+   */
   private $response;
+  /**
+   * Response joins
+   *
+   * @var unknown
+   */
   private $responseJoins;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
   private $configuration = null;
+  /**
+   * Collection
+   *
+   * @var \Broker\Collection
+   */
   private $collection = null;
+  /**
+   * Cache
+   *
+   * @var \Broker\Cache
+   */
   private $cache = null;
+  /**
+   * Constructor
+   *
+   * @param unknown $response          
+   * @param unknown $responseJoins          
+   * @param unknown $configuration          
+   * @param \Broker\Cache $cache          
+   * @param \Broker\Collection $collection          
+   */
   public function __construct($response, $responseJoins, $configuration, $cache, $collection) {
     $this->response = $response;
     $this->configuration = $configuration;
@@ -18,14 +59,22 @@ class Response {
     }
     $this->responseJoins = $responseJoins;
   }
-  public function process(): array {
+  /**
+   * Process
+   *
+   * @return array
+   */
+  public function process() {
     $this->processFacetFieldJoins ();
     $this->processDocumentsJoins ();
     return $this->response;
   }
+  /**
+   * Process facet field joins
+   */
   private function processFacetFieldJoins() {
     if ($this->responseJoins && is_object ( $this->responseJoins ) && isset ( $this->responseJoins->facetfield )) {
-      $facetfieldJoins = $this->responseJoins->facetfield;      
+      $facetfieldJoins = $this->responseJoins->facetfield;
       foreach ( $facetfieldJoins as $facetfieldJoin ) {
         if (isset ( $this->response ["response"]->facet_counts->facet_fields->{$facetfieldJoin->key} )) {
           $values = $this->collectFacetFieldValues ( $this->response ["response"]->facet_counts->facet_fields->{$facetfieldJoin->key} );
@@ -35,14 +84,27 @@ class Response {
       }
     }
   }
-  private function collectFacetFieldValues(array $list): array {
+  /**
+   * Collect facet field values
+   *
+   * @param array $list          
+   * @return array
+   */
+  private function collectFacetFieldValues($list) {
     $values = array ();
     for($i = 0; $i < count ( $list ); $i += 2) {
       $values [] = $list [$i];
     }
     return $values;
   }
-  private function collectJoinFacetFieldValues(array $values, $facetFieldJoin): array {
+  /**
+   * Collect join facet field values
+   *
+   * @param array $values          
+   * @param unknown $facetFieldJoin          
+   * @return array
+   */
+  private function collectJoinFacetFieldValues($values, $facetFieldJoin) {
     $allFields = $facetFieldJoin->fields;
     $allFields [] = $facetFieldJoin->to;
     $subRequest = new \stdClass ();
@@ -60,15 +122,15 @@ class Response {
     $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null );
     // get data
     try {
-      $solr = new \Broker\Solr ( $subParser->getConfiguration(), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
+      $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
       $solrResponse = $solr->getResponse ();
       if ($solrResponse && is_object ( $solrResponse )) {
         if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {
-          $subResponse = array();
+          $subResponse = array ();
           $subResponse ["status"] = "OK";
           $subResponse ["response"] = clone $solrResponse;
-          $subResponse = (new \Broker\Response($subResponse, $subParser->getResponseJoins(), $this->configuration, $this->cache, $this->collection))->process();
-          return $subResponse["response"]->response->docs;          
+          $subResponse = (new \Broker\Response ( $subResponse, $subParser->getResponseJoins (), $this->configuration, $this->cache, $this->collection ))->process ();
+          return $subResponse ["response"]->response->docs;
         }
       }
     } catch ( \Broker\SolrException $se ) {
@@ -78,7 +140,15 @@ class Response {
     }
     return array ();
   }
-  private function updateFacetFieldValues(array $list, string $to, array $updates): array {
+  /**
+   * Update facet field values
+   *
+   * @param array $list          
+   * @param string $to          
+   * @param array $updates          
+   * @return array
+   */
+  private function updateFacetFieldValues($list, $to, $updates) {
     for($i = 0; $i < count ( $list ); $i += 2) {
       $key = $list [$i];
       $value = array ();
@@ -94,6 +164,9 @@ class Response {
     }
     return $list;
   }
+  /**
+   * Process documents joins
+   */
   private function processDocumentsJoins() {
     if ($this->responseJoins && is_object ( $this->responseJoins ) && isset ( $this->responseJoins->documents )) {
       $documentsJoins = $this->responseJoins->documents;
@@ -104,9 +177,16 @@ class Response {
           $this->response ["response"]->response->docs = $this->updateDocuments ( $this->response ["response"]->response->docs, $documentsJoin->from, $documentsJoin->to, $documentsJoin->name, $updateValues );
         }
       }
-    } 
+    }
   }
-  private function collectDocumentsValues(array $documents, string $from): array {
+  /**
+   * Collect documents values
+   *
+   * @param array $documents          
+   * @param string $from          
+   * @return array
+   */
+  private function collectDocumentsValues($documents, $from) {
     $values = array ();
     foreach ( $documents as $document ) {
       if (isset ( $document->{$from} ) && is_string ( $document->{$from} )) {
@@ -115,22 +195,29 @@ class Response {
     }
     return $values;
   }
-  private function collectJoinDocumentsValues(array $values, $documentsJoin): array {
+  /**
+   * Collect join documents values
+   *
+   * @param array $values          
+   * @param unknown $documentsJoin          
+   * @return array
+   */
+  private function collectJoinDocumentsValues($values, $documentsJoin) {
     $allFields = $documentsJoin->fields;
-    $allFields [] = $documentsJoin->to;  
+    $allFields [] = $documentsJoin->to;
     $subRequest = new \stdClass ();
     $subRequest->configuration = $documentsJoin->configuration;
-    $subRequest->filter = array();
+    $subRequest->filter = array ();
     $filter = new \stdClass ();
     $filter->condition = new \stdClass ();
     $filter->condition->type = "equals";
     $filter->condition->field = $documentsJoin->to;
     $filter->condition->value = $values;
-    $subRequest->filter[] = $filter;
-    if(isset($documentsJoin->filter)) {
-      $subRequest->filter[] = $documentsJoin->filter;      
+    $subRequest->filter [] = $filter;
+    if (isset ( $documentsJoin->filter )) {
+      $subRequest->filter [] = $documentsJoin->filter;
     }
-    if(isset($documentsJoin->condition)) {
+    if (isset ( $documentsJoin->condition )) {
       $subRequest->condition = $documentsJoin->condition;
     }
     $subRequest->response = new \stdClass ();
@@ -140,28 +227,38 @@ class Response {
     $subRequest->response->documents->fields = $allFields;
     $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null );
     // get data
-    if(count($subParser->getErrors())==0) {
+    if (count ( $subParser->getErrors () ) == 0) {
       try {
-        $solr = new \Broker\Solr ( $subParser->getConfiguration(), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
+        $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
         $solrResponse = $solr->getResponse ();
         if ($solrResponse && is_object ( $solrResponse )) {
           if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {
-            $subResponse = array();
+            $subResponse = array ();
             $subResponse ["status"] = "OK";
             $subResponse ["response"] = clone $solrResponse;
-            $subResponse = (new \Broker\Response($subResponse, $subParser->getResponseJoins(), $this->configuration, $this->cache, $this->collection))->process();
-            return $subResponse["response"]->response->docs;
-          } 
+            $subResponse = (new \Broker\Response ( $subResponse, $subParser->getResponseJoins (), $this->configuration, $this->cache, $this->collection ))->process ();
+            return $subResponse ["response"]->response->docs;
+          }
         }
       } catch ( \Broker\SolrException $se ) {
         // do nothing
       } catch ( \Exception $e ) {
         // do nothing
       }
-    } 
+    }
     return array ();
   }
-  private function updateDocuments(array $documents, string $from, string $to, string $name, array $updates): array {
+  /**
+   * Update documents
+   *
+   * @param array $documents          
+   * @param string $from          
+   * @param string $to          
+   * @param string $name          
+   * @param array $updates          
+   * @return array
+   */
+  private function updateDocuments($documents, $from, $to, $name, $updates) {
     foreach ( $documents as $document ) {
       if (is_object ( $document )) {
         if (isset ( $document->{$from} ) && (is_string ( $document->{$from} ) || is_array ( $document->{$from} ))) {
@@ -186,6 +283,20 @@ class Response {
       }
     }
     return $documents;
+  }
+  /**
+   * Create solr status
+   *
+   * @param string $id          
+   * @param string $description          
+   * @return array
+   */
+  static function createSolrStatus($id, $description) {
+    $result = array ();
+    $result ["description"] = $description;
+    $result ["data"] = array ();
+    $result ["data"] [$id] = date ( "h:i:s" ) . " - " . $description;
+    return $result;
   }
 }
 

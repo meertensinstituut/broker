@@ -1,11 +1,39 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
+/**
+ * Cache
+ */
 class Cache {
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
   private $configuration;
+  /**
+   * Lifetime
+   *
+   * @var number
+   */
   private $lifetime = 3000;
+  /**
+   * Filename
+   *
+   * @var string
+   */
   private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   * @param unknown $configuration          
+   */
   public function __construct($directory, $configuration) {
     if (file_exists ( $directory ) && is_file ( $directory )) {
       $this->filename = $directory;
@@ -21,9 +49,12 @@ class Cache {
     $this->configuration = $configuration;
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
     $this->init ();
   }
+  /**
+   * Init
+   */
   private function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"cache\" (
           \"id\" INTEGER PRIMARY KEY ASC,
@@ -41,7 +72,15 @@ class Cache {
     $query->execute ();
     unset ( $query );
   }
-  public function create(string $configuration, string $url, string $request, $response) {
+  /**
+   * Create
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @param unknown $response          
+   */
+  public function create($configuration, $url, $request, $response) {
     $this->clean ();
     // hash
     $hash = $this->createHash ( $configuration, $url, $request );
@@ -64,6 +103,12 @@ class Cache {
     $query->execute ();
     unset ( $query );
   }
+  /**
+   * Get
+   *
+   * @param string $hash          
+   * @return array
+   */
   public function get($hash) {
     $sql = "SELECT    
     id, hash, configuration, url, request, response, numberOfChecks,
@@ -82,7 +127,15 @@ class Cache {
       return null;
     }
   }
-  public function check(string $configuration, string $url, string $request): array {
+  /**
+   * Check
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @return array
+   */
+  public function check($configuration, $url, $request) {
     $this->clean ();
     // hash
     $hash = $this->createHash ( $configuration, $url, $request );
@@ -131,7 +184,12 @@ class Cache {
       );
     }
   }
-  public function number(): int {
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
     $sql = "SELECT COUNT(*) AS number
       FROM \"cache\";";
     $query = $this->database->prepare ( $sql );
@@ -147,7 +205,14 @@ class Cache {
       return 0;
     }
   }
-  public function list(int $start, int $number) {
+  /**
+   * Get list
+   *
+   * @param number $start          
+   * @param number $number          
+   * @return array
+   */
+  public function getList($start, $number) {
     $sql = "SELECT    
         id, hash, configuration, numberOfChecks,
         datetime(created, 'localtime') as created,
@@ -171,12 +236,18 @@ class Cache {
       return null;
     }
   }
+  /**
+   * Clean
+   */
   public function clean() {
     $sql = "DELETE FROM \"cache\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
   }
+  /**
+   * Reset
+   */
   public function reset() {
     $sql = "DROP TABLE IF EXISTS \"cache\";";
     $query = $this->database->prepare ( $sql );
@@ -184,7 +255,15 @@ class Cache {
     unset ( $query );
     $this->init ();
   }
-  private static function createHash(string $configuration, string $url, string $request): string {
+  /**
+   * Create hash
+   *
+   * @param string $configuration          
+   * @param string $url          
+   * @param string $request          
+   * @return string
+   */
+  private static function createHash($configuration, $url, $request) {
     $base = trim ( $configuration ) . "\n" . trim ( $url ) . "\n" . trim ( $request );
     return hash ( "md5", $base );
   }

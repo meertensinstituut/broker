@@ -1,11 +1,39 @@
 <?php
 
+/**
+ * Broker
+ * @package Broker
+ */
 namespace Broker;
 
+/**
+ * Collection
+ */
 class Collection {
+  /**
+   * Database
+   *
+   * @var \PDO
+   */
   private $database;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
   private $configuration;
+  /**
+   * Filename
+   *
+   * @var string
+   */
   private $filename;
+  /**
+   * Constructor
+   *
+   * @param string $directory          
+   * @param string $configuration          
+   */
   public function __construct($directory, $configuration) {
     if (file_exists ( $directory ) && is_file ( $directory )) {
       $this->filename = $directory;
@@ -21,9 +49,12 @@ class Collection {
     $this->configuration = $configuration;
     $this->database = new \PDO ( "sqlite:" . $this->filename );
     $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    //$this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this->init (false);
+    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this->init ( false );
   }
+  /**
+   * Initialize
+   */
   private function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"collection\" (
           \"id\" INTEGER PRIMARY KEY ASC,
@@ -54,13 +85,39 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function create($configuration, $filter, $condition, $field): string {
+  /**
+   * Create
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param string $field          
+   * @return string
+   */
+  public function create($configuration, $filter, $condition, $field) {
     return $this->_create ( $configuration, $filter, $condition, $field, null );
   }
-  public function createFromCollection($configuration, $collectionId): string {
+  /**
+   * Create from collection
+   *
+   * @param unknown $configuration          
+   * @param string $collectionId          
+   * @return string
+   */
+  public function createFromCollection($configuration, $collectionId) {
     return $this->_create ( $configuration, null, null, null, $collectionId );
   }
-  private function _create($configuration, $filter, $condition, $field, $collectionId): string {
+  /**
+   * Create
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param string $field          
+   * @param string $collectionId          
+   * @return string
+   */
+  private function _create($configuration, $filter, $condition, $field, $collectionId) {
     $this->clean ();
     // create strings
     list ( $hash, $brokerConfiguration, $brokerFilter, $brokerCondition, $brokerField, $sourceCollectionId ) = $this->createHash ( $configuration, $filter, $condition, $field, $collectionId );
@@ -125,7 +182,12 @@ class Collection {
       return "";
     }
   }
-  public function delete(string $key) {
+  /**
+   * Delete
+   *
+   * @param string $key          
+   */
+  public function delete($key) {
     $this->clean ();
     $sql = "DELETE FROM \"collection\" WHERE key IS :key;";
     $query = $this->database->prepare ( $sql );
@@ -133,7 +195,14 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function check(string $key, int $recheckTime = 60) {
+  /**
+   * Check
+   *
+   * @param string $key          
+   * @param number $recheckTime          
+   * @return array
+   */
+  public function check($key, $recheckTime = 60) {
     // update expiration
     $sql = "UPDATE \"collection\" SET
         expires = datetime('now', '+60 minutes')
@@ -162,6 +231,12 @@ class Collection {
       return null;
     }
   }
+  /**
+   * Get
+   *
+   * @param string $key          
+   * @return array
+   */
   public function get(string $key) {
     $this->clean ();
     // update expiration
@@ -198,6 +273,12 @@ class Collection {
       return null;
     }
   }
+  /**
+   * Get with dependencies
+   *
+   * @param array $keys          
+   * @return array
+   */
   public function getWithDependencies(array $keys) {
     $result = array ();
     $result ["data"] = array ();
@@ -254,7 +335,18 @@ class Collection {
     }
     return $result;
   }
-  public function setInitialised(string $key, $configuration, string $solrUrl, string $solrCreateRequest, string $solrCheckRequest, string $solrShards, string $collectionIds) {
+  /**
+   * Set initialised
+   *
+   * @param string $key          
+   * @param unknown $configuration          
+   * @param string $solrUrl          
+   * @param string $solrCreateRequest          
+   * @param string $solrCheckRequest          
+   * @param string $solrShards          
+   * @param string $collectionIds          
+   */
+  public function setInitialised(string $key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
     $sql = "UPDATE \"collection\" SET
         initialised = 1,
         configuration = :configuration,
@@ -279,7 +371,12 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUninitialised(string $key) {
+  /**
+   * Set uninitialised
+   *
+   * @param string $key          
+   */
+  public function setUninitialised($key) {
     $sql = "UPDATE \"collection\" SET
         initialised = 0,
         configuration = null,
@@ -298,7 +395,13 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setCreated(string $key, string $solrCreateStatus) {
+  /**
+   * Set created
+   *
+   * @param string $key          
+   * @param string $solrCreateStatus          
+   */
+  public function setCreated($key, $solrCreateStatus) {
     $sql = "UPDATE \"collection\" SET
         solrCreateStatus = :solrCreateStatus,
         numberOfCreates = numberOfCreates + 1,
@@ -313,7 +416,13 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUncreated(string $key, string $solrCreateStatus) {
+  /**
+   * Set uncreated
+   *
+   * @param string $key          
+   * @param string $solrCreateStatus          
+   */
+  public function setUncreated($key, $solrCreateStatus) {
     $sql = "UPDATE \"collection\" SET        
         solrCreateStatus = :solrCreateStatus,
         solrCheckStatus = null,
@@ -327,7 +436,13 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setChecked(string $key, string $solrCheckStatus) {
+  /**
+   * Set checked
+   *
+   * @param string $key          
+   * @param string $solrCheckStatus          
+   */
+  public function setChecked($key, $solrCheckStatus) {
     $sql = "UPDATE \"collection\" SET
         solrCheckStatus = :solrCheckStatus,
         numberOfChecks = numberOfChecks + 1,
@@ -341,7 +456,13 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function setUnchecked(string $key, string $solrCheckStatus = null) {
+  /**
+   * Set unchecked
+   *
+   * @param string $key          
+   * @param string $solrCheckStatus          
+   */
+  public function setUnchecked($key, $solrCheckStatus = null) {
     $sql = "UPDATE \"collection\" SET
         solrCheckStatus = :solrCheckStatus,
         checked = null,
@@ -354,7 +475,12 @@ class Collection {
     $query->execute ();
     unset ( $query );
   }
-  public function doInitialise(string $key) {
+  /**
+   * Do initialise
+   *
+   * @param string $key          
+   */
+  public function doInitialise($key) {
     $localCollectionIds = array ();
     $localWarnings = array ();
     $localErrors = array ();
@@ -373,9 +499,9 @@ class Collection {
           if ($result ["sourceCollectionId"]) {
             $sourceCollectionInfo = $this->get ( $result ["sourceCollectionId"] );
             if ($sourceCollectionInfo && ($sourceCollectionInfo ["key"] == $result ["sourceCollectionId"])) {
-              if ($sourceCollectionInfo ["configuration"] && isset($this->configuration->config["solr"][$sourceCollectionInfo ["configuration"]])) {                
-                $url = $this->configuration->config["solr"][$sourceCollectionInfo ["configuration"]]["url"];
-                array_unshift($localCollectionIds, $result ["sourceCollectionId"]);
+              if ($sourceCollectionInfo ["configuration"] && isset ( $this->configuration->config ["solr"] [$sourceCollectionInfo ["configuration"]] )) {
+                $url = $this->configuration->config ["solr"] [$sourceCollectionInfo ["configuration"]] ["url"];
+                array_unshift ( $localCollectionIds, $result ["sourceCollectionId"] );
                 $subRequestCreate->response = new \stdClass ();
                 $subRequestCreate->response->mtas = new \stdClass ();
                 $subRequestCreate->response->mtas->collection = array ();
@@ -394,7 +520,7 @@ class Collection {
             }
           } else {
             if ($result ["brokerConfiguration"] != null) {
-              $subRequestCreate->configuration = json_decode ($result ["brokerConfiguration"]);
+              $subRequestCreate->configuration = json_decode ( $result ["brokerConfiguration"] );
             }
             if ($result ["brokerFilter"] != null) {
               $subRequestCreate->filter = json_decode ( $result ["brokerFilter"] );
@@ -411,7 +537,7 @@ class Collection {
             $subRequestCreate->response->mtas->collection [0]->field = $result ["brokerField"];
           }
           // create parser for collection
-          if($subRequestCreate) {
+          if ($subRequestCreate) {
             $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this->configuration, null, $this, null );
             // register result from parsing collection request
             $subParserWarnings = $subCreateParser->getWarnings ();
@@ -442,8 +568,8 @@ class Collection {
               // initialise
               $this->setInitialised ( $result ["key"], $subCreateParser->getConfiguration (), $subCreateParser->getUrl (), $subCreateParser->getRequest (), $subCheckParser->getRequest (), ($subCreateParser->getShards () != null) ? implode ( ",", $subCreateParser->getShards () ) : "", implode ( ",", $localCollectionIds ) );
             }
-          }  
-        }        
+          }
+        }
       }
     }
     return array (
@@ -451,7 +577,14 @@ class Collection {
         $localErrors 
     );
   }
-  public function doCheck(string $key, bool $dontReintialise = false): bool {
+  /**
+   * Do check
+   *
+   * @param string $key          
+   * @param boolean $dontReintialise          
+   * @return boolean
+   */
+  public function doCheck($key, $dontReintialise = false) {
     $sql = "SELECT * FROM \"collection\"
     WHERE key IS :key;";
     $query = $this->database->prepare ( $sql );
@@ -508,7 +641,7 @@ class Collection {
           }
           // check
           try {
-            $solr = new \Broker\Solr ( $result["configuration"], $result ["solrUrl"], "select", $result ["solrCheckRequest"], $result ["solrShards"], null );
+            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCheckRequest"], $result ["solrShards"], null );
             $solrResponse = $solr->getResponse ();
             if ($solrResponse && is_object ( $solrResponse )) {
               if (isset ( $solrResponse->mtas ) && is_object ( $solrResponse->mtas )) {
@@ -527,7 +660,7 @@ class Collection {
             // should not happen
           }
           try {
-            $solr = new \Broker\Solr ( $result["configuration"], $result ["solrUrl"], "select", $result ["solrCreateRequest"], $result ["solrShards"], null );
+            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCreateRequest"], $result ["solrShards"], null );
             $solrResponse = $solr->getResponse ();
             if ($solrResponse && is_object ( $solrResponse )) {
               if (isset ( $solrResponse->error )) {
@@ -555,7 +688,12 @@ class Collection {
       return false;
     }
   }
-  public function number(): int {
+  /**
+   * Number
+   *
+   * @return number
+   */
+  public function number() {
     $sql = "SELECT COUNT(*) AS number
     FROM \"collection\";";
     $query = $this->database->prepare ( $sql );
@@ -571,7 +709,14 @@ class Collection {
       return 0;
     }
   }
-  public function list(int $start, int $number) {
+  /**
+   * Get list
+   *
+   * @param number $start          
+   * @param number $number          
+   * @return array
+   */
+  public function getList($start, $number) {
     $sql = "SELECT
         key, initialised, brokerConfiguration, brokerFilter, brokerCondition, brokerField,
         configuration, collectionIds, solrUrl, solrCreateRequest, solrCheckRequest, 
@@ -598,20 +743,32 @@ class Collection {
       return null;
     }
   }
+  /**
+   * Clean
+   */
   public function clean() {
     $sql = "DELETE FROM \"collection\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
   }
-  public function reset() {    
+  /**
+   * Reset
+   */
+  public function reset() {
     $sql = "DROP TABLE IF EXISTS \"collection\";";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
     $this->init ();
   }
-  private function generateKey(int $length = 20): string {
+  /**
+   * Generate key
+   *
+   * @param number $length          
+   * @return string
+   */
+  private function generateKey($length = 20) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen ( $characters );
     $randomString = '';
@@ -620,7 +777,17 @@ class Collection {
     }
     return $randomString;
   }
-  private static function createHash($configuration, $filter, $condition, $field, $collectionId): array {
+  /**
+   * Create hash
+   *
+   * @param unknown $configuration          
+   * @param unknown $filter          
+   * @param unknown $condition          
+   * @param unknown $field          
+   * @param unknown $collectionId          
+   * @return array
+   */
+  private static function createHash($configuration, $filter, $condition, $field, $collectionId) {
     $base = "";
     if ($configuration != null) {
       $brokerConfiguration = json_encode ( $configuration );
