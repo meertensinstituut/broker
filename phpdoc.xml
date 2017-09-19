@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+	<parser>
+		<target>phpdoc</target>
+	</parser>
+	<transformer>
+		<target>gh-pages/apidocs</target>
+	</transformer>
+	<files>
+		<directory>src/includes</directory>
+		<directory>src/config/modules/</directory>
+		<file>src/index.php</file>
+		<file>src/config/config_example.inc.php</file>
+		<ignore>src/config/modules/expansion/LexiconINTExpansion.class.php</ignore>
+	</files>
+	<transformations>
+		<template name="new-black" />
+	</transformations>
+</phpdoc>

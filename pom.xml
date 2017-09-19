@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<properties>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>Broker</groupId>
+	<artifactId>Broker</artifactId>
+	<version>1.0</version>
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<name>BROKER</name>
+	<description>Broker</description>
+	<organization>
+		<name>Meertens Institute</name>
+		<url>http://www.meertens.knaw.nl/</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Matthijs Brouwer</name>
+			<url>https://nl.linkedin.com/in/brouwermatthijs/</url>
+		</developer>
+	</developers>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>gh-pages</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+							<excludes>
+								<exclude>**/.git/</exclude>
+							</excludes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+						<fileset>
+							<directory>phpdoc</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.6</version>
+				<configuration>
+					<siteDirectory>${project.basedir}/doc/</siteDirectory>
+					<outputDirectory>${project.basedir}/gh-pages/</outputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>doc/phpdoc.sh</executable>
+					<workingDirectory>${project.basedir}</workingDirectory>
+          <!-- <arguments>
+            <argument>-c</argument>
+            <argument>doc/phpdoc.sh</argument>
+          </arguments> -->
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- <report>dependencies</report> <report>dependency-info</report> -->
+							<!-- <report>index</report> -->
+							<!-- <report>issue-tracking</report> -->
+							<report>license</report>
+							<!-- <report>plugin-management</report> -->
+							<!-- <report>plugins</report> -->
+							<report>project-team</report>
+							<!-- <report>mailing-list</report> -->
+							<!-- <report>cim</report> -->
+							<!-- <report>scm</report> <report>summary</report> -->
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+</project>
