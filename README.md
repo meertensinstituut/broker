@@ -1,8 +1,6 @@
 # Broker
 
-The broker provides an easy configurable JSON interface translating JSON into Solr requests with support for caching and [query expansion](expansions.html). This enables simple integration of Solr functionality by websites and tools. Support for [Mtas](https://meertensinstituut.github.io/mtas/) is integrated in the Broker.
-
-See [meertensinstituut.github.io/broker/](https://meertensinstituut.github.io/broker/) for more documentation and instructions.
+The broker provides an easy configurable JSON interface translating JSON into Solr requests with support for caching and query expansion. Support for [Mtas](https://meertensinstituut.github.io/mtas/) is integrated in the Broker. See [meertensinstituut.github.io/broker/](https://meertensinstituut.github.io/broker/) for more documentation and instructions.
 
 A Docker image is available. To build and run
 
