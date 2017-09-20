@@ -39,8 +39,8 @@
  * Defaults
  * @package Broker
  */
-define ( &quot;SITE_LOCATION&quot;, dirname ( $_SERVER [&quot;SCRIPT_NAME&quot;] ) . DIRECTORY_SEPARATOR );
-define ( &quot;SITE_ROOT_DIR&quot;, realpath ( dirname ( dirname ( __FILE__ ) ) ) . DIRECTORY_SEPARATOR );
+define ( &quot;SITE_LOCATION&quot;, rtrim(dirname ( $_SERVER [&quot;SCRIPT_NAME&quot;] ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
+define ( &quot;SITE_ROOT_DIR&quot;, rtrim(realpath ( dirname ( dirname ( __FILE__ ) ) ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
 define ( &quot;CONFIG_DIR&quot;, &quot;config&quot; );
 define ( &quot;CONFIG_MODULES_DIR&quot;, &quot;modules&quot; );
 define ( &quot;CONFIG_MODULES_EXPANSION_DIR&quot;, &quot;expansion&quot; );

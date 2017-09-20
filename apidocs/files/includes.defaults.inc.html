@@ -11,11 +11,11 @@
          
     </dd></dl><a name="constants" class="anchor"></a><h2>Constants</h2><div><a id="::SITE_LOCATION" class="anchor"></a><div class="constant publicC"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png" alt="&gt;"></img><img src="../images/icons/arrow_down.png" alt="V" style="display: none;"></img></a><code class="title"><img src="../images/icons/constant.png" alt="Constant"></img> 
                 <span class="highlight">SITE_LOCATION</span>
-                = dirname($_SERVER["SCRIPT_NAME"]) . DIRECTORY_SEPARATOR</code><div class="description"></div><div class="code-tabs"><div xmlns:php="http://php.net/xsl" class="long-description"></div><dl class="constant-info"><dt xmlns:php="http://php.net/xsl">Package</dt><dd xmlns:php="http://php.net/xsl">Broker
+                = rtrim(dirname($_SERVER["SCRIPT_NAME"]), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR</code><div class="description"></div><div class="code-tabs"><div xmlns:php="http://php.net/xsl" class="long-description"></div><dl class="constant-info"><dt xmlns:php="http://php.net/xsl">Package</dt><dd xmlns:php="http://php.net/xsl">Broker
          
     </dd></dl></div><div class="clear"></div></div><a id="::SITE_ROOT_DIR" class="anchor"></a><div class="constant publicC"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png" alt="&gt;"></img><img src="../images/icons/arrow_down.png" alt="V" style="display: none;"></img></a><code class="title"><img src="../images/icons/constant.png" alt="Constant"></img> 
                 <span class="highlight">SITE_ROOT_DIR</span>
-                = realpath(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR</code><div class="description"></div><div class="code-tabs"><div xmlns:php="http://php.net/xsl" class="long-description"></div><dl class="constant-info"><dt xmlns:php="http://php.net/xsl">Package</dt><dd xmlns:php="http://php.net/xsl">Broker
+                = rtrim(realpath(dirname(dirname(__FILE__))), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR</code><div class="description"></div><div class="code-tabs"><div xmlns:php="http://php.net/xsl" class="long-description"></div><dl class="constant-info"><dt xmlns:php="http://php.net/xsl">Package</dt><dd xmlns:php="http://php.net/xsl">Broker
          
     </dd></dl></div><div class="clear"></div></div><a id="::CONFIG_DIR" class="anchor"></a><div class="constant publicC"><a href="#" class="gripper"><img src="../images/icons/arrow_right.png" alt="&gt;"></img><img src="../images/icons/arrow_down.png" alt="V" style="display: none;"></img></a><code class="title"><img src="../images/icons/constant.png" alt="Constant"></img> 
                 <span class="highlight">CONFIG_DIR</span>
