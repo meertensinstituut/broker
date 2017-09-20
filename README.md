@@ -9,5 +9,5 @@ docker build -t broker https://raw.githubusercontent.com/meertensinstituut/broke
 docker run -t -i -p 8080:80 --name broker broker
 ```
 
-This will provide a website on port 8080 on the ip of your docker host with a running broker.
+This will provide a website on port 8080 on the ip of your docker host with a running Broker.
 
