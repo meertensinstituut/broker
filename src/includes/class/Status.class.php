@@ -124,7 +124,8 @@ class Status {
               "description" => null,
               "data" => array () 
           );
-          $dependencies = $parser->getCollection ()->getWithDependencies ( $collectionIds );
+          $collectionObject = $parser->getCollection ();
+          $dependencies = $collectionObject->getWithDependencies ( $collectionIds );
           for($i = 0; $i < count ( $dependencies ["missing"] ); $i ++) {
             $response ["solrRequest"] ["data"] ["collection" . $i] = "collection " . $dependencies ["missing"] [$i] . " is not available";
           }
@@ -300,7 +301,8 @@ class Status {
                 $response ["status"] = "OK";
                 $response ["response"] = clone $solrResponse;
                 $responseJoins = $status ["responseJoins"] ? json_decode ( $status ["responseJoins"] ) : null;
-                $response = (new \Broker\Response ( $response, $responseJoins, $this->configuration, $status ["cache"] ? $this->getCache () : null, $this->collection ))->process ();
+                $responseObject = new \Broker\Response ( $response, $responseJoins, $this->configuration, $status ["cache"] ? $this->getCache () : null, $this->collection );
+                $response = $responseObject->process ();
               } else {
                 $response ["error"] = clone $solrResponse;
               }

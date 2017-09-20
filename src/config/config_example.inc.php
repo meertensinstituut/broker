@@ -4,7 +4,7 @@
  * @package Broker
  */
 $authentication = array (
-    // access based on ip
+    // access based on ip 
     "ip" => array (
         array(
           "ip" => "127.0.0.1/24",

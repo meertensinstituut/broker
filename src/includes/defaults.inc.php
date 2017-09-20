@@ -3,8 +3,8 @@
  * Defaults
  * @package Broker
  */
-define ( "SITE_LOCATION", rtrim(dirname ( $_SERVER ["SCRIPT_NAME"] ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
-define ( "SITE_ROOT_DIR", rtrim(realpath ( dirname ( dirname ( __FILE__ ) ) ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
+define ( "SITE_LOCATION", rtrim ( dirname ( $_SERVER ["SCRIPT_NAME"] ), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR );
+define ( "SITE_ROOT_DIR", rtrim ( realpath ( dirname ( dirname ( __FILE__ ) ) ), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR );
 define ( "CONFIG_DIR", "config" );
 define ( "CONFIG_MODULES_DIR", "modules" );
 define ( "CONFIG_MODULES_EXPANSION_DIR", "expansion" );
@@ -37,6 +37,41 @@ define ( "SITE_CACHE_DATABASE_DIR", SITE_CACHE_DIR . CACHE_DATABASE_DIR . DIRECT
 define ( "SITE_CACHE_SMARTY_DIR", SITE_CACHE_DIR . CACHE_SMARTY_DIR . DIRECTORY_SEPARATOR );
 define ( "SITE_CACHE_SMARTY_CACHE_DIR", SITE_CACHE_SMARTY_DIR . CACHE_SMARTY_CACHE_DIR . DIRECTORY_SEPARATOR );
 define ( "SITE_CACHE_SMARTY_TEMPLATESC_DIR", SITE_CACHE_SMARTY_DIR . CACHE_SMARTY_TEMPLATESC_DIR . DIRECTORY_SEPARATOR );
+
+// check for modules
+if (! extension_loaded ( "curl" )) {
+  die ( "Curl module for PHP is required!" );
+} else if (! extension_loaded ( "pdo_sqlite" )) {
+  die ( "Php_sqlite module for PHP is required!" );
+} else if (! extension_loaded ( "PDO" )) {
+  die ( "PDO module for PHP is required!" );
+}
+
+// support PHP 5.3
+if (! interface_exists ( "SessionHandlerInterface" )) {
+  interface SessionHandlerInterface {
+    public function close();
+    public function destroy($session_id);
+    public function gc($maxlifetime);
+    public function open($save_path, $name);
+    public function read($session_id);
+    public function write($session_id, $session_data);
+  }
+}
+if (! function_exists ( "hash_equals" )) {
+  function hash_equals($str1, $str2) {
+    if (strlen ( $str1 ) != strlen ( $str2 )) {
+      return false;
+    } else {
+      $res = $str1 ^ $str2;
+      $ret = 0;
+      for($i = strlen ( $res ) - 1; $i >= 0; $i --)
+        $ret |= ord ( $res [$i] );
+      return ! $ret;
+    }
+  }
+}
+
 /**
  * Autoloader class
  *

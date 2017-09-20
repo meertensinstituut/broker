@@ -658,12 +658,13 @@ class Configuration {
    * @param int $number          
    * @return array
    */
-  private function _findMtasExamplesTermvector($solrConfiguration, $field, $shards, string $prefix, int $number): array {
+  private function _findMtasExamplesTermvector($solrConfiguration, $field, $shards, $prefix, $number) {
     $values = array ();
     $request = "wt=json&rows=0&q=*:*&mtas=true&mtas.termvector=true";
     $request .= "&mtas.termvector.0.field=" . urlencode ( $field );
     $request .= "&mtas.termvector.0.prefix=" . urlencode ( $prefix );
     $request .= "&mtas.termvector.0.number=" . intval ( $number );
+    $request .= "&mtas.termvector.0.regexp=[a-zA-Z0-9]*";
     $request .= "&mtas.termvector.0.type=sum";
     $request .= "&mtas.termvector.0.sort.type=sum";
     $request .= "&mtas.termvector.0.sort.direction=desc";

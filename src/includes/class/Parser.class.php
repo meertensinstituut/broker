@@ -268,7 +268,8 @@ class Parser {
         $this->solrUrl = null;
         $this->solrShards = null;
       } else {
-        $__config = $this->configuration->getConfig ( "solr" ) [$config];
+        $tmpList = $this->configuration->getConfig ( "solr" );
+        $__config =  $tmpList[$config];
         $this->solrUrl = isset ( $__config ["url"] ) ? $__config ["url"] : "";
         $this->solrShards = isset ( $__config ["shards"] ) ? $__config ["shards"] : "";
         $this->solrConfiguration = $config;
@@ -1615,8 +1616,8 @@ class Parser {
           if (! is_array ( $value ) || count ( $object->queries ) == 0) {
             $this->errors [] = "mtas - stats - spans - {$key} should be array";
           } else {
-            for($i = 0; $i < count ( $value ); $i ++) {
-              $object->{$key} [$i] = $this->checkResponseMtasQuery ( $value [$i], "mtas - stats - spans - query - " );
+            for($i = 0; $i < count ( $value ); $i ++) {              
+              $object->{$key} [$i] = $this->checkResponseMtasQuery ( $value [$i], "mtas - stats - spans - query - " );              
             }
           }
         } else if ($key == "functions") {
@@ -2155,7 +2156,7 @@ class Parser {
    * @param string $prefix          
    * @return unknown
    */
-  private function checkResponseMtasQuery($object, string $prefix) {
+  private function checkResponseMtasQuery($object, $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
         if ($key == "type" || $key == "value" || $key == "prefix" || $key == "ignore") {
@@ -2191,7 +2192,7 @@ class Parser {
    * @param string $prefix          
    * @return unknown
    */
-  private function checkResponseMtasBase($object, string $prefix) {
+  private function checkResponseMtasBase($object, $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
         if ($key == "field" || $key == "type") {
@@ -2258,7 +2259,7 @@ class Parser {
    * @param string $prefix          
    * @return unknown
    */
-  private function checkResponseMtasFunction($object, string $prefix) {
+  private function checkResponseMtasFunction($object, $prefix) {
     if ($object && is_object ( $object )) {
       foreach ( $object as $key => $value ) {
         if ($key == "expression" || $key == "key" || $key == "type") {
@@ -4516,7 +4517,7 @@ class Parser {
    * @param string $prefixMessage          
    * @return array
    */
-  private function computeExpansionValues($value, $expansion, string $prefixMessage = "") {
+  private function computeExpansionValues($value, $expansion, $prefixMessage = "") {
     $values = array ();
     if ($expansion && is_object ( $expansion )) {
       foreach ( $expansion as $key => $item ) {

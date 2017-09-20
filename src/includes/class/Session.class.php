@@ -61,7 +61,7 @@ class Session implements \SessionHandlerInterface {
    * Destruct
    */
   public function __destruct() {
-    session_write_close ( true );
+    //session_write_close ( );
   }
   /**
    *

@@ -57,7 +57,8 @@ if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
           } else if (isset ( $solrResponse->response )) {
             $response ["status"] = "OK";
             $response ["response"] = clone $solrResponse;
-            $response = (new \Broker\Response ( $response, $parser->getResponseJoins (), $configuration, $parser->getCache (), null ))->process ();
+            $responseObject = new \Broker\Response ( $response, $parser->getResponseJoins (), $configuration, $parser->getCache (), null );
+            $response = $responseObject->process ();
           } else {
             $response ["error"] = $solrResponse;
           }

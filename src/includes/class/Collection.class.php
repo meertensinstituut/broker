@@ -237,7 +237,7 @@ class Collection {
    * @param string $key          
    * @return array
    */
-  public function get(string $key) {
+  public function get($key) {
     $this->clean ();
     // update expiration
     $sql = "UPDATE \"collection\" SET
@@ -346,7 +346,7 @@ class Collection {
    * @param string $solrShards          
    * @param string $collectionIds          
    */
-  public function setInitialised(string $key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
+  public function setInitialised($key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
     $sql = "UPDATE \"collection\" SET
         initialised = 1,
         configuration = :configuration,

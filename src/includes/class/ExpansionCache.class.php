@@ -72,7 +72,7 @@ class ExpansionCache {
    * @param unknown $parameters          
    * @param unknown $result          
    */
-  public function create(string $module, $value, $parameters, $result) {
+  public function create($module, $value, $parameters, $result) {
     $this->clean ();
     $value = is_null ( $value ) ? "" : serialize ( $value );
     $parameters = is_null ( $parameters ) ? "" : serialize ( $parameters );
