@@ -45,20 +45,57 @@ if (! extension_loaded ( "curl" )) {
   die ( "Php_sqlite module for PHP is required!" );
 } else if (! extension_loaded ( "PDO" )) {
   die ( "PDO module for PHP is required!" );
+} else if (! extension_loaded ( "mbstring" )) {
+  die ( "Mbstring module for PHP is required!" );
 }
 
 // support PHP 5.3
 if (! interface_exists ( "SessionHandlerInterface" )) {
+  /**
+   * SessionHandlerInterface (if not available)
+   */
   interface SessionHandlerInterface {
+    /**
+     * Close
+     */
     public function close();
+    /**
+     * Destroy
+     * @param string $session_id
+     */    
     public function destroy($session_id);
+    /**
+     * Garbage collect
+     * @param number $maxlifetime
+     */
     public function gc($maxlifetime);
+    /**
+     * Open
+     * @param string $save_path
+     * @param string $name
+     */
     public function open($save_path, $name);
+    /**
+     * Read
+     * @param string $session_id
+     * @return string
+     */
     public function read($session_id);
+    /**
+     * Write
+     * @param string $session_id
+     * @param string $session_data
+     */
     public function write($session_id, $session_data);
   }
 }
 if (! function_exists ( "hash_equals" )) {
+  /**
+   * Hash equals
+   * @param string $str1
+   * @param string $str2
+   * @return boolean
+   */
   function hash_equals($str1, $str2) {
     if (strlen ( $str1 ) != strlen ( $str2 )) {
       return false;

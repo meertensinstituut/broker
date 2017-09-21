@@ -22,7 +22,7 @@
       <item name="Introduction" href="index.html"/>
       <item name="Features" href="features.html"/>
       <item name="Getting started" href="installation.html"/>
-      <item name="Expansions" href="expansions.html"/>       
+      <!-- <item name="Expansions" href="expansions.html"/> //-->       
       <item name="Api documentation" href="apidocs/"/>          
     </menu>
     <menu ref="reports">       

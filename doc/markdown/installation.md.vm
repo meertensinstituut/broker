@@ -1,2 +1,46 @@
 #Getting started
 
+A [Dockerfile](https://www.docker.com/) is available to get started 
+quickly with the Broker.
+
+To build the image
+
+```console
+docker build -t broker https://raw.githubusercontent.com/meertensinstituut/broker/master/docker/Dockerfile
+```
+
+And to run the created image
+
+```console
+docker run -t -i -p 8080:80 --name broker broker
+```
+
+This wil make a Broker available on port 8080 from your docker host ip.
+
+The Broker can also be installed by making the content of the <em>src</em> directory
+in the [source](https://github.com/meertensinstituut/broker/) available on a 
+webserver. 
+
+* Webserver with [PHP](http://php.net/) installed. 
+* The [composer](https://getcomposer.org/) should be available
+* The PHP modules <em>php-curl</em>, <em>php-sqlite</em>, <em>PDO</em> 
+and <em>php-mbstring</em> have to be installed. 
+* Use <em>composer install</em> from the broker directory to get the dependencies.
+* Make the <em>cache</em> directory writeable for the Broker.
+* Visit the Broker location on the webserver, and follow instructions to create
+a configuration file <em>config.inc.php</em>.
+
+---
+
+
+<img src="images/broker_installation.png" style="border:1px solid #000000; width: 400px;" />
+
+Create and save the <em>config.inc.php</em> in the <em>config</em> directory.
+
+Now the Broker is ready to be used.
+
+<img src="images/broker_search.png" style="border:1px solid #000000; width: 400px;" />
+
+
+
+
