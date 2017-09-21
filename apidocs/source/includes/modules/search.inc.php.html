@@ -93,7 +93,8 @@ if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
           } else if (isset ( $solrResponse-&gt;response )) {
             $response [&quot;status&quot;] = &quot;OK&quot;;
             $response [&quot;response&quot;] = clone $solrResponse;
-            $response = (new \Broker\Response ( $response, $parser-&gt;getResponseJoins (), $configuration, $parser-&gt;getCache (), null ))-&gt;process ();
+            $responseObject = new \Broker\Response ( $response, $parser-&gt;getResponseJoins (), $configuration, $parser-&gt;getCache (), null );
+            $response = $responseObject-&gt;process ();
           } else {
             $response [&quot;error&quot;] = $solrResponse;
           }

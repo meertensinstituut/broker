@@ -39,8 +39,8 @@
  * Defaults
  * @package Broker
  */
-define ( &quot;SITE_LOCATION&quot;, rtrim(dirname ( $_SERVER [&quot;SCRIPT_NAME&quot;] ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
-define ( &quot;SITE_ROOT_DIR&quot;, rtrim(realpath ( dirname ( dirname ( __FILE__ ) ) ), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR );
+define ( &quot;SITE_LOCATION&quot;, rtrim ( dirname ( $_SERVER [&quot;SCRIPT_NAME&quot;] ), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR );
+define ( &quot;SITE_ROOT_DIR&quot;, rtrim ( realpath ( dirname ( dirname ( __FILE__ ) ) ), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR );
 define ( &quot;CONFIG_DIR&quot;, &quot;config&quot; );
 define ( &quot;CONFIG_MODULES_DIR&quot;, &quot;modules&quot; );
 define ( &quot;CONFIG_MODULES_EXPANSION_DIR&quot;, &quot;expansion&quot; );
@@ -73,6 +73,78 @@ define ( &quot;SITE_CACHE_DATABASE_DIR&quot;, SITE_CACHE_DIR . CACHE_DATABASE_DI
 define ( &quot;SITE_CACHE_SMARTY_DIR&quot;, SITE_CACHE_DIR . CACHE_SMARTY_DIR . DIRECTORY_SEPARATOR );
 define ( &quot;SITE_CACHE_SMARTY_CACHE_DIR&quot;, SITE_CACHE_SMARTY_DIR . CACHE_SMARTY_CACHE_DIR . DIRECTORY_SEPARATOR );
 define ( &quot;SITE_CACHE_SMARTY_TEMPLATESC_DIR&quot;, SITE_CACHE_SMARTY_DIR . CACHE_SMARTY_TEMPLATESC_DIR . DIRECTORY_SEPARATOR );
+
+// check for modules
+if (! extension_loaded ( &quot;curl&quot; )) {
+  die ( &quot;Curl module for PHP is required!&quot; );
+} else if (! extension_loaded ( &quot;pdo_sqlite&quot; )) {
+  die ( &quot;Php_sqlite module for PHP is required!&quot; );
+} else if (! extension_loaded ( &quot;PDO&quot; )) {
+  die ( &quot;PDO module for PHP is required!&quot; );
+} else if (! extension_loaded ( &quot;mbstring&quot; )) {
+  die ( &quot;Mbstring module for PHP is required!&quot; );
+}
+
+// support PHP 5.3
+if (! interface_exists ( &quot;SessionHandlerInterface&quot; )) {
+  /**
+   * SessionHandlerInterface (if not available)
+   */
+  interface SessionHandlerInterface {
+    /**
+     * Close
+     */
+    public function close();
+    /**
+     * Destroy
+     * @param string $session_id
+     */    
+    public function destroy($session_id);
+    /**
+     * Garbage collect
+     * @param number $maxlifetime
+     */
+    public function gc($maxlifetime);
+    /**
+     * Open
+     * @param string $save_path
+     * @param string $name
+     */
+    public function open($save_path, $name);
+    /**
+     * Read
+     * @param string $session_id
+     * @return string
+     */
+    public function read($session_id);
+    /**
+     * Write
+     * @param string $session_id
+     * @param string $session_data
+     */
+    public function write($session_id, $session_data);
+  }
+}
+if (! function_exists ( &quot;hash_equals&quot; )) {
+  /**
+   * Hash equals
+   * @param string $str1
+   * @param string $str2
+   * @return boolean
+   */
+  function hash_equals($str1, $str2) {
+    if (strlen ( $str1 ) != strlen ( $str2 )) {
+      return false;
+    } else {
+      $res = $str1 ^ $str2;
+      $ret = 0;
+      for($i = strlen ( $res ) - 1; $i &gt;= 0; $i --)
+        $ret |= ord ( $res [$i] );
+      return ! $ret;
+    }
+  }
+}
+
 /**
  * Autoloader class
  *

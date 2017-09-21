@@ -165,7 +165,8 @@ class Response {
           $subResponse = array ();
           $subResponse [&quot;status&quot;] = &quot;OK&quot;;
           $subResponse [&quot;response&quot;] = clone $solrResponse;
-          $subResponse = (new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection ))-&gt;process ();
+          $subResponseObject = new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection );
+          $subResponse = $subResponseObject-&gt;process ();
           return $subResponse [&quot;response&quot;]-&gt;response-&gt;docs;
         }
       }
@@ -272,7 +273,8 @@ class Response {
             $subResponse = array ();
             $subResponse [&quot;status&quot;] = &quot;OK&quot;;
             $subResponse [&quot;response&quot;] = clone $solrResponse;
-            $subResponse = (new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection ))-&gt;process ();
+            $subResponseObject = new \Broker\Response ( $subResponse, $subParser-&gt;getResponseJoins (), $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection );
+            $subResponse = $subResponseObject-&gt;process ();
             return $subResponse [&quot;response&quot;]-&gt;response-&gt;docs;
           }
         }

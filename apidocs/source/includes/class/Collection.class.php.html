@@ -273,7 +273,7 @@ class Collection {
    * @param string $key          
    * @return array
    */
-  public function get(string $key) {
+  public function get($key) {
     $this-&gt;clean ();
     // update expiration
     $sql = &quot;UPDATE \&quot;collection\&quot; SET
@@ -382,7 +382,7 @@ class Collection {
    * @param string $solrShards          
    * @param string $collectionIds          
    */
-  public function setInitialised(string $key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
+  public function setInitialised($key, $configuration, $solrUrl, $solrCreateRequest, $solrCheckRequest, $solrShards, $collectionIds) {
     $sql = &quot;UPDATE \&quot;collection\&quot; SET
         initialised = 1,
         configuration = :configuration,

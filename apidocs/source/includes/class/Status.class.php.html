@@ -160,7 +160,8 @@ class Status {
               &quot;description&quot; =&gt; null,
               &quot;data&quot; =&gt; array () 
           );
-          $dependencies = $parser-&gt;getCollection ()-&gt;getWithDependencies ( $collectionIds );
+          $collectionObject = $parser-&gt;getCollection ();
+          $dependencies = $collectionObject-&gt;getWithDependencies ( $collectionIds );
           for($i = 0; $i &lt; count ( $dependencies [&quot;missing&quot;] ); $i ++) {
             $response [&quot;solrRequest&quot;] [&quot;data&quot;] [&quot;collection&quot; . $i] = &quot;collection &quot; . $dependencies [&quot;missing&quot;] [$i] . &quot; is not available&quot;;
           }
@@ -336,7 +337,8 @@ class Status {
                 $response [&quot;status&quot;] = &quot;OK&quot;;
                 $response [&quot;response&quot;] = clone $solrResponse;
                 $responseJoins = $status [&quot;responseJoins&quot;] ? json_decode ( $status [&quot;responseJoins&quot;] ) : null;
-                $response = (new \Broker\Response ( $response, $responseJoins, $this-&gt;configuration, $status [&quot;cache&quot;] ? $this-&gt;getCache () : null, $this-&gt;collection ))-&gt;process ();
+                $responseObject = new \Broker\Response ( $response, $responseJoins, $this-&gt;configuration, $status [&quot;cache&quot;] ? $this-&gt;getCache () : null, $this-&gt;collection );
+                $response = $responseObject-&gt;process ();
               } else {
                 $response [&quot;error&quot;] = clone $solrResponse;
               }
