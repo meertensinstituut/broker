@@ -1,0 +1,165 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker
+ * @package Broker
+ */
+namespace Broker;
+
+/**
+ * Database
+ */
+abstract class Database {
+  
+  /**
+   * Database
+   *
+   * @var \PDO
+   */
+  public $database;
+  /**
+   * Configuration
+   *
+   * @var unknown
+   */
+  public $configuration;
+  /**
+   * Filename
+   *
+   * @var string
+   */
+  public $filename;
+  /**
+   * Classname
+   *
+   * @var string
+   */
+  private $classname;  
+  /**
+   * Constructor
+   *
+   * @param string $directory
+   * @param unknown $configuration
+   * @param string $classname
+   */  
+  public function __construct($directory, $configuration, $classname) {
+    $this-&gt;classname = $classname;
+    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
+      $this-&gt;filename = $directory;
+      if (! is_writeable ( $this-&gt;filename )) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), $this-&gt;classname );
+      }
+    } else if (is_dir ( $directory )) {
+      $this-&gt;filename = $directory . $this-&gt;classname;
+      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
+        $this-&gt;filename = tempnam ( sys_get_temp_dir (), $this-&gt;classname );
+      }
+    }
+    $this-&gt;configuration = $configuration;
+    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
+    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
+    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+    $this-&gt;init ( false );
+  }
+  
+  /**
+   * Init 
+   */
+  abstract function init();
+  
+  /**
+   * Get number
+   *
+   * @return number
+   */
+  public function number() {
+    $sql = &quot;SELECT COUNT(*) AS number
+    FROM \&quot;&quot;.$this-&gt;classname.&quot;\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    if ($query-&gt;execute ()) {
+      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
+      unset ( $query );
+      if ($result) {
+        return intval ( $result [&quot;number&quot;] );
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  /**
+   * Reset
+   */
+  public function reset() {
+    $sql = &quot;DROP TABLE IF EXISTS \&quot;&quot;.$this-&gt;classname.&quot;\&quot;;&quot;;
+    $query = $this-&gt;database-&gt;prepare ( $sql );
+    $query-&gt;execute ();
+    $this-&gt;errorCheck(&quot;reset&quot;, $query, true);
+    unset ( $query );
+    $this-&gt;init();
+  }
+  /**
+   * Check for errors
+   * @param string $source
+   * @param \PDOStatement $query
+   * @param boolean $removeDatabase
+   */
+  public function errorCheck($source, $query, $removeDatabase) {
+    if($query-&gt;errorCode()!=&quot;00000&quot;) {
+      echo &quot;Problem &quot;.$source.&quot; &quot;.$this-&gt;classname.&quot;: &quot;;
+      var_dump($query-&gt;errorInfo());
+      if($removeDatabase) {
+        @unlink($this-&gt;filename);
+        //if unlink somehow didn't work
+        @chmod($this-&gt;filename, 0777);
+      }
+      exit();
+    }
+  }
+  
+}</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

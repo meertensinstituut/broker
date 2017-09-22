@@ -45,7 +45,7 @@ namespace Broker;
 /**
  * Cache for expansion modules
  */
-class ExpansionCache {
+class ExpansionCache extends Database {
   /**
    * Lifetime
    *
@@ -53,37 +53,17 @@ class ExpansionCache {
    */
   private $lifetime = 3000;
   /**
-   * Filename
-   *
-   * @var string
-   */
-  private $filename;
-  /**
    * Constructor
    *
    * @param string $directory          
    */
   public function __construct($directory) {
-    if (file_exists ( $directory ) &amp;&amp; is_file ( $directory )) {
-      $this-&gt;filename = $directory;
-      if (! is_writeable ( $this-&gt;filename )) {
-        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;expansion&quot; );
-      }
-    } else if (is_dir ( $directory )) {
-      $this-&gt;filename = $directory . &quot;expansion&quot;;
-      if (! is_writable ( $directory ) || (file_exists ( $this-&gt;filename ) &amp;&amp; ! is_writable ( $this-&gt;filename ))) {
-        $this-&gt;filename = tempnam ( sys_get_temp_dir (), &quot;expansion&quot; );
-      }
-    }
-    $this-&gt;database = new \PDO ( &quot;sqlite:&quot; . $this-&gt;filename );
-    $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    // $this-&gt;database-&gt;setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this-&gt;init ();
+    parent::__construct($directory, null, &quot;expansion&quot;);
   }
   /**
    * Initialize
    */
-  private function init() {
+  public function init() {
     $sql = &quot;CREATE TABLE IF NOT EXISTS \&quot;expansion\&quot; (
           \&quot;id\&quot; INTEGER PRIMARY KEY ASC,
           \&quot;hash\&quot; TEXT NOT NULL,
@@ -235,27 +215,6 @@ class ExpansionCache {
     }
   }
   /**
-   * Number
-   *
-   * @return number
-   */
-  public function number() {
-    $sql = &quot;SELECT COUNT(*) AS number
-    FROM \&quot;expansion\&quot;;&quot;;
-    $query = $this-&gt;database-&gt;prepare ( $sql );
-    if ($query-&gt;execute ()) {
-      $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result [&quot;number&quot;] );
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  }
-  /**
    * Get list
    *
    * @param int $start          
@@ -294,17 +253,7 @@ class ExpansionCache {
     $query = $this-&gt;database-&gt;prepare ( $sql );
     $query-&gt;execute ();
     unset ( $query );
-  }
-  /**
-   * Reset
-   */
-  public function reset() {
-    $sql = &quot;DROP TABLE IF EXISTS \&quot;expansion\&quot;;&quot;;
-    $query = $this-&gt;database-&gt;prepare ( $sql );
-    $query-&gt;execute ();
-    unset ( $query );
-    $this-&gt;init ();
-  }
+  }  
   /**
    * Create hash
    *

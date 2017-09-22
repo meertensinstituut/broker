@@ -52,7 +52,6 @@ if (! $authentication-&gt;accessBasedOnLogin ()) {
   if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
     if (isset ( $_POST [&quot;reset&quot;] )) {
       if ($authentication-&gt;accessWithAdminPrivileges ()) {
-        $collection-&gt;number ();
         $cache-&gt;reset ();
         $status-&gt;reset ();
         $collection-&gt;reset ();
