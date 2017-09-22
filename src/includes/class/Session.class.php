@@ -9,45 +9,21 @@ namespace Broker;
 /**
  * Session handler
  */
-class Session implements \SessionHandlerInterface {
-  /**
-   * Database
-   *
-   * @var \PDO
-   */
-  private $database;
-  /**
-   * Filename
-   *
-   * @var string
-   */
-  private $filename;
+class Session extends Database implements \SessionHandlerInterface {
   /**
    * Constructor
    *
    * @param string $directory          
    */
   public function __construct($directory) {
-    if (file_exists ( $directory ) && is_file ( $directory )) {
-      $this->filename = $directory;
-      if (! is_writeable ( $this->filename )) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "session" );
-      }
-    } else if (is_dir ( $directory )) {
-      $this->filename = $directory . "session";
-      if (! is_writable ( $directory ) || (file_exists ( $this->filename ) && ! is_writable ( $this->filename ))) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "session" );
-      }
-    }
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this->init ();
+    parent::__construct($directory, null, "session");
+    @unlink($directory."sessions");
   }
   /**
    * Initialize
    */
-  private function init() {
-    $sql = "CREATE TABLE IF NOT EXISTS sessions(
+  public function init() {
+    $sql = "CREATE TABLE IF NOT EXISTS session(
           id INTEGER PRIMARY KEY ASC,
           sid TEXT NOT NULL UNIQUE,
           data TEXT,
@@ -81,7 +57,7 @@ class Session implements \SessionHandlerInterface {
    * @param string $session_id          
    */
   public function destroy($session_id) {
-    $sql = "DELETE FROM sessions WHERE sid = :sid";
+    $sql = "DELETE FROM session WHERE sid = :sid";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":sid", $session_id );
     return $query->execute ();
@@ -94,7 +70,7 @@ class Session implements \SessionHandlerInterface {
    * @param number $maxlifetime          
    */
   public function gc($maxlifetime) {
-    $sql = "DELETE FROM sessions WHERE updated < datetime('now', '-" . intval ( $maxlifetime ) . " seconds')";
+    $sql = "DELETE FROM session WHERE updated < datetime('now', '-" . intval ( $maxlifetime ) . " seconds')";
     $query = $this->database->prepare ( $sql );
     return $query->execute ();
   }
@@ -117,7 +93,7 @@ class Session implements \SessionHandlerInterface {
    * @param string $session_id          
    */
   public function read($session_id) {
-    $sql = "SELECT data FROM sessions WHERE sid = :sid";
+    $sql = "SELECT data FROM session WHERE sid = :sid";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":sid", $session_id );
     if ($query->execute ()) {
@@ -140,43 +116,12 @@ class Session implements \SessionHandlerInterface {
    * @param unknown $session_data          
    */
   public function write($session_id, $session_data) {
-    $sql = "INSERT OR REPLACE INTO sessions (sid, data, created, updated) 
-                                         VALUES (:sid, :data, COALESCE((SELECT created FROM sessions WHERE sid = :sid), datetime('now')), datetime('now'))";
+    $sql = "INSERT OR REPLACE INTO session (sid, data, created, updated) 
+                                         VALUES (:sid, :data, COALESCE((SELECT created FROM session WHERE sid = :sid), datetime('now')), datetime('now'))";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":sid", $session_id );
     $query->bindValue ( ":data", $session_data );
     return $query->execute ();
-  }
-  /**
-   * Number
-   *
-   * @return number
-   */
-  public function number() {
-    $sql = "SELECT COUNT(*) AS number
-    FROM \"sessions\";";
-    $query = $this->database->prepare ( $sql );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result ["number"] );
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  }
-  /**
-   * Reset
-   */
-  public function reset() {
-    $sql = "DROP TABLE IF EXISTS \"sessions\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
-    $this->init ();
   }
 }
 

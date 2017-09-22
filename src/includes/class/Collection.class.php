@@ -9,53 +9,22 @@ namespace Broker;
 /**
  * Collection
  */
-class Collection {
-  /**
-   * Database
-   *
-   * @var \PDO
-   */
-  private $database;
-  /**
-   * Configuration
-   *
-   * @var unknown
-   */
-  private $configuration;
-  /**
-   * Filename
-   *
-   * @var string
-   */
-  private $filename;
+class Collection extends Database {
+  
   /**
    * Constructor
    *
    * @param string $directory          
-   * @param string $configuration          
+   * @param unknown $configuration          
    */
   public function __construct($directory, $configuration) {
-    if (file_exists ( $directory ) && is_file ( $directory )) {
-      $this->filename = $directory;
-      if (! is_writeable ( $this->filename )) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "collection" );
-      }
-    } else if (is_dir ( $directory )) {
-      $this->filename = $directory . "collection";
-      if (! is_writable ( $directory ) || (file_exists ( $this->filename ) && ! is_writable ( $this->filename ))) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "collection" );
-      }
-    }
-    $this->configuration = $configuration;
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this->init ( false );
+    parent::__construct($directory, $configuration, "collection");
   }
+  
   /**
    * Initialize
    */
-  private function init() {
+  public function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"collection\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"key\" TEXT NOT NULL,
@@ -83,6 +52,7 @@ class Collection {
           UNIQUE(\"hash\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->errorCheck("init", $query, false);
     unset ( $query );
   }
   /**
@@ -137,6 +107,7 @@ class Collection {
     $query->bindValue ( ":brokerField", $brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
+    $this->errorCheck("create - insert", $query, false);
     unset ( $query );
     // update (if already existed)
     $sql = "UPDATE \"collection\" SET expires = datetime('now', '+60 minutes')
@@ -154,6 +125,7 @@ class Collection {
     $query->bindValue ( ":brokerField", $brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
+    $this->errorCheck("create - update", $query, false);
     unset ( $query );
     // get key
     $sql = "SELECT key FROM \"collection\" 
@@ -170,7 +142,7 @@ class Collection {
     $query->bindValue ( ":brokerCondition", $brokerCondition );
     $query->bindValue ( ":brokerField", $brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
-    if ($query->execute ()) {
+    if ($query->execute ()) {      
       $result = $query->fetch ( \PDO::FETCH_ASSOC );
       unset ( $query );
       if ($result) {
@@ -181,20 +153,7 @@ class Collection {
     } else {
       return "";
     }
-  }
-  /**
-   * Delete
-   *
-   * @param string $key          
-   */
-  public function delete($key) {
-    $this->clean ();
-    $sql = "DELETE FROM \"collection\" WHERE key IS :key;";
-    $query = $this->database->prepare ( $sql );
-    $query->bindValue ( ":key", $key );
-    $query->execute ();
-    unset ( $query );
-  }
+  }  
   /**
    * Check
    *
@@ -211,6 +170,7 @@ class Collection {
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":key", $key );
     $query->execute ();
+    $this->errorCheck("check - update", $query, false);
     unset ( $query );
     // get info
     $sql = "SELECT key, configuration, initialised,
@@ -246,6 +206,7 @@ class Collection {
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":key", $key );
     $query->execute ();
+    $this->errorCheck("get - update", $query, false);
     unset ( $query );
     // get info
     $sql = "SELECT 
@@ -369,6 +330,7 @@ class Collection {
     $query->bindValue ( ":solrCheckRequest", $solrCheckRequest );
     $query->bindValue ( ":solrShards", $solrShards );
     $query->execute ();
+    $this->errorCheck("setInitialised", $query, false);
     unset ( $query );
   }
   /**
@@ -393,6 +355,7 @@ class Collection {
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":key", $key );
     $query->execute ();
+    $this->errorCheck("setUninitialised", $query, false);
     unset ( $query );
   }
   /**
@@ -414,6 +377,7 @@ class Collection {
     $query->bindValue ( ":key", $key );
     $query->bindValue ( ":solrCreateStatus", $solrCreateStatus );
     $query->execute ();
+    $this->errorCheck("setCreated", $query, false);
     unset ( $query );
   }
   /**
@@ -434,6 +398,7 @@ class Collection {
     $query->bindValue ( ":key", $key );
     $query->bindValue ( ":solrCreateStatus", $solrCreateStatus );
     $query->execute ();
+    $this->errorCheck("setUncreated", $query, false);
     unset ( $query );
   }
   /**
@@ -454,6 +419,7 @@ class Collection {
     $query->bindValue ( ":key", $key );
     $query->bindValue ( ":solrCheckStatus", $solrCheckStatus );
     $query->execute ();
+    $this->errorCheck("setChecked", $query, false);
     unset ( $query );
   }
   /**
@@ -473,6 +439,7 @@ class Collection {
     $query->bindValue ( ":key", $key );
     $query->bindValue ( ":solrCheckStatus", $solrCheckStatus );
     $query->execute ();
+    $this->errorCheck("setUnchecked", $query, false);
     unset ( $query );
   }
   /**
@@ -689,27 +656,6 @@ class Collection {
     }
   }
   /**
-   * Number
-   *
-   * @return number
-   */
-  public function number() {
-    $sql = "SELECT COUNT(*) AS number
-    FROM \"collection\";";
-    $query = $this->database->prepare ( $sql );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result ["number"] );
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  }
-  /**
    * Get list
    *
    * @param number $start          
@@ -744,23 +690,28 @@ class Collection {
     }
   }
   /**
+   * Delete
+   *
+   * @param string $key
+   */
+  public function delete($key) {
+    $this->clean ();
+    $sql = "DELETE FROM \"collection\" WHERE key IS :key;";
+    $query = $this->database->prepare ( $sql );
+    $query->bindValue ( ":key", $key );
+    $query->execute ();
+    $this->errorCheck("delete", $query, false);
+    unset ( $query );
+  }
+  /**
    * Clean
    */
   public function clean() {
     $sql = "DELETE FROM \"collection\" WHERE expires < datetime('now');";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->errorCheck("clean", $query, false);
     unset ( $query );
-  }
-  /**
-   * Reset
-   */
-  public function reset() {
-    $sql = "DROP TABLE IF EXISTS \"collection\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
-    $this->init ();
   }
   /**
    * Generate key

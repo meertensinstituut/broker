@@ -38,11 +38,18 @@ $solr = array (
             "http://localhost:8983/solr/core4/" 
         ),
         "exampleFieldText"=> "title",  
+        "exampleFieldTextValues"=>array("jan","piet","kees","els","miep","greet"),
         "exampleFieldInteger"=> "year",
+        "exampleFieldIntegerValues"=>null, //autofill
         "exampleFieldString"=> "genre",
+        "exampleFieldStringValues"=>null, //autofill
+        "exampleFieldMtas"=> "mtas",
         "exampleMtasPrefixWord"=>"t_lc",
-        "exampleMtasPrefixLemma"=>"lemma",
-        "exampleMtasPrefixPos"=>"pos"
+        "exampleMtasPrefixWordValues"=>array("koe","paard","schaap","geit","kip","ezel","konijn","cavia","muis","rat"),
+        "exampleMtasPrefixLemma"=>"lemma", 
+        "exampleMtasPrefixLemmaValues"=>array("boom","struik","gras","plant","bloem","aarde","wortel","blad","hout","mest"),
+        "exampleMtasPrefixPos"=>"pos",
+        "exampleMtasPrefixPosValues"=>null,
     ),         
 );
 ?>

@@ -464,17 +464,17 @@
         <button class="json">Example type 'cql' with 'ignore'</button>
         <div class="json">{ "condition" : { "type": "cql", "field"
           : "::exampleFieldMtas(fieldName)::", "value" :
-          "[::exampleFieldMtasEscapedPosValue2(prefix=\"value1\")::]::space::[::exampleFieldMtasEscapedPosValue3(prefix=\"value2\")::]",
+          "[::exampleFieldMtasEscapedLemmaValue2(prefix=\"value1\")::]::space::[::exampleFieldMtasEscapedPosValue3(prefix=\"value2\")::]",
           "ignore" :
-          "[::exampleFieldMtasEscapedPosValue1(prefix=\"value3\")::]", "maximumIgnoreLength": 100},
+          "[::exampleFieldMtasEscapedWordValue8(prefix=\"value3\")::]", "maximumIgnoreLength": 100},
           "response": { "documents": { "start": 0, "rows": 10, "fields":
           [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
       </td>
       <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
         for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
-        matches [::exampleFieldMtasPosValue2(prefix="value1")::]
+        matches [::exampleFieldMtasLemmaValue2(prefix="value1")::]
         [::exampleFieldMtasPosValue3(prefix="value2")::] ignoring the
-        occurrence of <em>[::exampleFieldMtasPosValue1(prefix="value3")::]</em>.
+        occurrence of <em>[::exampleFieldMtasWordValue8(prefix="value3")::]</em>.
       </td>
     </tr>
   </table>

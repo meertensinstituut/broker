@@ -9,25 +9,7 @@ namespace Broker;
 /**
  * Status
  */
-class Status {
-  /**
-   * Database
-   *
-   * @var \PDO
-   */
-  private $database;
-  /**
-   * Configuration
-   *
-   * @var unknown
-   */
-  private $configuration;
-  /**
-   * Filename
-   *
-   * @var string
-   */
-  private $filename;
+class Status extends Database {  
   /**
    * Collection
    *
@@ -54,28 +36,13 @@ class Status {
    * @param \Broker\Cache $cache          
    */
   public function __construct($directory, $configuration, $cache) {
-    if (file_exists ( $directory ) && is_file ( $directory )) {
-      $this->filename = $directory;
-      if (! is_writeable ( $this->filename )) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "status" );
-      }
-    } else if (is_dir ( $directory )) {
-      $this->filename = $directory . "status";
-      if (! is_writable ( $directory ) || (file_exists ( $this->filename ) && ! is_writable ( $this->filename ))) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "status" );
-      }
-    }
-    $this->configuration = $configuration;
-    $this->cache = $cache;
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this->init ();
+    parent::__construct($directory, $configuration, "status");
+    $this->cache = $cache;    
   }
   /**
    * Init
    */
-  private function init() {
+  public function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"status\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"key\" TEXT NOT NULL,
@@ -96,6 +63,7 @@ class Status {
           UNIQUE(\"key\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
+    $this->errorCheck("init", $query, false);
     unset ( $query );
   }
   /**
@@ -377,40 +345,7 @@ class Status {
       $response ["error"] = "status not found";
     }
     return $response;
-  }
-  /**
-   * Delete
-   *
-   * @param string $key          
-   */
-  public function delete($key) {
-    $sql = "DELETE FROM \"status\" WHERE key IS :key;";
-    $query = $this->database->prepare ( $sql );
-    $query->bindValue ( ":key", $key );
-    $query->execute ();
-    unset ( $query );
-  }
-  /**
-   * Get number
-   *
-   * @return number
-   */
-  public function number() {
-    $sql = "SELECT COUNT(*) AS number
-    FROM \"status\";";
-    $query = $this->database->prepare ( $sql );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result ["number"] );
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  }
+  }    
   /**
    * List
    *
@@ -446,6 +381,20 @@ class Status {
     }
   }
   /**
+   * Delete
+   *
+   * @param string $key
+   */
+  public function delete($key) {
+    $this->clean ();
+    $sql = "DELETE FROM \"status\" WHERE key IS :key;";
+    $query = $this->database->prepare ( $sql );
+    $query->bindValue ( ":key", $key );
+    $query->execute ();
+    $this->errorCheck("delete", $query, false);
+    unset ( $query );
+  }
+  /**
    * Clean
    */
   public function clean() {
@@ -453,16 +402,6 @@ class Status {
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
-  }
-  /**
-   * Reset
-   */
-  public function reset() {
-    $sql = "DROP TABLE IF EXISTS \"status\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
-    $this->init ();
   }
   /**
    * Get (or create) collection

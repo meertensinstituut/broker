@@ -167,7 +167,7 @@ class Configuration {
   public function reset() {
     unlink ( SITE_CACHE_CONFIGURATION_DIR . "solr.json" );
     if (file_exists ( $this->filename ) && is_readable ( $this->filename )) {
-      $this->getSolrConfiguration ( md5 ( $file ), filectime ( $file ) );
+      $this->getSolrConfiguration ( md5 ( $this->filename ), filectime ( $this->filename ) );
     }
   }
   /**
@@ -195,16 +195,18 @@ class Configuration {
    * @param number $filetime          
    */
   private function getSolrConfiguration($md5hash, $filetime) {
-    $filename = SITE_CACHE_CONFIGURATION_DIR . "solr.json";
-    if (file_exists ( $filename )) {
-      $data = file_get_contents ( $filename );
+    $solrConfigurationFilename = SITE_CACHE_CONFIGURATION_DIR . "solr.json";
+    if (file_exists ( $solrConfigurationFilename )) {
+      $data = file_get_contents ( $solrConfigurationFilename );
       $this->solr = json_decode ( $data, true );
-      $this->solrTimestamp = filemtime ( $filename );
+      $this->solrTimestamp = filemtime ( $solrConfigurationFilename );
       if ($this->solr && json_last_error () == JSON_ERROR_NONE) {
         if (! isset ( $this->solr ["_md5hash"] ) || $this->solr ["_md5hash"] != $md5hash) {
-          unlink ( $filename );
+          // delete
+          unlink ( $solrConfigurationFilename );
         } else if (! isset ( $this->solr ["_filetime"] ) || $this->solr ["_filetime"] != $filetime) {
-          unlink ( $filename );
+          // delete also
+          unlink ( $solrConfigurationFilename );
         } else {
           return;
         }
@@ -250,7 +252,6 @@ class Configuration {
           $result = curl_exec ( $ch );
           if ($data = json_decode ( $result, true )) {
             if (isset ( $data ["schema"] ) && is_array ( $data ["schema"] )) {
-              $queryParsers = array ();
               $fieldTypes = array ();
               $fieldTypes ["text"] = array ();
               $fieldTypes ["boolean"] = array ();
@@ -307,21 +308,17 @@ class Configuration {
               if (isset ( $data ["schema"] ["uniqueKey"] ) && is_string ( $data ["schema"] ["uniqueKey"] )) {
                 $this->solr [$key] ["uniqueKey"] = $data ["schema"] ["uniqueKey"];
               }
-              list ( $this->solr [$key] ["exampleFieldText"], $this->solr [$key] ["exampleFieldTextValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldText"] ) ? $solrConfiguration ["exampleFieldText"] : null, $this->solr [$key], $solrConfiguration, array (
+              list ( $this->solr [$key] ["exampleFieldText"], $this->solr [$key] ["exampleFieldTextValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldText"] ) ? $solrConfiguration ["exampleFieldText"] : null, isset ( $solrConfiguration ["exampleFieldTextValues"] ) ? $solrConfiguration ["exampleFieldTextValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "title",
                   "name" 
               ), "text", true, null, true, null, false );
-              list ( $this->solr [$key] ["exampleFieldString"], $this->solr [$key] ["exampleFieldStringValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldString"] ) ? $solrConfiguration ["exampleFieldString"] : null, $this->solr [$key], $solrConfiguration, array (
+              list ( $this->solr [$key] ["exampleFieldString"], $this->solr [$key] ["exampleFieldStringValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldString"] ) ? $solrConfiguration ["exampleFieldString"] : null, isset ( $solrConfiguration ["exampleFieldStringValues"] ) ? $solrConfiguration ["exampleFieldStringValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "title",
                   "name" 
               ), "text", true, null, true, null, false );
-              list ( $this->solr [$key] ["exampleFieldInteger"], $this->solr [$key] ["exampleFieldIntegerValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldInteger"] ) ? $solrConfiguration ["exampleFieldInteger"] : null, $this->solr [$key], $solrConfiguration, array (
+              list ( $this->solr [$key] ["exampleFieldInteger"], $this->solr [$key] ["exampleFieldIntegerValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldInteger"] ) ? $solrConfiguration ["exampleFieldInteger"] : null, isset ( $solrConfiguration ["exampleFieldIntegerValues"] ) ? $solrConfiguration ["exampleFieldIntegerValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "year" 
               ), "integer", true, null, true, null, false );
-              // list ( $this->solr [$key] ["exampleFieldMtas"], $this->solr [$key] ["exampleFieldMtasValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldMtas"] ) ? $solrConfiguration ["exampleFieldMtas"] : null, $this->solr [$key], $solrConfiguration, array (
-              // "mtas"
-              // ), null, true, null, null, null, true );
-              
               list ( $this->solr [$key] ["exampleFieldMtas"], $this->solr [$key] ["exampleFieldMtasWord"], $this->solr [$key] ["exampleFieldMtasLemma"], $this->solr [$key] ["exampleFieldMtasPos"], $this->solr [$key] ["exampleFieldMtasSinglePosition"], $this->solr [$key] ["exampleFieldMtasMultiplePosition"], $this->solr [$key] ["exampleFieldMtasSetPosition"], $this->solr [$key] ["exampleFieldMtasIntersecting"] ) = $this->_findMtasExamples ( isset ( $solrConfiguration ["exampleFieldMtas"] ) ? $solrConfiguration ["exampleFieldMtas"] : null, $this->solr [$key], $solrConfiguration, array (
                   "mtas" 
               ) );
@@ -367,7 +364,7 @@ class Configuration {
     } else {
       die ( "No (valid) solr configuration" );
     }
-    file_put_contents ( $filename, json_encode ( $this->solr ) );
+    file_put_contents ( $solrConfigurationFilename, json_encode ( $this->solr ) );
   }
   /**
    * Process solr configuration
@@ -573,8 +570,8 @@ class Configuration {
       } else {
         $shards = null;
       }
-      $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, $shards, null );
-      $response = $solr->getResponse ();
+      $tmpSolr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, $shards, null );
+      $response = $tmpSolr->getResponse ();
       if (is_object ( $response ) && isset ( $response->mtas ) && isset ( $response->mtas->prefix )) {
         $number = 10;
         $singlePosition = isset ( $response->mtas->prefix [0]->singlePosition ) ? $response->mtas->prefix [0]->singlePosition : array ();
@@ -599,7 +596,17 @@ class Configuration {
           $word = array (
               $singlePosition [0] 
           );
-          $word [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $word [0], $number );
+          if (isset ( $solrConfiguration ["exampleMtasPrefixWordValues"] ) && is_array ( $solrConfiguration ["exampleMtasPrefixWordValues"] )) {
+            $values = array ();
+            foreach ( $solrConfiguration ["exampleMtasPrefixWordValues"] as $valuesItem ) {
+              if (is_string ( $valuesItem )) {
+                $values [] = $valuesItem;
+              }
+            }
+            $word [] = $values;
+          } else {
+            $word [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $word [0], $number );
+          }
           // get lemma
           if (isset ( $solrConfiguration ["exampleMtasPrefixLemma"] ) && is_string ( $solrConfiguration ["exampleMtasPrefixLemma"] )) {
             $hints = array (
@@ -614,7 +621,17 @@ class Configuration {
           $lemma = array (
               $singlePosition [0] 
           );
-          $lemma [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $lemma [0], $number );
+          if (isset ( $solrConfiguration ["exampleMtasPrefixLemmaValues"] ) && is_array ( $solrConfiguration ["exampleMtasPrefixLemmaValues"] )) {
+            $values = array ();
+            foreach ( $solrConfiguration ["exampleMtasPrefixLemmaValues"] as $valuesItem ) {
+              if (is_string ( $valuesItem )) {
+                $values [] = $valuesItem;
+              }
+            }
+            $lemma [] = $values;
+          } else {
+            $lemma [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $lemma [0], $number );
+          }
           // get pos
           if (isset ( $solrConfiguration ["exampleMtasPrefixPos"] ) && is_string ( $solrConfiguration ["exampleMtasPrefixPos"] )) {
             $hints = array (
@@ -629,7 +646,17 @@ class Configuration {
           $pos = array (
               $singlePosition [0] 
           );
-          $pos [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $pos [0], $number );
+          if (isset ( $solrConfiguration ["exampleMtasPrefixPosValues"] ) && is_array ( $solrConfiguration ["exampleMtasPrefixPosValues"] )) {
+            $values = array ();
+            foreach ( $solrConfiguration ["exampleMtasPrefixPosValues"] as $valuesItem ) {
+              if (is_string ( $valuesItem )) {
+                $values [] = $valuesItem;
+              }
+            }
+            $pos [] = $values;
+          } else {
+            $pos [] = $this->_findMtasExamplesTermvector ( $solrConfiguration, $field, $shards, $pos [0], $number );
+          }
         }
         sort ( $singlePosition );
         sort ( $multiplePosition );
@@ -682,6 +709,7 @@ class Configuration {
    * Find example
    *
    * @param string $configSuggestion          
+   * @param array $configValuesSuggestion          
    * @param array $configuration          
    * @param array $solrConfiguration          
    * @param array $hints          
@@ -692,7 +720,7 @@ class Configuration {
    * @param boolean $multivalued          
    * @param boolean $mtas          
    */
-  private function _findExample($configSuggestion, $configuration, $solrConfiguration, $hints = null, $type = null, $indexed = null, $required = null, $stored = null, $multivalued = null, $mtas = null) {
+  private function _findExample($configSuggestion, $configValuesSuggestion, $configuration, $solrConfiguration, $hints = null, $type = null, $indexed = null, $required = null, $stored = null, $multivalued = null, $mtas = null) {
     if ($configSuggestion != null && $this->_checkField ( $configSuggestion, $configuration, $type, $indexed, $required, $stored, $multivalued, $mtas )) {
       $field = $configSuggestion;
     } else {
@@ -710,31 +738,40 @@ class Configuration {
     }
     // get values
     if ($field != null) {
-      $request = "wt=json&terms.fl=" . urlencode ( $field );
-      if (isset ( $solrConfiguration ["shards"] ) && count ( $solrConfiguration ["shards"] ) > 0) {
-        $shards = implode ( ",", $solrConfiguration ["shards"] );
-        $request .= "&shards.qt=terms";
-      } else {
-        $shards = null;
-      }
-      $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "terms", $request, $shards, null );
-      $response = $solr->getResponse ();
-      if (is_object ( $response ) && isset ( $response->terms ) && isset ( $response->terms->{$field} )) {
-        if (is_object ( $response->terms->{$field} )) {
-          $values = array_keys ( get_object_vars ( $response->terms->{$field} ) );
-        } else if (is_array ( $response->terms->{$field} )) {
-          $values = $response->terms->{$field};
-          foreach ( $values as $key => $value ) {
-            if ($key & 1) {
-              unset ( $values [$key] );
-            }
+      if ($configValuesSuggestion != null && is_array ( $configValuesSuggestion )) {
+        $values = array();
+        foreach ($configValuesSuggestion AS $valuesItem) {
+          if(is_string($valuesItem)) {
+            $values[]=$valuesItem;
           }
-          $values = array_values ( $values );
+        }
+      } else {
+        $request = "wt=json&terms.fl=" . urlencode ( $field );
+        if (isset ( $solrConfiguration ["shards"] ) && count ( $solrConfiguration ["shards"] ) > 0) {
+          $shards = implode ( ",", $solrConfiguration ["shards"] );
+          $request .= "&shards.qt=terms";
+        } else {
+          $shards = null;
+        }
+        $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "terms", $request, $shards, null );
+        $response = $solr->getResponse ();
+        if (is_object ( $response ) && isset ( $response->terms ) && isset ( $response->terms->{$field} )) {
+          if (is_object ( $response->terms->{$field} )) {
+            $values = array_keys ( get_object_vars ( $response->terms->{$field} ) );
+          } else if (is_array ( $response->terms->{$field} )) {
+            $values = $response->terms->{$field};
+            foreach ( $values as $key => $value ) {
+              if ($key & 1) {
+                unset ( $values [$key] );
+              }
+            }
+            $values = array_values ( $values );
+          } else {
+            $values = null;
+          }
         } else {
           $values = null;
         }
-      } else {
-        $values = null;
       }
     } else {
       $values = null;

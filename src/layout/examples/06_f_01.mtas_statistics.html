@@ -207,13 +207,13 @@
           "type": "cql", 
           "value": "\"::exampleFieldMtasWordPostfix1(value)::\"::space::[::exampleFieldMtasEscapedPosValue0(prefix=\"value\")::]",
           "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
-          "ignore": "[::exampleFieldMtasEscapedPosValue2(prefix=\"value\")::]",
-          "maximumIgnoreLength": 2}]}]
+          "ignore": "[::exampleFieldMtasEscapedLemmaValue2(prefix=\"value\")::]",
+          "maximumIgnoreLength": 10}]}]
           }}}}</div>
       </td>
       <td class="text">Get statistics for CQL query <em>"::exampleFieldMtasWordPostfix1(value)::"::space::[::exampleFieldMtasPosValue0(prefix="value")::]</em> 
       with <em>"::exampleFieldMtasWordPrefix(prefix)::"</em> as default <em>prefix</em>, ignoring
-      <em>[::exampleFieldMtasPosValue2(prefix="value")::]</em> with a maximum of 2 in 
+      <em>[::exampleFieldMtasLemmaValue2(prefix="value")::]</em> with a maximum of 10 in 
       <em>::exampleFieldMtas(fieldName)::</em>.
       </td>
     </tr>
@@ -250,11 +250,11 @@ since this is automatically derived from the CQL query with the different instan
           "spans": [ {"field":"::exampleFieldMtas(fieldName)::", 
           "queries" : [{
             "type": "cql", 
-            "value": "[::exampleFieldMtasPosPrefix(prefix)::=$1]",
+            "value": "[::exampleFieldMtasLemmaPrefix(prefix)::=$1]",
             "variables" : {
               "definitions" : [{
                 "name": "1",
-                "value": "::exampleFieldMtasPosPostfix0(value1)::,::exampleFieldMtasPosPostfix1(value2)::",
+                "value": "::exampleFieldMtasLemmaPostfix0(value1)::,::exampleFieldMtasLemmaPostfix1(value2)::",
                 "expansion": {
                   "type": "explode"
                 }
@@ -264,9 +264,9 @@ since this is automatically derived from the CQL query with the different instan
           }]
           }}}}</div>
       </td>
-      <td class="text">Get statistics for CQL query <em>[::exampleFieldMtasPosPrefix(prefix)::=$1]</em> in 
+      <td class="text">Get statistics for CQL query <em>[::exampleFieldMtasLemmaPrefix(prefix)::=$1]</em> in 
       <em>::exampleFieldMtas(fieldName)::</em> with <em>$1</em> defined as the <em>explode</em> expansion
-      of <em>::exampleFieldMtasPosPostfix0(value1)::,::exampleFieldMtasPosPostfix1(value2)::</em>.
+      of <em>::exampleFieldMtasLemmaPostfix0(value1)::,::exampleFieldMtasLemmaPostfix1(value2)::</em>.
       </td>
     </tr>
   </table>

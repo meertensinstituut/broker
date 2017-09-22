@@ -9,13 +9,7 @@ namespace Broker;
 /**
  * Cache
  */
-class Cache {
-  /**
-   * Configuration
-   *
-   * @var unknown
-   */
-  private $configuration;
+class Cache extends Database {
   /**
    * Lifetime
    *
@@ -23,39 +17,18 @@ class Cache {
    */
   private $lifetime = 3000;
   /**
-   * Filename
-   *
-   * @var string
-   */
-  private $filename;
-  /**
    * Constructor
    *
    * @param string $directory          
    * @param unknown $configuration          
    */
   public function __construct($directory, $configuration) {
-    if (file_exists ( $directory ) && is_file ( $directory )) {
-      $this->filename = $directory;
-      if (! is_writeable ( $this->filename )) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "cache" );
-      }
-    } else if (is_dir ( $directory )) {
-      $this->filename = $directory . "collection";
-      if (! is_writable ( $directory ) || (file_exists ( $this->filename ) && ! is_writable ( $this->filename ))) {
-        $this->filename = tempnam ( sys_get_temp_dir (), "cache" );
-      }
-    }
-    $this->configuration = $configuration;
-    $this->database = new \PDO ( "sqlite:" . $this->filename );
-    $this->database->setAttribute ( \PDO::ATTR_TIMEOUT, 5000 );
-    // $this->database->setAttribute ( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-    $this->init ();
+    parent::__construct($directory, $configuration, "cache");
   }
   /**
    * Init
    */
-  private function init() {
+  public function init() {
     $sql = "CREATE TABLE IF NOT EXISTS \"cache\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"hash\" TEXT NOT NULL,
@@ -185,27 +158,6 @@ class Cache {
     }
   }
   /**
-   * Number
-   *
-   * @return number
-   */
-  public function number() {
-    $sql = "SELECT COUNT(*) AS number
-      FROM \"cache\";";
-    $query = $this->database->prepare ( $sql );
-    if ($query->execute ()) {
-      $result = $query->fetch ( \PDO::FETCH_ASSOC );
-      unset ( $query );
-      if ($result) {
-        return intval ( $result ["number"] );
-      } else {
-        return 0;
-      }
-    } else {
-      return 0;
-    }
-  }
-  /**
    * Get list
    *
    * @param number $start          
@@ -244,17 +196,7 @@ class Cache {
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
-  }
-  /**
-   * Reset
-   */
-  public function reset() {
-    $sql = "DROP TABLE IF EXISTS \"cache\";";
-    $query = $this->database->prepare ( $sql );
-    $query->execute ();
-    unset ( $query );
-    $this->init ();
-  }
+  }  
   /**
    * Create hash
    *

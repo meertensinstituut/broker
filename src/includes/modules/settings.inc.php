@@ -16,7 +16,6 @@ if (! $authentication->accessBasedOnLogin ()) {
   if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
     if (isset ( $_POST ["reset"] )) {
       if ($authentication->accessWithAdminPrivileges ()) {
-        $collection->number ();
         $cache->reset ();
         $status->reset ();
         $collection->reset ();

@@ -63,12 +63,18 @@
             <td>{if isset($settings.shards) && is_array($settings.shards)}{foreach $settings.shards as $shard}{if is_string($shard)}{$shard|escape:html}{else}?{/if}<br/>{/foreach}{else}---{/if}</td>
             <td>
               exampleFieldText: {if isset($settings.exampleFieldText) && is_string($settings.exampleFieldText)}{$settings.exampleFieldText|escape:html}{else}---{/if}<br />
+              exampleFieldTextValues: {if isset($settings.exampleFieldTextValues) && is_array($settings.exampleFieldTextValues)}{$settings.exampleFieldTextValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleFieldInteger: {if isset($settings.exampleFieldInteger) && is_string($settings.exampleFieldInteger)}{$settings.exampleFieldInteger|escape:html}{else}---{/if}<br />
+              exampleFieldIntegerValues: {if isset($settings.exampleFieldIntegerValues) && is_array($settings.exampleFieldIntegerValues)}{$settings.exampleFieldIntegerValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleFieldString: {if isset($settings.exampleFieldString) && is_string($settings.exampleFieldString)}{$settings.exampleFieldString|escape:html}{else}---{/if}<br />
+              exampleFieldStringValues: {if isset($settings.exampleFieldStringValues) && is_array($settings.exampleFieldStringValues)}{$settings.exampleFieldStringValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleFieldMtas: {if isset($settings.exampleFieldMtas) && is_string($settings.exampleFieldMtas)}{$settings.exampleFieldMtas|escape:html}{else}---{/if}<br />
               exampleMtasPrefixWord: {if isset($settings.exampleMtasPrefixWord) && is_string($settings.exampleMtasPrefixWord)}{$settings.exampleMtasPrefixWord|escape:html}{else}---{/if}<br />
+              exampleMtasPrefixWordValues: {if isset($settings.exampleMtasPrefixWordValues) && is_array($settings.exampleMtasPrefixWordValues)}{$settings.exampleMtasPrefixWordValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleMtasPrefixLemma: {if isset($settings.exampleMtasPrefixLemma) && is_string($settings.exampleMtasPrefixLemma)}{$settings.exampleMtasPrefixLemma|escape:html}{else}---{/if}<br />
+              exampleMtasPrefixLemmaValues: {if isset($settings.exampleMtasPrefixLemmaValues) && is_array($settings.exampleMtasPrefixLemmaValues)}{$settings.exampleMtasPrefixLemmaValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleMtasPrefixPos: {if isset($settings.exampleMtasPrefixPos) && is_string($settings.exampleMtasPrefixPos)}{$settings.exampleMtasPrefixPos|escape:html}{else}---{/if}<br />
+              exampleMtasPrefixPosValues: {if isset($settings.exampleMtasPrefixPosValues) && is_array($settings.exampleMtasPrefixPosValues)}{$settings.exampleMtasPrefixPosValues|implode:", "|escape:html}{else}---{/if}<br />              
             </td>          
           </tr>
         {/foreach}

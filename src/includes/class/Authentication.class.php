@@ -60,7 +60,7 @@ class Authentication {
       // session
       $sessionObject = new \Broker\Session ( SITE_CACHE_DATABASE_DIR );
       session_set_save_handler ( $sessionObject );
-      session_name ( "broker" );
+      session_name ( "brokerSession" );
       session_start ();
       // checks
       $this->accessBasedOnIP = $this->validateIP ( $_SERVER ["REMOTE_ADDR"] );

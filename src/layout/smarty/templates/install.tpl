@@ -88,12 +88,18 @@
       //  "http://localhost:8983/solr/demoCore3/", 
       //),
       //"exampleFieldText"=> "title",       // optional: preferred field examples
+      //"exampleFieldTextValues"=>array("koe","paard","schaap","geit","kip","ezel","konijn","cavia","muis","rat"),
       //"exampleFieldInteger"=> "year",     // optional: preferred field examples
+      //"exampleFieldTextValues"=>null, //autofill
       //"exampleFieldString"=> "genre",     // optional: preferred field examples                            
+      //"exampleFieldStringValues"=>null, //autofill
       //"exampleFieldMtas" => "mtas",       // optional: preferred field examples
       //"exampleMtasPrefixWord"=> "t_lc",   // optional: preferred prefix examples
+      //"exampleMtasPrefixWordValues"=>array("koe","paard","schaap","geit","kip","ezel","konijn","cavia","muis","rat"),
       //"exampleMtasPrefixLemma"=> "lemma", // optional: preferred prefix examples
+      //"exampleMtasPrefixLemmaValues"=>array("boom","struik","gras","plant","bloem","aarde","wortel","blad","hout","mest"),
       //"exampleMtasPrefixPos"=> "pos",     // optional: preferred prefix examples
+      //"exampleMtasPrefixPosValues"=>null,
     ), 
     //"config2" => array ( 
     //  "url" => "http://localhost:8983/solr/core1/" // obligatory: url solr core
