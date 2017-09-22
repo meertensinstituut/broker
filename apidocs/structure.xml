@@ -17,7 +17,7 @@
     </docblock>
     <source>eJyVVFFv2jAQfudXWBYPbYVmaLut6wbdJm3SpFWq1Gp7QZqOcCQGx7Zspy379fM5FBIKZQ0SsXOf77777s6frmxhO+LkpMNO2LdHKK1Clhk9k3nlIEijyfDZQraAHNlXZxbo4ifR6UIVCtRBZgnGhgycgyU76rD4CMEgy9B7NgGPUxYB0rJk4tJyNhy14PSk/Wa7AfLB6fs3/fgbiNNz3msgGNdQYg36UoebOVMyZTJQhfGhgT6ul6vXDn7K5FILC94/GDetqaZv+9myJt0Wm2sIoZBzT4pVD+jatJuOebmCbkOemCSUrpTqEevMLW044gF9WAN6jI+778bdGEpP/fBtv98fdz2o4IOTOh93+fHHtm+YlqvwwVXYFIkdUGmBy1qauPjPMm5UuYus2S26e5lhK921t5Tns5ox1okZdLreKLdptFU71d062EmGV07VoYsQ7KUQ6864vPhwcSbIociMw4Fo8OG+ADf1TY+srd8Bb6diu5gHDpy99sC54GxbpnQO6xn+LlFN7/AxcEo+yKCi4Iztx/0CVaGP6Lp+fA6a97iVGGcoVieaehwV/ZcSbXzlDqNtX+gfOmAe256iLxGa/b8Lt47+1OfxcjEzqdTuU7epr5PzHLXDfd5r3CudXwfwyXVJi+eeyX7jcCYff9PwDUc8/FHZQeC2wAuDJDAADTD3WQGQZEWZFJe0wb+oaGO0nFM5MriXQCWoJFUiXtC7CrCJ+xPLEoihSove8/pvYbdJTowpiV28JeQiFZ0k4VaBJpYTZZDslARlE2+jkBhPFFBWhakIVsaxf5nojaGg3JqXBY+wdjFXl9V6bOiauBr9A3Mf5mw=</source>
   </file>
-  <file path="includes/class/Authentication.class.php" generated-path="includes.class.Authentication.class.html" hash="0bbab347ceb9544a24a78bd58d8c3348" package="Broker">
+  <file path="includes/class/Authentication.class.php" generated-path="includes.class.Authentication.class.html" hash="d6d764278c7eff961de7bcd79005d1f3" package="Broker">
     <docblock line="0">
       <description>Broker</description>
       <long-description></long-description>
@@ -108,125 +108,125 @@
           <type>\Broker\unknown</type>
         </argument>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="74" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="92" package="Broker">
         <name>reset</name>
         <full_name>\Broker\Authentication::reset()</full_name>
-        <docblock line="74">
+        <docblock line="92">
           <description>Reset</description>
           <long-description></long-description>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="81" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="99" package="Broker">
         <name>access</name>
         <full_name>\Broker\Authentication::access()</full_name>
-        <docblock line="81">
+        <docblock line="99">
           <description>Check for access</description>
           <long-description></long-description>
-          <tag name="return" line="81" description="" type="boolean">
+          <tag name="return" line="99" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="89" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="107" package="Broker">
         <name>accessBasedOnIP</name>
         <full_name>\Broker\Authentication::accessBasedOnIP()</full_name>
-        <docblock line="89">
+        <docblock line="107">
           <description>Check for access based on IP</description>
           <long-description></long-description>
-          <tag name="return" line="89" description="" type="boolean">
+          <tag name="return" line="107" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="97" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="115" package="Broker">
         <name>accessBasedOnKey</name>
         <full_name>\Broker\Authentication::accessBasedOnKey()</full_name>
-        <docblock line="97">
+        <docblock line="115">
           <description>Check for access based on key</description>
           <long-description></long-description>
-          <tag name="return" line="97" description="" type="boolean">
+          <tag name="return" line="115" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="105" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="123" package="Broker">
         <name>accessBasedOnLogin</name>
         <full_name>\Broker\Authentication::accessBasedOnLogin()</full_name>
-        <docblock line="105">
+        <docblock line="123">
           <description>Check for access based on login</description>
           <long-description></long-description>
-          <tag name="return" line="105" description="" type="boolean">
+          <tag name="return" line="123" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="113" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="131" package="Broker">
         <name>accessWithAdminPrivileges</name>
         <full_name>\Broker\Authentication::accessWithAdminPrivileges()</full_name>
-        <docblock line="113">
+        <docblock line="131">
           <description>Check for access with admin privileges</description>
           <long-description></long-description>
-          <tag name="return" line="113" description="" type="boolean">
+          <tag name="return" line="131" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="121" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="139" package="Broker">
         <name>getIP</name>
         <full_name>\Broker\Authentication::getIP()</full_name>
-        <docblock line="121">
+        <docblock line="139">
           <description>Get ip</description>
           <long-description></long-description>
-          <tag name="return" line="121" description="" type="string">
+          <tag name="return" line="139" description="" type="string">
             <type>string</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="129" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="147" package="Broker">
         <name>getLogin</name>
         <full_name>\Broker\Authentication::getLogin()</full_name>
-        <docblock line="129">
+        <docblock line="147">
           <description>Get login</description>
           <long-description></long-description>
-          <tag name="return" line="129" description="" type="string|boolean">
+          <tag name="return" line="147" description="" type="string|boolean">
             <type>string</type>
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="141" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="159" package="Broker">
         <name>getName</name>
         <full_name>\Broker\Authentication::getName()</full_name>
-        <docblock line="141">
+        <docblock line="159">
           <description>Get name</description>
           <long-description></long-description>
-          <tag name="return" line="141" description="" type="string|boolean">
+          <tag name="return" line="159" description="" type="string|boolean">
             <type>string</type>
             <type>boolean</type>
           </tag>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="151" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="169" package="Broker">
         <name>logout</name>
         <full_name>\Broker\Authentication::logout()</full_name>
-        <docblock line="151">
+        <docblock line="169">
           <description>Logout</description>
           <long-description></long-description>
         </docblock>
       </method>
-      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="169" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="187" package="Broker">
         <name>login</name>
         <full_name>\Broker\Authentication::login()</full_name>
-        <docblock line="169">
+        <docblock line="187">
           <description>Login</description>
           <long-description></long-description>
-          <tag name="param" line="169" description="" type="string" variable="$login">
+          <tag name="param" line="187" description="" type="string" variable="$login">
             <type>string</type>
           </tag>
-          <tag name="param" line="169" description="" type="string" variable="$name">
+          <tag name="param" line="187" description="" type="string" variable="$name">
             <type>string</type>
           </tag>
-          <tag name="param" line="169" description="" type="boolean" variable="$admin">
+          <tag name="param" line="187" description="" type="boolean" variable="$admin">
             <type>boolean</type>
           </tag>
         </docblock>
@@ -246,16 +246,16 @@
           <type>boolean</type>
         </argument>
       </method>
-      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="189" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="207" package="Broker">
         <name>validateIP</name>
         <full_name>\Broker\Authentication::validateIP()</full_name>
-        <docblock line="189">
+        <docblock line="207">
           <description>Validate IP</description>
           <long-description></long-description>
-          <tag name="param" line="189" description="" type="string" variable="$ip">
+          <tag name="param" line="207" description="" type="string" variable="$ip">
             <type>string</type>
           </tag>
-          <tag name="return" line="189" description="" type="boolean">
+          <tag name="return" line="207" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
@@ -265,16 +265,16 @@
           <type>string</type>
         </argument>
       </method>
-      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="250" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="private" namespace="Broker" line="268" package="Broker">
         <name>validateKey</name>
         <full_name>\Broker\Authentication::validateKey()</full_name>
-        <docblock line="250">
+        <docblock line="268">
           <description>Validate key</description>
           <long-description></long-description>
-          <tag name="param" line="250" description="" type="string" variable="$key">
+          <tag name="param" line="268" description="" type="string" variable="$key">
             <type>string</type>
           </tag>
-          <tag name="return" line="250" description="" type="boolean">
+          <tag name="return" line="268" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
@@ -284,19 +284,19 @@
           <type>string</type>
         </argument>
       </method>
-      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="269" package="Broker">
+      <method final="false" abstract="false" static="false" visibility="public" namespace="Broker" line="287" package="Broker">
         <name>validateLogin</name>
         <full_name>\Broker\Authentication::validateLogin()</full_name>
-        <docblock line="269">
+        <docblock line="287">
           <description>Validate login</description>
           <long-description></long-description>
-          <tag name="param" line="269" description="" type="string" variable="$login">
+          <tag name="param" line="287" description="" type="string" variable="$login">
             <type>string</type>
           </tag>
-          <tag name="param" line="269" description="" type="string" variable="$password">
+          <tag name="param" line="287" description="" type="string" variable="$password">
             <type>string</type>
           </tag>
-          <tag name="return" line="269" description="" type="boolean">
+          <tag name="return" line="287" description="" type="boolean">
             <type>boolean</type>
           </tag>
         </docblock>
@@ -312,7 +312,7 @@
         </argument>
       </method>
     </class>
-    <source>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</source>
+    <source>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</source>
   </file>
   <file path="includes/class/Cache.class.php" generated-path="includes.class.Cache.class.html" hash="941eec754096d4d82247157466abe01b" package="Broker">
     <docblock line="0">
