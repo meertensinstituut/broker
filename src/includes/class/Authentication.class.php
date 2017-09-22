@@ -59,7 +59,25 @@ class Authentication {
     if (! $this->accessBasedOnKey) {
       // session
       $sessionObject = new \Broker\Session ( SITE_CACHE_DATABASE_DIR );
-      session_set_save_handler ( $sessionObject );
+      session_set_save_handler ( Array (
+          $sessionObject,
+          "open" 
+      ), Array (
+          $sessionObject,
+          "close" 
+      ), Array (
+          $sessionObject,
+          "read" 
+      ), Array (
+          $sessionObject,
+          "write" 
+      ), Array (
+          $sessionObject,
+          "destroy" 
+      ), Array (
+          $sessionObject,
+          "gc" 
+      ) );
       session_name ( "brokerSession" );
       session_start ();
       // checks
