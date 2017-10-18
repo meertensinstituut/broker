@@ -531,3 +531,92 @@ div#content div.info input.text {
 	min-width: 80%;
 }
 
+div#content div.mapping div.tabs {
+	border-style: none none none solid;
+  border-color: #555555;
+  border-width: 1px;
+  height: 30px;
+}
+div#content div.mapping div.tabs div.tab {
+	border-style: solid solid none none;
+  border-color: #555555;
+  border-width: 1px;
+  width: 200px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  font-weight: bold;
+  color: #C0C0C0;
+  cursor: pointer;
+  float: left;
+}
+div#content div.mapping div.tabs div.selected,
+div#content div.mapping div.tabs div:hover {
+	color: #000000;
+}	
+
+div#content div.mapping div.mappingcontent {
+	border-style: solid;
+  border-color: #555555;
+  border-width: 1px;
+  background-color: #F5F5F5;
+  min-height: 300px;
+}
+
+div#content div.mapping div.mappingblock {
+  border-style: solid;
+  border-color: #000000;
+  border-width: 1px;
+  background-color: #FFFFFF;
+  min-width: 25%;
+  height: 30px;
+  margin: 10px;
+  padding: 4px 10px 0 10px;
+  float: left;
+}
+div#content div.mapping div.right {
+	border-style: solid;
+  border-color: #000000;
+  border-width: 1px;
+  background-color: #FFFFFF;
+  min-width: 25%;
+  height: 246px;
+  margin: 10px;
+  padding: 4px 10px 0 10px;
+	float: right;
+}
+	
+div#content div.mapping div.mappingblock input,
+div#content div.mapping div.mappingblock select {
+	border-style: solid;
+  border-color: #555555;
+  border-width: 1px;
+  height: 25px;
+  padding: 0 5px 0 5px;
+  background-color: #FFFFFF;
+  width: 90%;
+}
+div#content div.mapping div.textarea {
+	clear: left;
+	border-style: solid;
+  border-color: #555555;
+  border-width: 1px;
+  margin: 2px 10px 10px 10px;
+  padding: 0px;
+  overflow: hidden;
+}
+div#content div.mapping div.textarea textarea {
+	border-style: none;
+	border-width: 0px;
+	width: 100%;
+	height: 200px;
+}
+div#content div.mapping div.buttons {
+	margin: 2px 10px 10px 10px;	
+}
+div#content div.mapping div.buttons button.send {
+	border-color: #000080;
+  background-color: #000080;
+  color: #FFFFFF;
+  margin-left: 5px;
+}

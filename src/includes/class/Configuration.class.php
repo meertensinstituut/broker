@@ -315,7 +315,7 @@ class Configuration {
               list ( $this->solr [$key] ["exampleFieldString"], $this->solr [$key] ["exampleFieldStringValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldString"] ) ? $solrConfiguration ["exampleFieldString"] : null, isset ( $solrConfiguration ["exampleFieldStringValues"] ) ? $solrConfiguration ["exampleFieldStringValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "title",
                   "name" 
-              ), "text", true, null, true, null, false );
+              ), "string", true, null, true, null, false );
               list ( $this->solr [$key] ["exampleFieldInteger"], $this->solr [$key] ["exampleFieldIntegerValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldInteger"] ) ? $solrConfiguration ["exampleFieldInteger"] : null, isset ( $solrConfiguration ["exampleFieldIntegerValues"] ) ? $solrConfiguration ["exampleFieldIntegerValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "year" 
               ), "integer", true, null, true, null, false );
@@ -722,7 +722,7 @@ class Configuration {
    */
   private function _findExample($configSuggestion, $configValuesSuggestion, $configuration, $solrConfiguration, $hints = null, $type = null, $indexed = null, $required = null, $stored = null, $multivalued = null, $mtas = null) {
     if ($configSuggestion != null && $this->_checkField ( $configSuggestion, $configuration, $type, $indexed, $required, $stored, $multivalued, $mtas )) {
-      $field = $configSuggestion;
+      $field = $configSuggestion;      
     } else {
       $field = null;
       $fields = $configuration ["fields"];

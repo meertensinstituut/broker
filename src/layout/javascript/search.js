@@ -7,7 +7,76 @@ $(function() {
   $("div.test[data-examplesurl][data-searchurl]").each(function() {
     initTest($(this));
   });
+  
+  $("div.mapping").each(function() {
+    initMapping($(this));
+  });
 
+  function initMapping(container) {
+    createMapping(container);
+  }
+  
+  function createMapping(container) {
+    var tabs = $("<div/>").addClass("tabs");
+    //resource screen
+    var mappingResource = $("<div/>").addClass("mappingcontent").hide();
+    var inputResourceUrl = $("<input/>").attr("type","url").attr("placeholder", "url resource");
+    var inputResourceFile = $("<input/>").attr("type","file");
+    var inputResourceTextarea = $("<textarea/>");
+    mappingResource.append($("<div/>").addClass("mappingblock").append(inputResourceUrl));
+    mappingResource.append($("<div/>").addClass("mappingblock").append(inputResourceFile));
+    mappingResource.append($("<div/>").addClass("textarea").append(inputResourceTextarea));
+    var buttonResourceReset = $("<button/>").text("Reset");
+    var buttonResourceSend = $("<button/>").addClass("send").text("Test mapping");
+    var buttonsResource = $("<div/>").addClass("buttons");
+    buttonsResource.append(buttonResourceReset);
+    buttonsResource.append(buttonResourceSend);
+    mappingResource.append(buttonsResource);
+    //config screen
+    var mappingConfiguration = $("<div/>").addClass("mappingcontent").hide();
+    var listConfigurationFiles = $("<div/>").text("TEST");
+    var inputConfigurationCore = $("<select/>").attr("size","1").attr("placeholder", "url resource");
+    inputConfigurationCore.append($("<option/>").attr("disabled","true").attr("selected","true").text("--- Select core ---"));
+    var inputConfigurationFile = $("<input/>").attr("type","file");
+    var inputConfigurationTextarea = $("<textarea/>");
+    mappingConfiguration.append($("<div/>").addClass("right").append(listConfigurationFiles));
+    mappingConfiguration.append($("<div/>").addClass("mappingblock").append(inputConfigurationCore));
+    mappingConfiguration.append($("<div/>").addClass("mappingblock").append(inputConfigurationFile));
+    mappingConfiguration.append($("<div/>").addClass("textarea").append(inputConfigurationTextarea));
+    var buttonConfigurationReset = $("<button/>").text("Reset");
+    var buttonConfigurationSend = $("<button/>").addClass("send").text("Test mapping");
+    var buttonsConfiguration = $("<div/>").addClass("buttons");
+    buttonsConfiguration.append(buttonConfigurationReset);
+    buttonsConfiguration.append(buttonConfigurationSend);
+    mappingConfiguration.append(buttonsConfiguration);
+    //define tabs
+    var tabResource = $("<div/>").addClass("tab").text("Resource").click(function() {
+      tabs.find("div.tab").each(function() {
+        $(this).removeClass("selected");
+      });
+      mappingConfiguration.hide();
+      mappingResource.show();
+      $(this).addClass("selected");
+    });
+    var tabConfiguration = $("<div/>").addClass("tab").text("Configuration").click(function() {
+      tabs.find("div.tab").each(function() {
+        $(this).removeClass("selected");
+      });
+      mappingResource.hide();
+      mappingConfiguration.show();
+      $(this).addClass("selected");
+    });    
+    tabs.append(tabResource);
+    tabs.append(tabConfiguration);
+    //fill container
+    container.html("");
+    container.append(tabs);
+    container.append(mappingResource);
+    container.append(mappingConfiguration);
+    tabResource.addClass("selected");
+    mappingResource.show();
+  }
+  
   function initTest(container) {
     createTest(container);
   }
