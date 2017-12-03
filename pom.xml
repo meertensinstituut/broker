@@ -2,7 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<maven.build.timestamp.format>yyyy-MM-dd
+			HH:mm</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<modelVersion>4.0.0</modelVersion>
@@ -28,7 +29,37 @@
 		</developer>
 	</developers>
 	<build>
+		<finalName>${project.artifactId}-${project.version}-r${buildNumber}</finalName>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<id>read-props</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>read-project-properties</goal>
+						</goals>
+						<configuration>
+							<files>
+								<file>test.properties</file>
+							</files>
+						</configuration>
+					</execution>
+					<execution>
+						<phase>site</phase>
+						<id>write-props</id>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>test2.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.0.0</version>
@@ -69,6 +100,7 @@
 				<version>1.1.1</version>
 				<executions>
 					<execution>
+						<phase>pre-site</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -77,10 +109,8 @@
 				<configuration>
 					<executable>doc/phpdoc.sh</executable>
 					<workingDirectory>${project.basedir}</workingDirectory>
-          <!-- <arguments>
-            <argument>-c</argument>
-            <argument>doc/phpdoc.sh</argument>
-          </arguments> -->
+					<!-- <arguments> <argument>-c</argument> <argument>doc/phpdoc.sh</argument> 
+						</arguments> -->
 				</configuration>
 			</plugin>
 		</plugins>

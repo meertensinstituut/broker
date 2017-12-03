@@ -7,49 +7,172 @@ $(function() {
   $("div.test[data-examplesurl][data-searchurl]").each(function() {
     initTest($(this));
   });
-  
-  $("div.mapping").each(function() {
+
+  $("div.mapping[data-mappingurl]").each(function() {
     initMapping($(this));
   });
 
   function initMapping(container) {
-    createMapping(container);
+    var request = {
+      "action" : "info"
+    };
+    $.ajax({
+      "type" : "POST",
+      "url" : container.data("mappingurl"),
+      "data" : JSON.stringify(request),
+      "contentType" : "application/json",
+      "success" : function(data) {
+        createMapping(container, data);
+      }
+    });
   }
-  
-  function createMapping(container) {
+
+  function createMapping(container, info) {
+    var mappingData;
     var tabs = $("<div/>").addClass("tabs");
-    //resource screen
+    // result screen
+    var mappingResult = $("<div/>").addClass("mappingresult");
+    // resource screen
     var mappingResource = $("<div/>").addClass("mappingcontent").hide();
-    var inputResourceUrl = $("<input/>").attr("type","url").attr("placeholder", "url resource");
-    var inputResourceFile = $("<input/>").attr("type","file");
+    var inputResourceUrl = $("<input/>").attr("type", "url").attr("placeholder", "url resource");
+    var inputResourceFile = $("<input/>").attr("type", "file");
     var inputResourceTextarea = $("<textarea/>");
+    inputResourceFile.change(function() {
+      var file = this.files[0];
+      name = file.name;
+      size = file.size;
+      if (file.name.length < 1) {
+        inputConfigurationFile.val("");
+      } else {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          inputResourceTextarea.val(reader.result);
+          inputResourceFile.val("");
+          checkForm();
+        };
+        reader.onerror = function() {
+          alert(reader.error);
+          inputResourceFile.val("");
+        };
+        reader.readAsText(file, "UTF-8");
+      }
+    });
+    inputResourceUrl.on("change keyup paste", function() {
+      checkForm();
+    });
+    inputResourceTextarea.on("change keyup paste", function() {
+      checkForm();
+    });
     mappingResource.append($("<div/>").addClass("mappingblock").append(inputResourceUrl));
     mappingResource.append($("<div/>").addClass("mappingblock").append(inputResourceFile));
     mappingResource.append($("<div/>").addClass("textarea").append(inputResourceTextarea));
-    var buttonResourceReset = $("<button/>").text("Reset");
-    var buttonResourceSend = $("<button/>").addClass("send").text("Test mapping");
+    var buttonResourceReset = $("<button/>").text("Reset").click(function() {
+      resetMapping();
+    });
+    var buttonResourceSend = $("<button/>").addClass("send").text("Test mapping").click(function() {
+      doMapping();
+    });
     var buttonsResource = $("<div/>").addClass("buttons");
     buttonsResource.append(buttonResourceReset);
     buttonsResource.append(buttonResourceSend);
     mappingResource.append(buttonsResource);
-    //config screen
+    // config screen
     var mappingConfiguration = $("<div/>").addClass("mappingcontent").hide();
-    var listConfigurationFiles = $("<div/>").text("TEST");
-    var inputConfigurationCore = $("<select/>").attr("size","1").attr("placeholder", "url resource");
-    inputConfigurationCore.append($("<option/>").attr("disabled","true").attr("selected","true").text("--- Select core ---"));
-    var inputConfigurationFile = $("<input/>").attr("type","file");
+    var listConfigurationFiles = $("<div/>").text("");
     var inputConfigurationTextarea = $("<textarea/>");
+    var inputConfigurationFile = $("<input/>").attr("type", "file");
+    var inputConfigurationCore = $("<select/>").attr("size", "1").attr("placeholder", "url resource");
+    inputConfigurationCore.append($("<option/>").attr("disabled", "true").attr("value", "").attr("selected", "true").text("--- Select Solr Configuration ---"));
+    if (info && info.configurations) {
+      for ( var configuration in info.configurations) {
+        if (info.configurations.hasOwnProperty(configuration)) {
+          inputConfigurationCore.append($("<option/>").attr("value", configuration).text(configuration));
+        }
+      }
+      inputConfigurationCore.change(function() {
+        checkForm();
+        listConfigurationFiles.text("");
+        if (this.value && info.configurations.hasOwnProperty(this.value)) {
+          listConfigurationFiles.closest("div.right").show();
+          inputConfigurationFile.closest("div.mappingblock").show();
+          inputConfigurationTextarea.closest("div.textarea").show();
+          listConfigurationFiles.append($("<div/>").addClass("title").text(this.value));
+          if (info.configurations[this.value].hasOwnProperty("files")) {
+            for ( var file in info.configurations[this.value]["files"]) {
+              var fileItem = $("<div/>").addClass("link");
+              fileItem.text(info.configurations[this.value]["files"][file]);
+              fileItem.data("configuration", this.value);
+              fileItem.data("file", info.configurations[this.value]["files"][file]);
+              listConfigurationFiles.append(fileItem);
+            }
+            listConfigurationFiles.find("div.link").click(function() {
+              var request = {
+                "action" : "file",
+                "file" : $(this).data("file"),
+                "configuration" : $(this).data("configuration")
+              };
+              var oThis = $(this);
+              $.ajax({
+                "type" : "POST",
+                "url" : container.data("mappingurl"),
+                "data" : JSON.stringify(request),
+                "contentType" : "application/json",
+                "success" : function(data) {
+                  if (data.hasOwnProperty("data")) {
+                    inputConfigurationTextarea.val(data.data);
+                    oThis.siblings().removeClass("selected");
+                    oThis.addClass("selected");
+                  } else {
+                    inputConfigurationTextarea.val("");
+                  }
+                  checkForm();
+                }
+              });
+            });
+          }
+        }
+      });
+    }
+    inputConfigurationFile.change(function() {
+      listConfigurationFiles.find("div.link").removeClass("selected");
+      var file = this.files[0];
+      name = file.name;
+      size = file.size;
+      if (file.name.length < 1) {
+        inputConfigurationFile.val("");
+      } else {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          inputConfigurationTextarea.val(reader.result);
+          inputConfigurationFile.val("");
+          checkForm();
+        };
+        reader.onerror = function() {
+          alert(reader.error);
+          inputConfigurationFile.val("");
+        };
+        reader.readAsText(file, "UTF-8");
+      }
+    });
+    inputConfigurationTextarea.on("change keyup paste", function() {
+      listConfigurationFiles.find("div.link").removeClass("selected");
+      checkForm();
+    });
     mappingConfiguration.append($("<div/>").addClass("right").append(listConfigurationFiles));
     mappingConfiguration.append($("<div/>").addClass("mappingblock").append(inputConfigurationCore));
     mappingConfiguration.append($("<div/>").addClass("mappingblock").append(inputConfigurationFile));
     mappingConfiguration.append($("<div/>").addClass("textarea").append(inputConfigurationTextarea));
-    var buttonConfigurationReset = $("<button/>").text("Reset");
-    var buttonConfigurationSend = $("<button/>").addClass("send").text("Test mapping");
+    var buttonConfigurationReset = $("<button/>").text("Reset").click(function() {
+      resetMapping();
+    });
+    var buttonConfigurationSend = $("<button/>").addClass("send").text("Test mapping").click(function() {
+      doMapping();
+    });
     var buttonsConfiguration = $("<div/>").addClass("buttons");
     buttonsConfiguration.append(buttonConfigurationReset);
     buttonsConfiguration.append(buttonConfigurationSend);
     mappingConfiguration.append(buttonsConfiguration);
-    //define tabs
+    // define tabs
     var tabResource = $("<div/>").addClass("tab").text("Resource").click(function() {
       tabs.find("div.tab").each(function() {
         $(this).removeClass("selected");
@@ -65,18 +188,122 @@ $(function() {
       mappingResource.hide();
       mappingConfiguration.show();
       $(this).addClass("selected");
-    });    
+    });
     tabs.append(tabResource);
     tabs.append(tabConfiguration);
-    //fill container
+    // fill container
     container.html("");
     container.append(tabs);
     container.append(mappingResource);
     container.append(mappingConfiguration);
+    container.append(mappingResult);
     tabResource.addClass("selected");
     mappingResource.show();
+    resetMapping();
+    function doMapping() {
+      var request = {
+        "action" : "mapping",
+        "document" : inputResourceTextarea.val(),
+        "url" : inputResourceUrl.val(),
+        "configuration" : inputConfigurationCore.val(),
+        "mapping" : inputConfigurationTextarea.val()
+      };
+      var oThis = $(this);
+      $.ajax({
+        "type" : "POST",
+        "url" : container.data("mappingurl"),
+        "data" : JSON.stringify(request),
+        "contentType" : "application/json",
+        "success" : function(data) {
+          oThis.siblings().removeClass("selected");
+          oThis.addClass("selected");
+          mappingData = false;
+          if (data.hasOwnProperty("data")) {
+            mappingData = data.data;
+            createResult(0, 100);         
+          } else {
+            alert("no data");
+          }
+          checkForm();
+        }
+      });
+    }
+    function resetMapping() {
+      mappingData = false;
+      inputResourceUrl.val("");
+      inputResourceFile.val("");
+      inputResourceTextarea.val("")
+      inputConfigurationCore.val("").change();
+      inputConfigurationFile.val("");
+      listConfigurationFiles.parent().hide();
+      inputConfigurationFile.parent().hide();
+      inputConfigurationTextarea.val("").parent().hide();
+      mappingResult.html("").hide();
+      checkForm();
+    }
+    function createResult(start, step) {
+      mappingResult.html("");      
+      if(mappingData && mappingData.hasOwnProperty("mapping") && mappingData.mapping.length>0) {
+        var topMenu = $("<div/>").addClass("navigation");
+        if(start>0) {
+          var topMenuPrevious = $("<div/>").addClass("navigationLeft").append($("<button/>").text("previous "+step).click(function() {
+            createResult((start-step), step);
+          }));
+          topMenu.append(topMenuPrevious);
+        }
+        if(start+step<mappingData.mapping.length) {
+          var topMenuNext = $("<div/>").addClass("navigationRight").append($("<button/>").text("next "+Math.min(step,(mappingData.mapping.length-start-step-1))).click(function() {
+            createResult((start+step), step);
+          }));
+          topMenu.append(topMenuNext);
+        }
+        var last = Math.min((start+step), (mappingData.mapping.length-1));
+        var topMenuInfo = $("<div/>").addClass("navigationInfo").text((start+1)+" - "+last+" from "+(mappingData.mapping.length-1));
+        topMenu.append(topMenuInfo);
+        mappingResult.append(topMenu);
+        var table = $("<table/>");
+        var trTitle = $("<tr/>").addClass("title");
+        for(var j=0; j<mappingData.mapping[0].length; j++) {
+          trTitle.append($("<td/>").text(mappingData.mapping[0][j]));
+        }
+        table.append(trTitle);
+        for(var i=start; i<last; i++) {
+          var tr = $("<tr/>");
+          for(var j=0; j<mappingData.mapping[(i+1)].length; j++) {
+            tr.append($("<td/>").text(mappingData.mapping[(i+1)][j]));
+          }
+          table.append(tr);
+        }        
+        mappingResult.append(table);
+      } 
+      mappingResult.show();
+    }
+    function checkForm() {
+      var problems = []
+      if (inputResourceTextarea.val().trim() == "" && inputResourceUrl.val().trim() == "") {
+        problems.push("no resource defined");
+      }
+      if (inputResourceUrl.val().trim() == "") {
+        inputResourceTextarea.prop("disabled", false);
+        inputResourceFile.closest("div").show();
+      } else {
+        inputResourceTextarea.prop("disabled", true);
+        inputResourceFile.closest("div").hide();
+      }
+      if (!inputConfigurationCore.val() || inputConfigurationCore.val().trim() == "") {
+        problems.push("no solr configuration selected");
+      } else if (!inputConfigurationTextarea || inputConfigurationTextarea.val().trim() == "") {
+        problems.push("no configuration defined");
+      }
+      if (problems.length == 0) {
+        buttonResourceSend.prop("disabled", false).attr("title", null);
+        buttonConfigurationSend.prop("disabled", false).attr("title", null);
+      } else {
+        buttonResourceSend.prop("disabled", true).attr("title", problems.join("\n"));
+        buttonConfigurationSend.prop("disabled", true).attr("title", problems.join("\n"));
+      }
+    }
   }
-  
   function initTest(container) {
     createTest(container);
   }
@@ -243,16 +470,16 @@ $(function() {
             statusTime.text(parseInt(totalTime).toLocaleString("en-UK") + " ms");
             try {
               var response = JSON.parse(data);
-              if(response.response==undefined || response.response.numFound==undefined || response.response.numFound===0) {
+              if (response.response == undefined || response.response.numFound == undefined || response.response.numFound === 0) {
                 var errorRow = $("<tr/>");
                 errorRow.append($("<td/>").text("no results"));
                 errorRow.append($("<td/>").text(maintitle));
                 errorRow.append($("<td/>").text(subtitle));
                 errorRow.append($("<td/>").attr("title", "request").text(text));
                 errorRow.append($("<td/>").attr("title", "error").text(data));
-                errorsTable.append(errorRow);                
+                errorsTable.append(errorRow);
               }
-              statusTime.addClass("ready");                            
+              statusTime.addClass("ready");
             } catch (err) {
               statusTime.addClass("error");
               var errorRow = $("<tr/>");
@@ -621,14 +848,14 @@ $(function() {
     if (text.match(/::configuration[0-9]+(\([^\)]+\))?::/)) {
       var configurations = Object.keys(solrConfig);
       text = text.replace(/::configuration([0-9]+)(\(([^\)]+)\))?::/g, function(match, p1, p2) {
-        if(p1<configurations.length) {
+        if (p1 < configurations.length) {
           return configurations[p1];
         } else {
           return p2;
-        } 
+        }
       });
-    }  
-    for (property in solrConfig) {      
+    }
+    for (property in solrConfig) {
       if (solrConfig.hasOwnProperty(property)) {
         if (text.match(/::uniqueKey::/)) {
           if (solrConfig[property].uniqueKey !== undefined) {
@@ -720,7 +947,7 @@ $(function() {
                 if (p1 == "Escaped") {
                   value = value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
                 }
-              } 
+              }
               return value;
             });
           }
