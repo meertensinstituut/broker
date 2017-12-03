@@ -222,12 +222,16 @@ class Authentication {
               $filterIP = preg_replace ( "/\b0+(?=\d)/", "", $filterIP );
               if (filter_var ( $filterIP, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 )) {
                 $filterIP = ip2long ( $filterIP );
-                if ($filterRange != null && $filterRange != "" && (intval ( $filterRange ) > 0)) {
-                  $filterRange = intval ( $filterRange );
-                  $min = (($filterIP) & ((- 1 << (32 - $filterRange))));
-                  $max = ((($min)) + pow ( 2, (32 - $filterRange) ) - 1);
-                  if ($ip >= $min && $ip <= $max) {
+                if ($filterRange != null && $filterRange != "") {
+                  if($filterRange==0) {
                     return true;
+                  } else if (intval ( $filterRange ) > 0) {
+                    $filterRange = intval ( $filterRange );
+                    $min = (($filterIP) & ((- 1 << (32 - $filterRange))));
+                    $max = ((($min)) + pow ( 2, (32 - $filterRange) ) - 1);
+                    if ($ip >= $min && $ip <= $max) {
+                      return true;
+                    }
                   }
                   // die ( long2ip ( $filterIP ) . "/" . $filterRange . " : " . $min . " - " . $max );
                 } else if ($ip == $filterIP) {
