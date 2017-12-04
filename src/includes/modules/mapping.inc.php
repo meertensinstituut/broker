@@ -71,12 +71,20 @@ if (! $authentication->accessBasedOnLogin ()) {
                   $coreUrl = $configuration->config ["solr"] [$configItem] ["url"];
                   if (($mapping = $mappingRequest->mapping) && is_string ( $mapping )) {
                     if (($url = $mappingRequest->url) && is_string ( $url )) {
-                      $response ["data"] = "todo";
+                      $data = array (
+                          "configuration" => $mapping,
+                          "url" => $url 
+                      );
                     } else if (($document = $mappingRequest->document) && is_string ( $document )) {
                       $data = array (
                           "configuration" => $mapping,
                           "document" => $document 
                       );
+                    } else {
+                      $response ["status"] = "error";
+                      $response ["error"] = "no url or document";
+                    }
+                    if($response["status"]=="ok") {
                       $ch = curl_init ( $coreUrl . "mtas?wt=json&action=mapping" );
                       $options = array (
                           CURLOPT_HTTPHEADER => array (
@@ -100,8 +108,8 @@ if (! $authentication->accessBasedOnLogin ()) {
                       } else {
                         $response ["status"] = "error";
                         $response ["error"] = "couldn't decode response";
-                      }
-                    }
+                      }       
+                    }  
                   } else {
                     $response ["status"] = "error";
                     $response ["error"] = "no (valid) mapping provided";
