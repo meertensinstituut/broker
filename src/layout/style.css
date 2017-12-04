@@ -353,6 +353,7 @@ div#content div.examples div.content div.menu div.item {
 	padding: 0 0 0 5px;
 	cursor: pointer;
 	text-transform: capitalize;
+	white-space: nowrap;
 }
 
 div#content div.examples div.content div.menu div.item:hover {
