@@ -318,7 +318,7 @@ class Configuration {
               ), "string", true, null, true, null, false );
               list ( $this->solr [$key] ["exampleFieldInteger"], $this->solr [$key] ["exampleFieldIntegerValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldInteger"] ) ? $solrConfiguration ["exampleFieldInteger"] : null, isset ( $solrConfiguration ["exampleFieldIntegerValues"] ) ? $solrConfiguration ["exampleFieldIntegerValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "year" 
-              ), "integer", true, null, true, null, false );
+              ), "integer/long", true, null, true, null, false );
               list ( $this->solr [$key] ["exampleFieldMtas"], $this->solr [$key] ["exampleFieldMtasWord"], $this->solr [$key] ["exampleFieldMtasLemma"], $this->solr [$key] ["exampleFieldMtasPos"], $this->solr [$key] ["exampleFieldMtasSinglePosition"], $this->solr [$key] ["exampleFieldMtasMultiplePosition"], $this->solr [$key] ["exampleFieldMtasSetPosition"], $this->solr [$key] ["exampleFieldMtasIntersecting"] ) = $this->_findMtasExamples ( isset ( $solrConfiguration ["exampleFieldMtas"] ) ? $solrConfiguration ["exampleFieldMtas"] : null, $this->solr [$key], $solrConfiguration, array (
                   "mtas" 
               ) );
@@ -455,7 +455,7 @@ class Configuration {
             case "integer" :
               if (! in_array ( $checkField, $configuration ["typeInteger"] )) {
                 continue 2;
-              }
+              } 
               break;
             case "date" :
               if (! in_array ( $checkField, $configuration ["typeDate"] )) {
@@ -464,6 +464,11 @@ class Configuration {
               break;
             case "long" :
               if (! in_array ( $checkField, $configuration ["typeLong"] )) {
+                continue 2;
+              }
+              break;
+            case "integer/long" :
+              if (! in_array ( $checkField, $configuration ["typeInteger"] ) && ! in_array ( $checkField, $configuration ["typeLong"] )) {
                 continue 2;
               }
               break;
