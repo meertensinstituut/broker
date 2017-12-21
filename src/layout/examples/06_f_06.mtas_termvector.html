@@ -24,7 +24,8 @@
     <span class="optional">"listRegexp" : &lt;boolean&gt;</span>, 
     <span class="optional">"ignoreList" : [&lt;string&gt;,... ]</span>,    
     <span class="optional">"ignoreListRegexp" : &lt;boolean&gt;</span>, 
-    <span class="optional">"functions" : [&lt;function&gt;,...]</span>,    
+    <span class="optional">"functions" : [&lt;function&gt;,...]</span>,
+    <span class="optional">"distances" : [&lt;distance&gt;,...]</span>,    
   },... 
 ]</pre>
 </div>
@@ -213,6 +214,62 @@
       <td class="text">Get frequency list for 
       prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>
       with <em>regexp</em> and <em>ignoreRegexp</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="text">And <em>distance</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "levenshtein" / ...</span>,
+  <span class="obligatory">"base" : &lt;string&gt;</span>,
+  <span class="optional">"key" : &lt;string&gt;</span>,
+  <span class="optional">"maximum" : &lt;numeric&gt;</span>,
+  <span class="optional">"parameter" : &lt;parameter&gt;</span>,
+}</pre>
+</div>
+
+<div class="text">with <em>parameter</em> of the form</div>
+
+<div class="code">
+  <pre>{
+  <span class="optional">"key" : &lt;string&gt; / &lt;numeric&gt;</span>,
+  <span class="optional">...</span>
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'termvector' - 'distance'</button>
+        <div class="json">{ 
+          "response": 
+            { "mtas": { 
+                "termvector" : [{
+                  "key": "words near ::exampleFieldMtasWordPostfix5(value1)::",
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix)::",
+                  "sort": {
+                    "type": "sum",
+                    "direction": "desc"
+                  },
+                  "distances": [{
+                    "key": "Levenshtein",
+                    "type": "levenshtein",
+                    "base": "::exampleFieldMtasWordPostfix5(value1)::",
+                    "maximum": 1.2
+                  }] 
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get frequency list for 
+      prefix <em>::exampleFieldMtasWordPrefix(prefix)::</em> in <em>::exampleFieldMtas(fieldName)::</em>
+      with items near <em>::exampleFieldMtasWordPostfix5(value1)::</em>.
       </td>
     </tr>
   </table>

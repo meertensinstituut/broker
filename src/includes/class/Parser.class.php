@@ -491,8 +491,8 @@ class Parser {
             $this->errors [] = "documents - start should be integer";
           }
         } else if ($key == "rows") {
-          if ($value == null || ! is_int ( $value )) {
-            $this->errors [] = "documents - number should be integer";
+          if ($value === null || ! is_int ( $value )) {
+            $this->errors [] = "documents - rows should be integer";
           }
         } else {
           $this->warnings [] = "documents - {$key} not expected";
@@ -1325,6 +1325,12 @@ class Parser {
           foreach ( $object as $key => $value ) {
             if ($key == "field" || $key == "key" || $key == "__options") {
               // ignore
+            } else if($key == "countDistinct") {
+              if(is_bool($value)) {
+                $object->__options [] = $key ."=" .($value?"true":"false");
+              } else {
+                $this->warnings [] = "stats - statsfields - {$key} should be a boolean";
+              }
             } else if ($key == "tag") {
               if (is_string ( $value )) {
                 $object->__options [] = $key . "=\"" . str_replace ( "\"", "\\\"", $value ) . "\"";
@@ -1831,6 +1837,14 @@ class Parser {
               $value [$i] = $this->checkResponseMtasFunction ( $value [$i], "mtas - termvector - function - " );
             }
           }
+        } else if ($key == "distances") {
+          if (! is_array ( $value )) {
+            $this->errors [] = "mtas - termvector - {$key} should be array";
+          } else {
+            for($i = 0; $i < count ( $value ); $i ++) {
+              $value [$i] = $this->checkResponseMtasDistance ( $value [$i], "mtas - termvector - distance - " );
+            }
+          }
         } else {
           $this->warnings [] = "mtas - termvector - {$key} not expected";
         }
@@ -2272,6 +2286,52 @@ class Parser {
       }
       if (! isset ( $object->expression )) {
         $this->errors [] = $prefix . "expression is obligatory";
+      }
+      return $object;
+    } else {
+      $this->warnings [] = $prefix . "unexpected type";
+      return null;
+    }
+  }
+  /**
+   * Check mtas distance
+   *
+   * @param unknown $object
+   * @param string $prefix
+   * @return unknown
+   */
+  private function checkResponseMtasDistance($object, $prefix) {
+    if ($object && is_object ( $object )) {
+      foreach ( $object as $key => $value ) {
+        if ($key == "type" || $key == "key" || $key == "base") {
+          if (! is_string ( $value )) {
+            $this->errors [] = $prefix . "{$key} should be string";
+          }
+        } else if ($key == "maximum") {
+          if (! is_numeric ( $value )) {
+            $this->errors [] = $prefix . "{$key} should be numeric";
+          }
+        } else if($key == "parameter") {
+          if (! is_object ( $value )) {
+            $this->errors [] = $prefix . "{$key} should be an object";
+          } else {
+            foreach($value AS $subKey => $subValue) {
+              if(!preg_match("/^[a-z0-9]+$/i",$subKey)) {
+                $this->errors [] = $prefix . "parameter - {$subKey} not allowed";
+              } else if (!is_string($subValue) && ! is_numeric ( $subValue )) {              
+                $this->errors [] = $prefix . "parameter - {$subKey} should be string or numeric";
+              } 
+            }
+          }
+        } else {
+          $this->warnings [] = $prefix . "{$key} not expected";
+        }
+      }
+      if (! isset ( $object->type )) {
+        $this->errors [] = $prefix . "type is obligatory";
+      }
+      if (! isset ( $object->base )) {
+        $this->errors [] = $prefix . "base is obligatory";
       }
       return $object;
     } else {
@@ -3800,6 +3860,27 @@ class Parser {
       }
       if (isset ( $object->number ) && is_int ( $object->number )) {
         $requestList [] = "mtas.termvector." . $i . ".number=" . urlencode ( $object->number );
+      }
+      if (isset ( $object->distances ) && is_array ( $object->distances )) {
+        for($j = 0; $j < count ( $object->distances ); $j ++) {
+          if (isset ( $object->distances [$j]->key ) && is_string ( $object->distances [$j]->key )) {
+            $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".key=" . urlencode ( $object->distances [$j]->key );
+          }
+          if (isset ( $object->distances [$j]->type ) && is_string ( $object->distances [$j]->type )) {
+            $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".type=" . urlencode ( $object->distances [$j]->type );
+          }
+          if (isset ( $object->distances [$j]->base ) && is_string ( $object->distances [$j]->base )) {
+            $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".base=" . urlencode ( $object->distances [$j]->base );
+          }
+          if (isset ( $object->distances [$j]->maximum ) && is_numeric ( $object->distances [$j]->maximum )) {
+            $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".maximum=" . urlencode ( $object->distances [$j]->maximum );
+          }
+          if (isset ( $object->distances [$j]->parameter ) && is_object ( $object->distances [$j]->parameter )) {
+            foreach($object->distances [$j]->parameter AS $parameterKey => $parameterValue) {
+              $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".parameter.".$parameterKey."=" . urlencode ( $parameterValue );
+            }  
+          }
+        }
       }
       if (isset ( $object->functions ) && is_array ( $object->functions )) {
         for($j = 0; $j < count ( $object->functions ); $j ++) {
