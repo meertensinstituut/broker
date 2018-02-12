@@ -10,7 +10,7 @@ if (isset ( $_GET ["suboperation"] ) && is_string ( $_GET ["suboperation"] ) && 
       header ( "Content-Type: text/javascript; charset=utf-8" );
       header ( "Access-Control-Allow-Origin: *" );
       header ( "Access-Control-Allow-Headers: content-type" );
-      echo (json_encode ( $status->create ( file_get_contents ( "php://input" ) ) ));
+      echo (json_encode ( $status->create ( file_get_contents ( "php://input" ), true ) ));
     } else {
       header ( "Location: " . $configuration->url ( "status", null ) );
     }

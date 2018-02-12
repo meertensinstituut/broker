@@ -11,7 +11,7 @@ if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
   $response = array ();
   $response ["status"] = "ERROR";
   try {
-    $parser = new \Broker\Parser ( $brokerRequest, $configuration, null, null, null );
+    $parser = new \Broker\Parser ( $brokerRequest, $configuration, null, null, null, null );
     header ( "X-Broker-errors: " . count ( $parser->getErrors () ) );
     header ( "X-Broker-warnings: " . count ( $parser->getWarnings () ) );
     header ( "X-Broker-shards: " . count ( $parser->getShards () ) );
@@ -49,7 +49,7 @@ if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
         }
       }
       try {
-        $solr = new \Broker\Solr ( $parser->getConfiguration (), $parser->getUrl (), "select", $parser->getRequest (), $parser->getShards () != null ? implode ( ",", $parser->getShards () ) : null, $parser->getCache () );
+        $solr = new \Broker\Solr ( $parser->getConfiguration (), $parser->getUrl (), "select", $parser->getRequest (), $parser->getRequestAddition(), $parser->getShards () != null ? implode ( ",", $parser->getShards () ) : null, $parser->getCache () );
         $solrResponse = $solr->getResponse ();
         if ($solrResponse && is_object ( $solrResponse )) {
           if (isset ( $solrResponse->error )) {

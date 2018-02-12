@@ -7,6 +7,7 @@
   <div class="item{if isset($_smartyIncludeModule) && $_smartyIncludeModule=="mapping"} selected{/if}" onclick="location.href='{$_configuration->url("mapping",null)|escape:javascript}';">mapping</div> 
   {/if}
   {if $_authentication->accessWithAdminPrivileges()}
+  <div class="item{if isset($_smartyIncludeModule) && $_smartyIncludeModule=="processes"} selected{/if}" onclick="location.href='{$_configuration->url("processes",null)|escape:javascript}';">processes</div> 
   <div class="item{if isset($_smartyIncludeModule) && $_smartyIncludeModule=="test"} selected{/if}" onclick="location.href='{$_configuration->url("test",null)|escape:javascript}';">test</div> 
   {/if}        
   {if $_authentication->accessBasedOnLogin()}

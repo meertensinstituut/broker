@@ -538,7 +538,7 @@ $(function() {
           }
         });
       } catch (err) {
-        alert("something went wrong");
+        alert("something went wrong: "+err.message);
       }
     } else {
       container.find("div.controls button.reset").show();

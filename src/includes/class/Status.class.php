@@ -9,7 +9,7 @@ namespace Broker;
 /**
  * Status
  */
-class Status extends Database {  
+class Status extends Database {
   /**
    * Collection
    *
@@ -36,8 +36,8 @@ class Status extends Database {
    * @param \Broker\Cache $cache          
    */
   public function __construct($directory, $configuration, $cache) {
-    parent::__construct($directory, $configuration, "status");
-    $this->cache = $cache;    
+    parent::__construct ( $directory, $configuration, "status" );
+    $this->cache = $cache;
   }
   /**
    * Init
@@ -46,12 +46,14 @@ class Status extends Database {
     $sql = "CREATE TABLE IF NOT EXISTS \"status\" (
           \"id\" INTEGER PRIMARY KEY ASC,
           \"key\" TEXT NOT NULL,
+          \"statusKey\" TEXT,
           \"brokerRequest\" TEXT NOT NULL,
           \"collectionIds\" TEXT,
           \"cache\" INTEGER,
           \"configuration\" TEXT,
           \"solrUrl\" TEXT,
           \"solrRequest\" TEXT,
+          \"solrRequestAddition\" TEXT,
           \"solrShards\" TEXT,
           \"solrStatus\" TEXT,
           \"responseJoins\" TEXT,
@@ -63,7 +65,7 @@ class Status extends Database {
           UNIQUE(\"key\"));";
     $query = $this->database->prepare ( $sql );
     $query->execute ();
-    $this->errorCheck("init", $query, false);
+    $this->errorCheck ( "init", $query, false );
     unset ( $query );
   }
   /**
@@ -72,25 +74,32 @@ class Status extends Database {
    * @param string $brokerRequest          
    * @return array
    */
-  public function create($brokerRequest) {
+  public function create($brokerRequest, $status=false) {
     $this->clean ();
     $response = array ();
     $response ["status"] = "ERROR";
     if ($brokerRequest && trim ( $brokerRequest != "" )) {
       try {
-        $parser = new \Broker\Parser ( $brokerRequest, $this->configuration, $this->cache, null, null );
         $key = $this->generateKey ();
+        if($status) {
+          $statusKey = $this->generateKey (32);
+        } else {
+          $statusKey = null;
+        }
+        $parser = new \Broker\Parser ( $brokerRequest, $this->configuration, $this->cache, null, null, $statusKey );
         $collectionIds = $parser->getCollectionIds ();
         $parserConfiguration = $parser->getConfiguration ();
         $solrUrl = $parser->getUrl ();
         $solrRequest = $parser->getRequest ();
+        $solrRequestAddition = $parser->getRequestAddition ();
         $solrShards = $parser->getShards ();
-        $cache = $parser->getCache ();
+        $cacheEnabled = $parser->getCache ()!=null;
         $responseJoins = $parser->getResponseJoins ();
         if ($solrRequest != null) {
           $response ["solrRequest"] = array (
               "description" => null,
-              "data" => array () 
+              "data" => array (),
+              "key" => $parser->getStatusKey ()
           );
           $collectionObject = $parser->getCollection ();
           $dependencies = $collectionObject->getWithDependencies ( $collectionIds );
@@ -101,6 +110,9 @@ class Status extends Database {
             $response ["solrRequest"] ["data"] ["collection" . ($i + count ( $dependencies ["missing"] ))] = "collection " . $dependencies ["data"] [$i] ["key"] . " on " . $dependencies ["data"] [$i] ["configuration"] . ": " . $dependencies ["data"] [$i] ["solrCreateRequest"];
           }
           $response ["solrRequest"] ["data"] ["main"] = "main request on " . $parserConfiguration . ": " . $solrRequest;
+          if($solrRequestAddition) {
+            $response ["solrRequest"] ["data"] ["additional"] = "additional parameters for request on " . $parserConfiguration . ": " . $solrRequestAddition;
+          }
         }
         if (count ( $parser->getWarnings () ) > 0) {
           $response ["brokerWarnings"] = array (
@@ -137,23 +149,28 @@ class Status extends Database {
           $query->execute ();
           unset ( $query );
           // create status
-          $sql = "INSERT INTO status (key, brokerRequest, collectionIds, cache, configuration, solrUrl, solrRequest, solrShards, responseJoins, created, expires)
-                                             VALUES (:key, :brokerRequest, :collectionIds, :cache, 
-                                             :configuration, :solrUrl, :solrRequest, :solrShards, 
+          $sql = "INSERT INTO status (key, statusKey, brokerRequest, collectionIds, cache, configuration, solrUrl, solrRequest, solrRequestAddition, solrShards, responseJoins, created, expires)
+                                             VALUES (:key, :statusKey, :brokerRequest, :collectionIds, :cache, 
+                                             :configuration, :solrUrl, :solrRequest, :solrRequestAddition, :solrShards, 
                                              :responseJoins, datetime('now'), datetime('now', '+" . intval ( $this->timeout ) . " minutes'))";
           $query = $this->database->prepare ( $sql );
           $query->bindValue ( ":key", $key );
+          $query->bindValue ( ":statusKey", $statusKey );
           $query->bindValue ( ":brokerRequest", $brokerRequest );
           $query->bindValue ( ":collectionIds", count ( $collectionIds ) > 0 ? json_encode ( $collectionIds ) : "" );
-          $query->bindValue ( ":cache", $cache != null ? 1 : 0 );
+          $query->bindValue ( ":cache", $cacheEnabled ? 1 : 0 );
           $query->bindValue ( ":configuration", $parserConfiguration );
           $query->bindValue ( ":solrUrl", $solrUrl );
           $query->bindValue ( ":solrRequest", $solrRequest );
+          $query->bindValue ( ":solrRequestAddition", $solrRequestAddition );
           $query->bindValue ( ":solrShards", $solrShards ? implode ( ",", $solrShards ) : null );
           $query->bindValue ( ":responseJoins", count ( $responseJoins ) > 0 ? json_encode ( $responseJoins ) : null );
           if ($query->execute ()) {
             $response ["id"] = $this->database->lastInsertId ();
             $response ["key"] = $key;
+            if($statusKey!=null) {
+              $response ["statusKey"] = $statusKey;
+            }
             $response ["status"] = "OK";
           } else {
             $response ["error"] = "couldn't create status";
@@ -186,11 +203,13 @@ class Status extends Database {
     // get info
     $sql = "SELECT
         key, 
+        statusKey, 
         brokerRequest,
         collectionIds,
         cache,
         solrUrl,
         solrRequest,
+        solrRequestAddition,
         solrShards,
         solrStatus,        
         responseJoins,        
@@ -260,7 +279,7 @@ class Status extends Database {
             }
           }
           try {
-            $solr = new \Broker\Solr ( $status ["configuration"], $status ["solrUrl"], "select", $status ["solrRequest"], $status ["solrShards"], $status ["cache"] ? $this->getCache () : null );
+            $solr = new \Broker\Solr ( $status ["configuration"], $status ["solrUrl"], "select", $status ["solrRequest"], $status ["solrRequestAddition"], $status ["solrShards"], $status ["cache"] ? $this->getCache () : null );
             $solrResponse = $solr->getResponse ();
             if ($solrResponse && is_object ( $solrResponse )) {
               if (isset ( $solrResponse->error )) {
@@ -345,7 +364,7 @@ class Status extends Database {
       $response ["error"] = "status not found";
     }
     return $response;
-  }    
+  }
   /**
    * List
    *
@@ -356,6 +375,7 @@ class Status extends Database {
   public function getList($start, $number) {
     $sql = "SELECT
         key, 
+        statusKey, 
         cache, 
         datetime(created, 'localtime') as created, 
         datetime(started, 'localtime') as started, 
@@ -383,7 +403,7 @@ class Status extends Database {
   /**
    * Delete
    *
-   * @param string $key
+   * @param string $key          
    */
   public function delete($key) {
     $this->clean ();
@@ -391,7 +411,7 @@ class Status extends Database {
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":key", $key );
     $query->execute ();
-    $this->errorCheck("delete", $query, false);
+    $this->errorCheck ( "delete", $query, false );
     unset ( $query );
   }
   /**

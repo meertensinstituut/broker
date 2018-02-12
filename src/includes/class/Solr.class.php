@@ -17,6 +17,12 @@ class Solr {
    */
   private $request = null;
   /**
+   * Request addition
+   *
+   * @var string
+   */
+  private $requestAddition = null;
+  /**
    * Handler
    *
    * @var string
@@ -56,8 +62,9 @@ class Solr {
    * @param array $shards          
    * @param \Broker\Cache $cache          
    */
-  public function __construct($configuration, $url, $handler, $request, $shards, $cache) {
+  public function __construct($configuration, $url, $handler, $request, $requestAddition, $shards, $cache) {
     $this->request = $request;
+    $this->requestAddition = $requestAddition;
     $this->handler = $handler;
     $this->url = $url;
     $this->shards = $shards;
@@ -75,6 +82,7 @@ class Solr {
     if ($this->shards != null) {
       $finalRequest = ($finalRequest ? $finalRequest . "&" : "") . "shards=" . urlencode ( $this->shards );
     }
+    //check cache
     if ($this->cache != null) {
       list ( $id, $response ) = $this->cache->check ( $this->configuration, $this->url . $this->handler . "/", $finalRequest );
       if ($id && $response) {
@@ -85,6 +93,12 @@ class Solr {
         }
       }
     }
+    //add addition after cache handling
+    if($this->requestAddition!=null) {
+      $finalSearchRequest=$finalRequest."&".$this->requestAddition;
+    } else {
+      $finalSearchRequest=$finalRequest;
+    }
     $ch = curl_init ( $this->url . $this->handler . "/" );
     $options = array (
         CURLOPT_HTTPHEADER => array (
@@ -92,7 +106,7 @@ class Solr {
         ),
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $finalRequest 
+        CURLOPT_POSTFIELDS => $finalSearchRequest 
     );
     curl_setopt_array ( $ch, $options );
     $result = curl_exec ( $ch );
@@ -100,7 +114,7 @@ class Solr {
     if (($data = json_decode ( $result ))) {
       // cache
       if ($this->cache != null && ! isset ( $data->error )) {
-        $this->cache->create ( $this->configuration, $this->url . $this->handler . "/", $finalRequest, $result );
+        $this->cache->create ( $this->configuration, $this->url . $this->handler . "/", $finalRequest, $this->requestAddition, $result );
       }
       // return data
       return $data;

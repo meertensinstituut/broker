@@ -505,7 +505,7 @@ class Collection extends Database {
           }
           // create parser for collection
           if ($subRequestCreate) {
-            $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this->configuration, null, $this, null );
+            $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this->configuration, null, $this, null, null );
             // register result from parsing collection request
             $subParserWarnings = $subCreateParser->getWarnings ();
             $subParserErrors = $subCreateParser->getErrors ();
@@ -531,7 +531,7 @@ class Collection extends Database {
               $subRequestCheck->response->mtas->collection [0]->id = $result ["key"];
               $subRequestCheck->response->mtas->collection [0]->action = "check";
               // create parser for collection
-              $subCheckParser = new \Broker\Parser ( $subRequestCheck, $this->configuration, null, $this, null );
+              $subCheckParser = new \Broker\Parser ( $subRequestCheck, $this->configuration, null, $this, null, null );
               // initialise
               $this->setInitialised ( $result ["key"], $subCreateParser->getConfiguration (), $subCreateParser->getUrl (), $subCreateParser->getRequest (), $subCheckParser->getRequest (), ($subCreateParser->getShards () != null) ? implode ( ",", $subCreateParser->getShards () ) : "", implode ( ",", $localCollectionIds ) );
             }
@@ -608,7 +608,7 @@ class Collection extends Database {
           }
           // check
           try {
-            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCheckRequest"], $result ["solrShards"], null );
+            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCheckRequest"], null, $result ["solrShards"], null );
             $solrResponse = $solr->getResponse ();
             if ($solrResponse && is_object ( $solrResponse )) {
               if (isset ( $solrResponse->mtas ) && is_object ( $solrResponse->mtas )) {
@@ -627,7 +627,7 @@ class Collection extends Database {
             // should not happen
           }
           try {
-            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCreateRequest"], $result ["solrShards"], null );
+            $solr = new \Broker\Solr ( $result ["configuration"], $result ["solrUrl"], "select", $result ["solrCreateRequest"], null, $result ["solrShards"], null );
             $solrResponse = $solr->getResponse ();
             if ($solrResponse && is_object ( $solrResponse )) {
               if (isset ( $solrResponse->error )) {

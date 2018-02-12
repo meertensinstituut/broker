@@ -99,7 +99,7 @@ class Configuration {
    * @param NULL|string $suboperation          
    * @return string
    */
-  public function url($operation = null, $suboperation = null) {
+  public function url($operation = null, $suboperation = null, $subsuboperation = null) {
     if ($operation == null || ! $operation || ! preg_match ( "/^[a-z]+$/i", $operation )) {
       return SITE_LOCATION;
     } else {
@@ -110,11 +110,19 @@ class Configuration {
           return SITE_LOCATION . "?operation=" . urlencode ( $operation );
         }
       } else {
-        if (array_key_exists ( "HTTP_MOD_REWRITE", $_SERVER )) {
-          return SITE_LOCATION . $operation . DIRECTORY_SEPARATOR . $suboperation . DIRECTORY_SEPARATOR;
-        } else {
-          return SITE_LOCATION . "?operation=" . urlencode ( $operation ) . "&suboperation=" . urlencode ( $suboperation );
-        }
+        if ($subsuboperation == null || ! $subsuboperation || ! preg_match ( "/^[a-z0-9]+$/i", $subsuboperation )) {
+          if (array_key_exists ( "HTTP_MOD_REWRITE", $_SERVER )) {
+            return SITE_LOCATION . $operation . DIRECTORY_SEPARATOR . $suboperation . DIRECTORY_SEPARATOR ;
+          } else {
+            return SITE_LOCATION . "?operation=" . urlencode ( $operation ) . "&suboperation=" . urlencode ( $suboperation );
+          }
+        } else {        
+          if (array_key_exists ( "HTTP_MOD_REWRITE", $_SERVER )) {
+            return SITE_LOCATION . $operation . DIRECTORY_SEPARATOR . $suboperation . DIRECTORY_SEPARATOR . $subsuboperation . DIRECTORY_SEPARATOR;
+          } else {
+            return SITE_LOCATION . "?operation=" . urlencode ( $operation ) . "&suboperation=" . urlencode ( $suboperation ) . "&subsuboperation=" . urlencode ( $subsuboperation );
+          }
+        }  
       }
     }
   }
@@ -575,7 +583,7 @@ class Configuration {
       } else {
         $shards = null;
       }
-      $tmpSolr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, $shards, null );
+      $tmpSolr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, null, $shards, null );
       $response = $tmpSolr->getResponse ();
       if (is_object ( $response ) && isset ( $response->mtas ) && isset ( $response->mtas->prefix )) {
         $number = 10;
@@ -700,7 +708,7 @@ class Configuration {
     $request .= "&mtas.termvector.0.type=sum";
     $request .= "&mtas.termvector.0.sort.type=sum";
     $request .= "&mtas.termvector.0.sort.direction=desc";
-    $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, $shards, null );
+    $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "select", $request, null, $shards, null );
     $tvresponse = $solr->getResponse ();
     if (is_object ( $tvresponse ) && isset ( $tvresponse->mtas ) && isset ( $tvresponse->mtas->termvector )) {
       $tmpList = $tvresponse->mtas->termvector [0]->list;
@@ -758,7 +766,7 @@ class Configuration {
         } else {
           $shards = null;
         }
-        $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "terms", $request, $shards, null );
+        $solr = new \Broker\Solr ( "[configuration]", isset ( $solrConfiguration ["url"] ) ? $solrConfiguration ["url"] : null, "terms", $request, null, $shards, null );
         $response = $solr->getResponse ();
         if (is_object ( $response ) && isset ( $response->terms ) && isset ( $response->terms->{$field} )) {
           if (is_object ( $response->terms->{$field} )) {

@@ -119,10 +119,10 @@ class Response {
     $subRequest->response->documents->start = 0;
     $subRequest->response->documents->rows = 1000000;
     $subRequest->response->documents->fields = $allFields;
-    $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null );
+    $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null, null );
     // get data
     try {
-      $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
+      $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), null, implode ( ",", $subParser->getShards () ), $this->cache );
       $solrResponse = $solr->getResponse ();
       if ($solrResponse && is_object ( $solrResponse )) {
         if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {
@@ -226,11 +226,11 @@ class Response {
     $subRequest->response->documents->start = 0;
     $subRequest->response->documents->rows = 1000000;
     $subRequest->response->documents->fields = $allFields;
-    $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null );
+    $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null, null );
     // get data
     if (count ( $subParser->getErrors () ) == 0) {
       try {
-        $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), implode ( ",", $subParser->getShards () ), $this->cache );
+        $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), null, implode ( ",", $subParser->getShards () ), $this->cache );
         $solrResponse = $solr->getResponse ();
         if ($solrResponse && is_object ( $solrResponse )) {
           if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {

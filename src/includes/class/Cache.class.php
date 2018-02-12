@@ -35,7 +35,8 @@ class Cache extends Database {
           \"configuration\" TEXT NULL,
           \"url\" TEXT NOT NULL,
           \"request\" TEXT NOT NULL,
-          \"response\" TEXT NOT NULL,
+          \"requestAddition\" TEXT,
+          \"response\" TEXT NOT NULL,          
           \"numberOfChecks\" INTEGER,
           \"created\" TEXT NOT NULL,
           \"used\" TEXT NOT NULL,          
@@ -53,7 +54,7 @@ class Cache extends Database {
    * @param string $request          
    * @param unknown $response          
    */
-  public function create($configuration, $url, $request, $response) {
+  public function create($configuration, $url, $request, $requestAddition, $response) {
     $this->clean ();
     // hash
     $hash = $this->createHash ( $configuration, $url, $request );
@@ -65,13 +66,14 @@ class Cache extends Database {
     unset ( $query );
     // insert
     $sql = "INSERT OR IGNORE INTO \"cache\"
-    (hash, configuration, url, request, response, numberOfChecks, created, used, expires)
-    VALUES (:hash, :configuration, :url, :request, :response, 1, datetime('now'), datetime('now'), datetime('now', '+" . intval ( $this->lifetime ) . " minutes'))";
+    (hash, configuration, url, request, requestAddition, response, numberOfChecks, created, used, expires)
+    VALUES (:hash, :configuration, :url, :request, :requestAddition, :response, 1, datetime('now'), datetime('now'), datetime('now', '+" . intval ( $this->lifetime ) . " minutes'))";
     $query = $this->database->prepare ( $sql );
     $query->bindValue ( ":hash", $hash );
     $query->bindValue ( ":configuration", $configuration );
     $query->bindValue ( ":url", $url );
     $query->bindValue ( ":request", $request );
+    $query->bindValue ( ":requestAddition", $requestAddition );
     $query->bindValue ( ":response", $response );
     $query->execute ();
     unset ( $query );
@@ -84,7 +86,7 @@ class Cache extends Database {
    */
   public function get($hash) {
     $sql = "SELECT    
-    id, hash, configuration, url, request, response, numberOfChecks,
+    id, hash, configuration, url, request, requestAddition, response, numberOfChecks,
     datetime(created, 'localtime') as created,
     datetime(used, 'localtime') as used,
     datetime(expires, 'localtime') as expires

@@ -17,6 +17,12 @@ class Parser {
    */
   private $brokerRequest = null;
   /**
+   * Status key
+   * 
+   * @var string
+   */
+  private $statusKey = null;
+  /**
    * Url solr
    *
    * @var string
@@ -34,6 +40,12 @@ class Parser {
    * @var string
    */
   private $solrRequest = null;
+  /**
+   * Solr request addition
+   *
+   * @var string
+   */
+  private $solrRequestAddition = null;
   /**
    * Solr configuration
    *
@@ -110,12 +122,17 @@ class Parser {
    * @param \Broker\ExpansionCache $expansionCache          
    * @throws \Exception
    */
-  public function __construct($request, $configuration, $cache, $collection, $expansionCache) {
+  public function __construct($request, $configuration, $cache, $collection, $expansionCache, $statusKey) {
     if ($collection != null) {
       $this->collection = $collection;
     }
     $this->cache = $cache;
     $this->brokerRequest = is_string ( $request ) ? json_decode ( $request, false ) : $request;
+    if ($statusKey != null && (! is_string ( $statusKey ) || strlen ( $statusKey ) < 10)) {
+      throw new \Exception ( "Could not parse request: invalid key" );
+    } else if($statusKey!=null) {
+      $this->statusKey = $statusKey;      
+    }
     $this->configuration = $configuration;
     $this->responseJoins = new \stdClass ();
     if ($this->brokerRequest != null && json_last_error () == JSON_ERROR_NONE) {
@@ -135,6 +152,26 @@ class Parser {
     } else {
       return null;
     }
+  }
+  /**
+   * Get addition solr request
+   *
+   * @return string
+   */
+  public function getRequestAddition() {
+    if (count ( $this->errors ) == 0) {
+      return $this->solrRequestAddition;
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Get status key
+   *
+   * @return string
+   */  
+  public function getStatusKey() {
+    return $this->statusKey;
   }
   /**
    * Get solr url
@@ -234,6 +271,7 @@ class Parser {
     $__facetQueries = array ();
     $__mtasStats = array ();
     $requestList = array ();
+    $requestAdditionalList = array ();    
     foreach ( $this->brokerRequest as $key => $value ) {
       if ($key == "condition") {
         $this->brokerRequest->condition = $this->checkCondition ( $value );
@@ -269,7 +307,7 @@ class Parser {
         $this->solrShards = null;
       } else {
         $tmpList = $this->configuration->getConfig ( "solr" );
-        $__config =  $tmpList[$config];
+        $__config = $tmpList [$config];
         $this->solrUrl = isset ( $__config ["url"] ) ? $__config ["url"] : "";
         $this->solrShards = isset ( $__config ["shards"] ) ? $__config ["shards"] : "";
         $this->solrConfiguration = $config;
@@ -296,10 +334,14 @@ class Parser {
       $__facetQueriesKeyList = array ();
       $this->checkResponseFacetQueries ( $__facetQueries, $__facetQueriesKeyList );
       if (count ( $this->errors ) == 0) {
-        if (isset ( $this->brokerRequest->response )) {
-          $this->brokerRequest->response = $this->parseResponse ( $this->brokerRequest->response, $__facetQueries, $__mtasStats, $this->solrConfiguration );
+        if (isset ( $this->brokerRequest->response ) || $this->statusKey != null) {
+          if (! isset ( $this->brokerRequest->response )) {
+            $this->brokerRequest->response = null;
+          }
+          $this->brokerRequest->response = $this->parseResponse ( $this->brokerRequest->response, $__facetQueries, $__mtasStats );
           if ($this->brokerRequest->response) {
             $requestList = array_merge ( $requestList, $this->brokerRequest->response->__requestList );
+            $requestAdditionalList = array_merge ( $requestAdditionalList, $this->brokerRequest->response->__requestAdditionalList );            
           }
         }
         if (isset ( $this->brokerRequest->sort )) {
@@ -325,6 +367,7 @@ class Parser {
     $requestList [] = "wt=json";
     $requestList [] = "echoParams=none";
     $this->solrRequest = implode ( "&", $requestList );
+    $this->solrRequestAddition = (count($requestAdditionalList)>0)?implode("&", $requestAdditionalList):null;    
   }
   /**
    * Check cache in request
@@ -1325,9 +1368,9 @@ class Parser {
           foreach ( $object as $key => $value ) {
             if ($key == "field" || $key == "key" || $key == "__options") {
               // ignore
-            } else if($key == "countDistinct") {
-              if(is_bool($value)) {
-                $object->__options [] = $key ."=" .($value?"true":"false");
+            } else if ($key == "countDistinct") {
+              if (is_bool ( $value )) {
+                $object->__options [] = $key . "=" . ($value ? "true" : "false");
               } else {
                 $this->warnings [] = "stats - statsfields - {$key} should be a boolean";
               }
@@ -1622,8 +1665,8 @@ class Parser {
           if (! is_array ( $value ) || count ( $object->queries ) == 0) {
             $this->errors [] = "mtas - stats - spans - {$key} should be array";
           } else {
-            for($i = 0; $i < count ( $value ); $i ++) {              
-              $object->{$key} [$i] = $this->checkResponseMtasQuery ( $value [$i], "mtas - stats - spans - query - " );              
+            for($i = 0; $i < count ( $value ); $i ++) {
+              $object->{$key} [$i] = $this->checkResponseMtasQuery ( $value [$i], "mtas - stats - spans - query - " );
             }
           }
         } else if ($key == "functions") {
@@ -2296,8 +2339,8 @@ class Parser {
   /**
    * Check mtas distance
    *
-   * @param unknown $object
-   * @param string $prefix
+   * @param unknown $object          
+   * @param string $prefix          
    * @return unknown
    */
   private function checkResponseMtasDistance($object, $prefix) {
@@ -2307,20 +2350,20 @@ class Parser {
           if (! is_string ( $value )) {
             $this->errors [] = $prefix . "{$key} should be string";
           }
-        } else if ($key == "maximum") {
+        } else if ($key == "minimum" || $key == "maximum") {
           if (! is_numeric ( $value )) {
             $this->errors [] = $prefix . "{$key} should be numeric";
           }
-        } else if($key == "parameter") {
+        } else if ($key == "parameter") {
           if (! is_object ( $value )) {
             $this->errors [] = $prefix . "{$key} should be an object";
           } else {
-            foreach($value AS $subKey => $subValue) {
-              if(!preg_match("/^[a-z0-9]+$/i",$subKey)) {
+            foreach ( $value as $subKey => $subValue ) {
+              if (! preg_match ( "/^[a-z0-9]+$/i", $subKey )) {
                 $this->errors [] = $prefix . "parameter - {$subKey} not allowed";
-              } else if (!is_string($subValue) && ! is_numeric ( $subValue )) {              
+              } else if (! is_string ( $subValue ) && ! is_numeric ( $subValue )) {
                 $this->errors [] = $prefix . "parameter - {$subKey} should be string or numeric";
-              } 
+              }
             }
           }
         } else {
@@ -2863,6 +2906,7 @@ class Parser {
   private function parseResponse($object, $facetQueries, $mtasStats) {
     if ($object && is_object ( $object )) {
       $requestList = array ();
+      $requestAdditionalList = array ();
       if (! isset ( $object->documents )) {
         $requestList [] = "rows=0";
       } else {
@@ -2886,16 +2930,39 @@ class Parser {
           $requestList = array_merge ( $requestList, $object->stats->__requestList );
         }
       }
-      if (isset ( $object->mtas ) || count ( $mtasStats ) > 0) {
-        if (! isset ( $object->mtas )) {
-          $object->mtas = new \stdClass ();
+      if (isset ( $object->mtas ) || count ( $mtasStats ) > 0 || $this->statusKey != null) {
+        if(isset ( $object->mtas ) || count ( $mtasStats ) > 0) {
+          if(!isset ( $object->mtas )) {
+            $object->mtas = new \stdClass();
+          }
+          $object->mtas = $this->parseResponseMtas ( $object->mtas, $mtasStats);
+        } else {
+          $object->mtas = $this->parseResponseMtas ( null, $mtasStats);          
         }
-        $object->mtas = $this->parseResponseMtas ( $object->mtas, $mtasStats );
-        if ($object->mtas != null && isset ( $object->mtas->__requestList )) {
-          $requestList = array_merge ( $requestList, $object->mtas->__requestList );
+        if ($object->mtas != null) {
+          if (isset ( $object->mtas->__requestList )) {
+            $requestList = array_merge ( $requestList, $object->mtas->__requestList );
+          }
+          if (isset ( $object->mtas->__requestAdditionalList )) {
+            $requestAdditionalList = array_merge ( $requestAdditionalList, $object->mtas->__requestAdditionalList );
+          }
         }
       }
       $object->__requestList = $requestList;
+      $object->__requestAdditionalList = $requestAdditionalList;
+      return $object;
+    } else if ($this->statusKey != null) {
+      $object = new \stdClass ();
+      $object->mtas = new \stdClass ();
+      $object->mtas = $this->parseResponseMtas ( $object->mtas, $mtasStats);
+      if ($object->mtas != null) {
+        if (isset ( $object->mtas->__requestList )) {
+          $object->__requestList = $object->mtas->__requestList;
+        }
+        if (isset ( $object->mtas->__requestAdditionalList )) {
+          $object->__requestAdditionalList = $object->mtas->__requestAdditionalList;
+        }        
+      }
       return $object;
     } else {
       return null;
@@ -3366,7 +3433,14 @@ class Parser {
     $localWarnings = array ();
     if ($object && is_object ( $object )) {
       $requestList = array ();
+      $requestAdditionalList = array ();
       $requestList [] = "mtas=true";
+      // add status key
+      if ($this->statusKey != null) {
+        $requestAdditionalList [] = "mtas.status=true";
+        $requestAdditionalList [] = "mtas.status.key=".urlencode($this->statusKey);
+      }
+      // check response
       foreach ( $object as $key => $value ) {
         if ($key == "stats") {
           if ($value && is_object ( $value )) {
@@ -3450,8 +3524,18 @@ class Parser {
         $requestList = array_merge ( $requestList, $object->stats->__requestList );
       }
       $object->__requestList = $requestList;
+      $object->__requestAdditionalList = $requestAdditionalList;
       $this->errors = array_merge ( $this->errors, $localErrors );
       $this->warnings = array_merge ( $this->warnings, $localWarnings );
+      return $object;
+    } else if($this->statusKey!=null) {
+      $object = new \stdClass();
+      $requestAdditionalList = array();
+      $requestAdditionalList [] = "mtas=true";
+      $requestAdditionalList [] = "mtas.status=true";
+      $requestAdditionalList [] = "mtas.status.key=".urlencode($this->statusKey);
+      $object->__requestList = array();
+      $object->__requestAdditionalList = $requestAdditionalList;
       return $object;
     } else {
       $localWarnings [] = "mtas - unexpected type";
@@ -3872,13 +3956,16 @@ class Parser {
           if (isset ( $object->distances [$j]->base ) && is_string ( $object->distances [$j]->base )) {
             $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".base=" . urlencode ( $object->distances [$j]->base );
           }
+          if (isset ( $object->distances [$j]->minimum ) && is_numeric ( $object->distances [$j]->minimum )) {
+            $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".minimum=" . urlencode ( $object->distances [$j]->minimum );
+          }
           if (isset ( $object->distances [$j]->maximum ) && is_numeric ( $object->distances [$j]->maximum )) {
             $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".maximum=" . urlencode ( $object->distances [$j]->maximum );
           }
           if (isset ( $object->distances [$j]->parameter ) && is_object ( $object->distances [$j]->parameter )) {
-            foreach($object->distances [$j]->parameter AS $parameterKey => $parameterValue) {
-              $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".parameter.".$parameterKey."=" . urlencode ( $parameterValue );
-            }  
+            foreach ( $object->distances [$j]->parameter as $parameterKey => $parameterValue ) {
+              $requestList [] = "mtas.termvector." . $i . ".distance." . $j . ".parameter." . $parameterKey . "=" . urlencode ( $parameterValue );
+            }
           }
         }
       }
