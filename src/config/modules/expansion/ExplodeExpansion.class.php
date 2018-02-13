@@ -31,17 +31,17 @@ class ExplodeExpansion implements \Broker\Expansion {
    * Explode expansion
    * 
    * @param string|array $value          
-   * @param unknown $configuration          
+   * @param unknown $expansionConfiguration          
    */
-  public function __construct($value, $configuration) {
+  public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this->value = $value;
-    if ($configuration && is_object ( $configuration )) {
-      if (isset ( $configuration->parameters ) && is_object ( $configuration->parameters )) {
-        if (isset ( $configuration->parameters->split ) && is_string ( $configuration->parameters->split )) {
-          $this->split = $configuration->parameters->split;
+    if ($expansionConfiguration && is_object ( $expansionConfiguration )) {
+      if (isset ( $expansionConfiguration->parameters ) && is_object ( $expansionConfiguration->parameters )) {
+        if (isset ( $expansionConfiguration->parameters->split ) && is_string ( $expansionConfiguration->parameters->split )) {
+          $this->split = $expansionConfiguration->parameters->split;
         }
-        if (isset ( $configuration->parameters->trim )) {
-          if ($configuration->parameters->trim) {
+        if (isset ( $expansionConfiguration->parameters->trim )) {
+          if ($expansionConfiguration->parameters->trim) {
             $this->trim = true;
           } else {
             $this->trim = false;

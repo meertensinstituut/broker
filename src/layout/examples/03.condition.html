@@ -159,16 +159,16 @@
         <button class="json">Example type 'equals' with 'expansion'</button>
         <div class="json">{ "condition" : { "type": "equals",
           "field" : "::exampleFieldText(fieldName)::", "value" :
-          "::exampleFieldTextValue0(word)::*::exampleFieldTextValue1(word)::",
+          "::exampleFieldTextValue0(word)::",
           "expansion": {
-            "type": "explode", "parameters":{"split":"*"}
+            "type": "distance", "parameters":{"method":"levenshtein", "field": "::exampleFieldMtas(fieldName)::", "prefix": "::exampleFieldMtasWordPrefix(prefix1)::", "maximum": 1}
           }, "key" : "key for facetquery", "facetquery" : true}, "response": {
           "documents": { "start": 0, "rows": 10, "fields": [
           "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
       </td>
       <td class="text">Get unique key and field <em>::exampleFieldText(fieldName)::</em>
         for the first 10 documents where field <em>::exampleFieldText(fieldName)::</em>
-        contains a term equal to '::exampleFieldTextValue0(word)::' or '::exampleFieldTextValue1(word)::'.
+        contains a term with maximum levenshtein distance 1 to '::exampleFieldTextValue0(word)::'.
       </td>
     </tr>
   </table>

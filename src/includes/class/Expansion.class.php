@@ -16,7 +16,7 @@ interface Expansion {
    * @param string|array $value          
    * @param unknown $configuration          
    */
-  public function __construct($value, $configuration);
+  public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration);
   /**
    * Check cache status
    *

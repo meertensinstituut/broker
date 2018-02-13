@@ -4685,7 +4685,7 @@ class Parser {
    * @param string $prefixMessage          
    * @return array
    */
-  private function computeExpansionValues($value, $expansion, $prefixMessage = "") {
+  private function computeExpansionValues($value, $expansion, $prefixMessage = "") {    
     $values = array ();
     if ($expansion && is_object ( $expansion )) {
       foreach ( $expansion as $key => $item ) {
@@ -4718,19 +4718,19 @@ class Parser {
               $values = array_merge ( $values, $expansionObject->getValues () );
             }
           } else {
-            $expansionObject = new $expansionObjectClass ( $value, $expansion );
+            $expansionObject = new $expansionObjectClass ( $value, $expansion, $this->configuration, $this->solrConfiguration );
             // check cache
             if ($expansionObject->cached ()) {
               if (! $this->expansionCache) {
                 $this->expansionCache = new \Broker\ExpansionCache ( SITE_CACHE_DATABASE_DIR );
               }
-              list ( $id, $cachedValues ) = $this->expansionCache->check ( $expansion->type, $value, isset ( $expansion->parameters ) ? $expansion->parameters : null );
+              list ( $id, $cachedValues ) = $this->expansionCache->check ( $expansion->type, $value, isset ( $expansion->parameters ) ? array($this->solrConfiguration, $expansion->parameters) : $this->solrConfiguration );
               if ($id) {
                 $values = $cachedValues;
               } else {
                 $values = $expansionObject->getValues ();
                 if (! ($expansionErrors = $expansionObject->getErrors ())) {
-                  $this->expansionCache->create ( $expansion->type, $value, isset ( $expansion->parameters ) ? $expansion->parameters : null, $values );
+                  $this->expansionCache->create ( $expansion->type, $value, isset ( $expansion->parameters ) ? array($this->solrConfiguration, $expansion->parameters) : $this->solrConfiguration, $values );
                 } else {
                   foreach ( $expansionErrors as $expansionError ) {
                     $this->warnings [] = $prefixMessage . "expansion - " . $expansionError;
