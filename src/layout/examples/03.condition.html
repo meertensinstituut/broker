@@ -526,20 +526,20 @@ since this is automatically derived from the CQL query with the different instan
   <table>
     <tr>
       <td class="button">
-        <button class="json">Example type 'cql' with 'variable'</button>
+        <button class="json">Example type 'cql' with 'expansion'</button>
         <div class="json">{ "condition" : { "type": "cql",
           "field": "::exampleFieldMtas(fieldName)::", "value":
           "[::exampleFieldMtasWordPrefix(prefix)::=$1]", "variables":
-          {"definitions":[{"name":"1","value":"::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::",
-          "expansion":{"type":"explode"}}]}}, "response": {
+          {"definitions":[{"name":"1","value":"::exampleFieldMtasWordPostfix1(value2)::",
+          "expansion":{"type":"distance", "parameters": {"method": "levenshtein", "field": "::exampleFieldMtas(fieldName)::", "prefix": "t_lc", "maximum": 1}}}]}}, "response": {
           "documents": { "start": 0, "rows": 10, "fields": [
           "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
       </td>
       <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
         for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
         matches [::exampleFieldMtasWordPrefix(prefix)::=$1] with variable
-        $1 defined by the explode expansion of
-        "::exampleFieldMtasWordPostfix0(value1)::,::exampleFieldMtasWordPostfix1(value2)::".
+        $1 defined by collection of terms with maximum levenshtein distance 1 to
+        "::exampleFieldMtasWordPostfix1(value2)::".
       </td>
     </tr>
   </table>

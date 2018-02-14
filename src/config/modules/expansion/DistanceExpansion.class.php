@@ -15,6 +15,8 @@ class DistanceExpansion implements \Broker\Expansion {
   private $configuration;
   private $brokerConfiguration;
   private $solrConfiguration;
+  private $filter;
+  private $condition;
   private $errors;
   private $method;
   private $prefix;
@@ -38,6 +40,8 @@ class DistanceExpansion implements \Broker\Expansion {
     $this->configuration = $expansionConfiguration;   
     $this->brokerConfiguration = $brokerConfiguration;
     $this->solrConfiguration = $solrConfiguration;
+    $this->filter = null;
+    $this->condition = null;
     $this->minimum = self::$defaultMinimum;
     $this->maximum = self::$defaultMaximum;
     $this->number = self::$defaultNumber;
@@ -58,6 +62,17 @@ class DistanceExpansion implements \Broker\Expansion {
         $this->field = $expansionConfiguration->parameters->field;
       } else {
         $this->errors[] = "no (valid) field provided";
+      }
+      if (isset ( $expansionConfiguration->parameters->filter )) {
+        $this->filter = $expansionConfiguration->parameters->filter;
+      }
+      if (isset ( $expansionConfiguration->parameters->condition)) {
+        $this->condition = $expansionConfiguration->parameters->condition;
+      }
+      if (isset ( $expansionConfiguration->parameters->configuration ) && is_string ( $expansionConfiguration->parameters->configuration )) {
+        $this->solrConfiguration = $expansionConfiguration->parameters->configuration;
+      } else if (isset ( $expansionConfiguration->parameters->configuration )) {
+        $this->errors[] = "invalid configuration provided";
       }
       if (isset ( $expansionConfiguration->parameters->minimum ) && is_numeric ( $expansionConfiguration->parameters->minimum )) {
         $this->minimum = $expansionConfiguration->parameters->minimum;
@@ -115,6 +130,9 @@ class DistanceExpansion implements \Broker\Expansion {
         "method" => "obligatory, mtas distance function (for example levenshtein or damerauLevenshtein)",
         "prefix" => "obligatory",
         "field" => "obligatory",
+        "filter" => "optional, filter for request computing expansion",
+        "condition" => "optional, condition for request computing expansion",
+        "configuration" => "optional, uses current configuration if applicable",
         "minimum" => "optional, default using " . self::$defaultMinimum ,
         "maximum" => "optional, default using " . self::$defaultMaximum ,
         "number" => "optional, default using " . self::$defaultNumber ,
@@ -131,7 +149,15 @@ class DistanceExpansion implements \Broker\Expansion {
   public function getValues() {  
     $list = array();
     $request = new \stdClass ();
-    $request->configuration = $this->solrConfiguration;
+    if($this->solrConfiguration!=null) {
+      $request->configuration = $this->solrConfiguration;
+    }
+    if($this->filter!=null) {
+      $request->filter = $this->filter;
+    }
+    if($this->condition!=null) {
+      $request->condition = $this->condition;
+    }
     $request->response = new \stdClass ();
     $request->response->mtas = new \stdClass ();
     $request->response->mtas->termvector = array();

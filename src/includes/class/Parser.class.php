@@ -4714,7 +4714,7 @@ class Parser {
           }
           if (is_array ( $value )) {
             foreach ( $value as $valueItem ) {
-              $expansionObject = new $expansionObjectClass ( $valueItem, $expansion );
+              $expansionObject = new $expansionObjectClass ( $valueItem, $expansion , $this->configuration, $this->solrConfiguration);
               $values = array_merge ( $values, $expansionObject->getValues () );
             }
           } else {
