@@ -164,7 +164,7 @@ class Status extends Database {
           $query->bindValue ( ":solrRequest", $solrRequest );
           $query->bindValue ( ":solrRequestAddition", $solrRequestAddition );
           $query->bindValue ( ":solrShards", $solrShards ? implode ( ",", $solrShards ) : null );
-          $query->bindValue ( ":responseJoins", count ( $responseJoins ) > 0 ? json_encode ( $responseJoins ) : null );
+          $query->bindValue ( ":responseJoins", ($responseJoins && $responseJoins->length > 0) ? json_encode ( $responseJoins ) : null );
           if ($query->execute ()) {
             $response ["id"] = $this->database->lastInsertId ();
             $response ["key"] = $key;
