@@ -1,0 +1,189 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+/**
+ * Module mapping
+ * @package Broker
+ */
+if (! $authentication-&gt;accessBasedOnLogin ()) {
+  $authentication-&gt;logout ();
+  header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;login&quot;, &quot;settings&quot; ) );
+  exit ();
+} else {
+  if (isset ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; is_string ( $_GET [&quot;suboperation&quot;] ) &amp;&amp; trim ( $_GET [&quot;suboperation&quot;] ) != &quot;&quot;) {
+    if (strtolower ( trim ( $_GET [&quot;suboperation&quot;] ) ) == &quot;api&quot;) {
+      if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == &quot;POST&quot;) {
+        $response = array ();
+        header ( &quot;Content-Type: application/json&quot; );
+        if ($mappingRequest = json_decode ( file_get_contents ( &quot;php://input&quot; ) )) {
+          $response [&quot;status&quot;] = &quot;ok&quot;;
+          if (! isset ( $mappingRequest-&gt;action ) || ! is_string ( $mappingRequest-&gt;action )) {
+            $response [&quot;status&quot;] = &quot;error&quot;;
+            $response [&quot;error&quot;] = &quot;no (valid) action in request&quot;;
+          } else {
+            if ($mappingRequest-&gt;action == &quot;info&quot;) {
+              $response [&quot;configurations&quot;] = array ();
+              foreach ( $configuration-&gt;config [&quot;solr&quot;] as $configItem =&gt; $value ) {
+                if (isset ( $configuration-&gt;solr [$configItem] ) &amp;&amp; isset ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &amp;&amp; count ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &gt; 0) {
+                  $coreUrl = $configuration-&gt;config [&quot;solr&quot;] [$configItem] [&quot;url&quot;];
+                  $ch = curl_init ( $coreUrl . &quot;mtas?wt=json&amp;action=files&quot; );
+                  $options = array (
+                      CURLOPT_RETURNTRANSFER =&gt; true 
+                  );
+                  curl_setopt_array ( $ch, $options );
+                  $result = curl_exec ( $ch );
+                  if (($data = json_decode ( $result )) &amp;&amp; isset ( $data-&gt;files )) {
+                    $response [&quot;configurations&quot;] [$configItem] = array (
+                        &quot;files&quot; =&gt; $data-&gt;files 
+                    );
+                  } else {
+                    $response [&quot;status&quot;] = &quot;error&quot;;
+                    $response [&quot;error&quot;] = &quot;problem with configuration &quot; . $configItem;
+                  }
+                }
+              }
+            } else if ($mappingRequest-&gt;action == &quot;file&quot;) {
+              if (! isset ( $mappingRequest-&gt;file ) || ! is_string ( $mappingRequest-&gt;file )) {
+                $response [&quot;status&quot;] = &quot;error&quot;;
+                $response [&quot;error&quot;] = &quot;no (valid) file in request&quot;;
+              } else if (! isset ( $mappingRequest-&gt;configuration ) || ! is_string ( $mappingRequest-&gt;configuration )) {
+                $response [&quot;status&quot;] = &quot;error&quot;;
+                $response [&quot;error&quot;] = &quot;no (valid) configuration in request&quot;;
+              } else {
+                $configItem = $mappingRequest-&gt;configuration;
+                if (isset ( $configuration-&gt;config [&quot;solr&quot;] [$configItem] ) &amp;&amp; isset ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &amp;&amp; count ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &gt; 0) {
+                  $coreUrl = $configuration-&gt;config [&quot;solr&quot;] [$configItem] [&quot;url&quot;];
+                  $ch = curl_init ( $coreUrl . &quot;mtas?wt=json&amp;action=file&amp;file=&quot; . urlencode ( $mappingRequest-&gt;file ) );
+                  $options = array (
+                      CURLOPT_RETURNTRANSFER =&gt; true 
+                  );
+                  curl_setopt_array ( $ch, $options );
+                  $result = curl_exec ( $ch );
+                  if (($data = json_decode ( $result )) &amp;&amp; isset ( $data-&gt;file )) {
+                    $response [&quot;data&quot;] = $data-&gt;file;
+                  } else {
+                    $response [&quot;status&quot;] = &quot;error&quot;;
+                    $response [&quot;error&quot;] = &quot;problem with configuration &quot; . $configItem;
+                  }
+                }
+              }
+            } else if ($mappingRequest-&gt;action == &quot;mapping&quot;) {
+              if (($configItem = $mappingRequest-&gt;configuration) &amp;&amp; is_string ( $configItem )) {
+                if (isset ( $configuration-&gt;config [&quot;solr&quot;] [$configItem] ) &amp;&amp; isset ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &amp;&amp; count ( $configuration-&gt;solr [$configItem] [&quot;mtas&quot;] ) &gt; 0) {
+                  $coreUrl = $configuration-&gt;config [&quot;solr&quot;] [$configItem] [&quot;url&quot;];
+                  if (($mapping = $mappingRequest-&gt;mapping) &amp;&amp; is_string ( $mapping )) {
+                    if (($url = $mappingRequest-&gt;url) &amp;&amp; is_string ( $url )) {
+                      $data = array (
+                          &quot;configuration&quot; =&gt; $mapping,
+                          &quot;url&quot; =&gt; $url 
+                      );
+                    } else if (($document = $mappingRequest-&gt;document) &amp;&amp; is_string ( $document )) {
+                      $data = array (
+                          &quot;configuration&quot; =&gt; $mapping,
+                          &quot;document&quot; =&gt; $document 
+                      );
+                    } else {
+                      $response [&quot;status&quot;] = &quot;error&quot;;
+                      $response [&quot;error&quot;] = &quot;no url or document&quot;;
+                    }
+                    if($response[&quot;status&quot;]==&quot;ok&quot;) {
+                      $ch = curl_init ( $coreUrl . &quot;mtas?wt=json&amp;action=mapping&quot; );
+                      $options = array (
+                          CURLOPT_HTTPHEADER =&gt; array (
+                              &quot;Content-Type: application/json; charset=utf-8&quot; 
+                          ),
+                          CURLOPT_RETURNTRANSFER =&gt; true,
+                          CURLOPT_POST =&gt; true,
+                          CURLOPT_POSTFIELDS =&gt; json_encode ( $data ) 
+                      );
+                      curl_setopt_array ( $ch, $options );
+                      $dataString = curl_exec ( $ch );
+                      if (is_object ( $dataString ) || trim ( $dataString ) == &quot;&quot;) {
+                        $response [&quot;status&quot;] = &quot;error&quot;;
+                        $response [&quot;error&quot;] = &quot;no (valid) response&quot;;
+                      } else if ($data = json_decode ( $dataString )) {
+                        $mappingResult = array();
+                        if(isset($data-&gt;mapping)) {
+                          $mappingResult[&quot;mapping&quot;] = $data-&gt;mapping;
+                        }
+                        $response [&quot;data&quot;] = $mappingResult;
+                      } else {
+                        $response [&quot;status&quot;] = &quot;error&quot;;
+                        $response [&quot;error&quot;] = &quot;couldn't decode response&quot;;
+                      }       
+                    }  
+                  } else {
+                    $response [&quot;status&quot;] = &quot;error&quot;;
+                    $response [&quot;error&quot;] = &quot;no (valid) mapping provided&quot;;
+                  }
+                } else {
+                  $response [&quot;status&quot;] = &quot;error&quot;;
+                  $response [&quot;error&quot;] = &quot;problem with configuration &quot; . $configItem;
+                }
+              } else {
+                $response [&quot;status&quot;] = &quot;error&quot;;
+                $response [&quot;error&quot;] = &quot;no (valid) configuration provided&quot;;
+              }
+            } else {
+              $response [&quot;status&quot;] = &quot;error&quot;;
+              $response [&quot;error&quot;] = &quot;unrecognized action &quot; . $mappingRequest-&gt;action;
+            }
+          }
+        } else {
+          $response [&quot;status&quot;] = &quot;error&quot;;
+          $response [&quot;error&quot;] = &quot;no valid json&quot;;
+        }
+        echo json_encode ( $response );
+      } else {
+        // only allow post
+        header ( &quot;Location: &quot; . $configuration-&gt;url ( &quot;mapping&quot; ) );
+      }
+      exit ();
+    } else {
+      // default
+    }
+  }
+}
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,373 @@
+<html>
+    <head>
+        <script
+            type="text/javascript"
+            src="../../../../js/jquery-1.4.2.min.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shCore.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushJScript.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushPhp.js">
+        </script>
+        <script
+            type="text/javascript"
+            src="../../../../syntax_highlighter/scripts/shBrushXml.js">
+        </script>
+        <link
+            href="../../../../syntax_highlighter/styles/shCore.css" rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="../../../../syntax_highlighter/styles/shCoreEclipse.css"
+            rel="stylesheet" type="text/css"
+        />
+        <link
+            href="../../../../syntax_highlighter/styles/shThemeWordpress.css"
+            rel="stylesheet" type="text/css"
+        />
+    </head>
+    <body>
+        <pre class="brush: php">&lt;?php
+
+/**
+ * Broker expansion
+ * @package Broker
+ * @subpackage Expansion
+ */
+namespace BrokerExpansion;
+
+/**
+ * DistanceExpansion
+ */
+class DistanceExpansion implements \Broker\Expansion {
+  /**
+   * Value
+   * 
+   * @var string
+   */
+  private $value;
+  /**
+   * Configuration
+   * 
+   * @var unknown
+   */
+  private $configuration;
+  /**
+   * Broker configuration
+   * 
+   * @var unknown
+   */
+  private $brokerConfiguration;
+  /**
+   * Solr configuration
+   * 
+   * @var unknown
+   */
+  private $solrConfiguration;
+  /**
+   * Filter
+   * 
+   * @var unknown
+   */
+  private $filter;
+  /**
+   * Condition
+   * 
+   * @var unknown
+   */
+  private $condition;
+  /**
+   * Errors
+   * @var array
+   */
+  private $errors;
+  /**
+   * Method
+   * 
+   * @var string
+   */
+  private $method;
+  /**
+   * Prefix
+   * 
+   * @var string
+   */
+  private $prefix;
+  /**
+   * Field
+   * 
+   * @var string
+   */
+  private $field;
+  /**
+   * Minimum
+   * 
+   * @var integer
+   */
+  private $minimum;  
+  /**
+   * Maximum
+   * 
+   * @var integer
+   */
+  private $maximum;  
+  /**
+   * Number
+   * 
+   * @var integer
+   */
+  private $number;  
+  /**
+   * Regexp
+   * 
+   * @var string
+   */
+  private $regexp;  
+  /**
+   * Parameter
+   * 
+   * @var unknown
+   */
+  private $parameter;
+  /**
+   * Default minimum
+   * 
+   * @var integer
+   */
+  private static $defaultMinimum = 0;
+  /**
+   * Default maximum
+   * 
+   * @var integer
+   */
+  private static $defaultMaximum = 1;
+  /**
+   * Default number
+   * 
+   * @var integer
+   */
+  private static $defaultNumber = 100;
+  
+  /**
+   * Constructor
+   * 
+   * @param string|array $value
+   * @param unknown $expansionConfiguration
+   * @param unknown $brokerConfiguration
+   * @param unknown $solrConfiguration
+   */
+  public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
+    $this-&gt;errors = array();
+    $this-&gt;value = $value;
+    $this-&gt;configuration = $expansionConfiguration;   
+    $this-&gt;brokerConfiguration = $brokerConfiguration;
+    $this-&gt;solrConfiguration = $solrConfiguration;
+    $this-&gt;filter = null;
+    $this-&gt;condition = null;
+    $this-&gt;minimum = self::$defaultMinimum;
+    $this-&gt;maximum = self::$defaultMaximum;
+    $this-&gt;number = self::$defaultNumber;
+    $this-&gt;regexp = null;
+    $this-&gt;parameter = null;
+    if (isset ( $expansionConfiguration-&gt;parameters ) &amp;&amp; is_object ( $expansionConfiguration-&gt;parameters )) {
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;method ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;method )) {
+        $this-&gt;method = $expansionConfiguration-&gt;parameters-&gt;method;
+      } else {
+        $this-&gt;errors[] = &quot;no (valid) method provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;prefix ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;prefix )) {
+        $this-&gt;prefix = $expansionConfiguration-&gt;parameters-&gt;prefix;
+      } else {
+        $this-&gt;errors[] = &quot;no (valid) prefix provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;field ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;field )) {
+        $this-&gt;field = $expansionConfiguration-&gt;parameters-&gt;field;
+      } else {
+        $this-&gt;errors[] = &quot;no (valid) field provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;filter )) {
+        $this-&gt;filter = $expansionConfiguration-&gt;parameters-&gt;filter;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;condition)) {
+        $this-&gt;condition = $expansionConfiguration-&gt;parameters-&gt;condition;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;configuration ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;configuration )) {
+        $this-&gt;solrConfiguration = $expansionConfiguration-&gt;parameters-&gt;configuration;
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;configuration )) {
+        $this-&gt;errors[] = &quot;invalid configuration provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;minimum ) &amp;&amp; is_numeric ( $expansionConfiguration-&gt;parameters-&gt;minimum )) {
+        $this-&gt;minimum = $expansionConfiguration-&gt;parameters-&gt;minimum;
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;minimum )) {
+        $this-&gt;errors[] = &quot;invalid minimum provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;maximum ) &amp;&amp; is_numeric ( $expansionConfiguration-&gt;parameters-&gt;maximum )) {
+        $this-&gt;maximum = $expansionConfiguration-&gt;parameters-&gt;maximum;
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;maximum )) {
+        $this-&gt;errors[] = &quot;invalid maximum provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;number ) &amp;&amp; is_int ( $expansionConfiguration-&gt;parameters-&gt;number )) {
+        $this-&gt;number = $expansionConfiguration-&gt;parameters-&gt;number;
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;number )) {
+        $this-&gt;errors[] = &quot;invalid number provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;regexp ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;regexp )) {      
+        $this-&gt;regexp = $expansionConfiguration-&gt;parameters-&gt;regexp;
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;regexp )) {
+        $this-&gt;errors[] = &quot;invalid regexp provided&quot;;
+      }
+      if (isset ( $expansionConfiguration-&gt;parameters-&gt;parameter ) &amp;&amp; is_object ( $expansionConfiguration-&gt;parameters-&gt;parameter )) {
+        $this-&gt;parameter = $expansionConfiguration-&gt;parameters-&gt;parameter;        
+      } else if (isset ( $expansionConfiguration-&gt;parameters-&gt;parameter )) {
+        $this-&gt;errors[] = &quot;invalid parameter provided&quot;;
+      }
+    }  
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see \Broker\Expansion::cached()
+   */
+  public static function cached() {
+    return true;
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see \Broker\Expansion::description()
+   */
+  public static function description() {
+    return &quot;expansion returning words with distance within limits&quot;;
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see \Broker\Expansion::parameters()
+   */
+  public static function parameters() {
+    return array (
+        &quot;method&quot; =&gt; &quot;obligatory, mtas distance function (for example levenshtein or damerauLevenshtein)&quot;,
+        &quot;prefix&quot; =&gt; &quot;obligatory&quot;,
+        &quot;field&quot; =&gt; &quot;obligatory&quot;,
+        &quot;filter&quot; =&gt; &quot;optional, filter for request computing expansion&quot;,
+        &quot;condition&quot; =&gt; &quot;optional, condition for request computing expansion&quot;,
+        &quot;configuration&quot; =&gt; &quot;optional, uses current configuration if applicable&quot;,
+        &quot;minimum&quot; =&gt; &quot;optional, default using &quot; . self::$defaultMinimum ,
+        &quot;maximum&quot; =&gt; &quot;optional, default using &quot; . self::$defaultMaximum ,
+        &quot;number&quot; =&gt; &quot;optional, default using &quot; . self::$defaultNumber ,
+        &quot;regexp&quot; =&gt; &quot;optional, default none&quot;,
+        &quot;parameter&quot; =&gt; &quot;optional object with mtas distance parameters, default none&quot;
+    );    
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see \Broker\Expansion::getValues()
+   */
+  public function getValues() {  
+    $list = array();
+    $request = new \stdClass ();
+    if($this-&gt;solrConfiguration!=null) {
+      $request-&gt;configuration = $this-&gt;solrConfiguration;
+    }
+    if($this-&gt;filter!=null) {
+      $request-&gt;filter = $this-&gt;filter;
+    }
+    if($this-&gt;condition!=null) {
+      $request-&gt;condition = $this-&gt;condition;
+    }
+    $request-&gt;response = new \stdClass ();
+    $request-&gt;response-&gt;mtas = new \stdClass ();
+    $request-&gt;response-&gt;mtas-&gt;termvector = array();
+    $request-&gt;response-&gt;mtas-&gt;termvector[0] = new \stdClass ();
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;field =  $this-&gt;field;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;prefix = $this-&gt;prefix;  
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;sort = new \stdClass ();
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;sort-&gt;type = &quot;sum&quot;;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;sort-&gt;direction = &quot;desc&quot;;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;number = $this-&gt;number;
+    if($this-&gt;regexp!=null) {
+      $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;regexp = $this-&gt;regexp;
+    }
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances = array();
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0] = new \stdClass ();
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0]-&gt;type = $this-&gt;method;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0]-&gt;base = $this-&gt;value;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0]-&gt;minimum = $this-&gt;minimum;
+    $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0]-&gt;maximum = $this-&gt;maximum;
+    if($this-&gt;parameter!=null) {
+      $request-&gt;response-&gt;mtas-&gt;termvector[0]-&gt;distances[0]-&gt;parameter = $this-&gt;parameter;
+    }
+    //parse
+    $parser = new \Broker\Parser ($request, $this-&gt;brokerConfiguration, null, null, null, null);    
+    if(count($parser-&gt;getWarnings ())&gt;0) {
+      foreach($parser-&gt;getWarnings() AS $warning) {
+        $this-&gt;errors[] = $warning;
+      }
+    } else if(count($parser-&gt;getErrors ())&gt;0) {
+      foreach($parser-&gt;getErrors() AS $error) {
+        $this-&gt;errors[] = $error;
+      }
+    } else {
+      try {
+          $solr = new \Broker\Solr ( $parser-&gt;getConfiguration (), $parser-&gt;getUrl (), &quot;select&quot;, $parser-&gt;getRequest (), $parser-&gt;getRequestAddition(), $parser-&gt;getShards () != null ? implode ( &quot;,&quot;, $parser-&gt;getShards () ) : null, $parser-&gt;getCache () );
+          $solrResponse = $solr-&gt;getResponse ();
+          if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
+            if(isset($solrResponse-&gt;mtas) &amp;&amp; is_object($solrResponse-&gt;mtas)) {
+              if(isset($solrResponse-&gt;mtas-&gt;termvector) &amp;&amp; is_array($solrResponse-&gt;mtas-&gt;termvector)) {
+                if(count($solrResponse-&gt;mtas-&gt;termvector)&gt;0 &amp;&amp; is_object($solrResponse-&gt;mtas-&gt;termvector[0])) {
+                  if(isset($solrResponse-&gt;mtas-&gt;termvector[0]-&gt;list) &amp;&amp; is_array($solrResponse-&gt;mtas-&gt;termvector[0]-&gt;list)) {
+                    foreach($solrResponse-&gt;mtas-&gt;termvector[0]-&gt;list AS $item) {
+                      if(is_object($item) &amp;&amp; isset($item-&gt;key) &amp;&amp; is_string($item-&gt;key)) {
+                        $list[] = $item-&gt;key;
+                      }
+                    }
+                  }
+                }                
+              }
+            }            
+          }                             
+      } catch ( \Broker\SolrException $se ) {
+          $this-&gt;errors[] = $se-&gt;getMessage ();
+      } catch ( \Exception $e ) {
+          $this-&gt;errors[] = $solr-&gt;getResponse ();
+      }    
+    }     
+    return $list;
+  }
+  /**
+   *
+   * {@inheritDoc}
+   *
+   * @see \Broker\Expansion::getErrors()
+   */
+  public function getErrors() {
+    if (count ( $this-&gt;errors ) &gt; 0) {
+      return $this-&gt;errors;
+    } else {
+      return null;
+    }
+  }
+  
+}
+
+?&gt;</pre>
+        <script type="text/javascript">
+             SyntaxHighlighter.all();
+             jQuery('.gutter div').each(function(key, data){
+                jQuery(data).prepend('<a name="L'+jQuery(data).text()+'"/>');
+             });
+        </script>
+    </body>
+</html>

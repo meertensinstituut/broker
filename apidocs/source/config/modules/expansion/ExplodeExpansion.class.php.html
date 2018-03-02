@@ -67,17 +67,19 @@ class ExplodeExpansion implements \Broker\Expansion {
    * Explode expansion
    * 
    * @param string|array $value          
-   * @param unknown $configuration          
+   * @param unknown $expansionConfiguration
+   * @param unknown $brokerConfiguration
+   * @param unknown $solrConfiguration
    */
-  public function __construct($value, $configuration) {
+  public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this-&gt;value = $value;
-    if ($configuration &amp;&amp; is_object ( $configuration )) {
-      if (isset ( $configuration-&gt;parameters ) &amp;&amp; is_object ( $configuration-&gt;parameters )) {
-        if (isset ( $configuration-&gt;parameters-&gt;split ) &amp;&amp; is_string ( $configuration-&gt;parameters-&gt;split )) {
-          $this-&gt;split = $configuration-&gt;parameters-&gt;split;
+    if ($expansionConfiguration &amp;&amp; is_object ( $expansionConfiguration )) {
+      if (isset ( $expansionConfiguration-&gt;parameters ) &amp;&amp; is_object ( $expansionConfiguration-&gt;parameters )) {
+        if (isset ( $expansionConfiguration-&gt;parameters-&gt;split ) &amp;&amp; is_string ( $expansionConfiguration-&gt;parameters-&gt;split )) {
+          $this-&gt;split = $expansionConfiguration-&gt;parameters-&gt;split;
         }
-        if (isset ( $configuration-&gt;parameters-&gt;trim )) {
-          if ($configuration-&gt;parameters-&gt;trim) {
+        if (isset ( $expansionConfiguration-&gt;parameters-&gt;trim )) {
+          if ($expansionConfiguration-&gt;parameters-&gt;trim) {
             $this-&gt;trim = true;
           } else {
             $this-&gt;trim = false;

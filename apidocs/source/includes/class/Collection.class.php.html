@@ -140,7 +140,7 @@ class Collection extends Database {
     $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
     $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
     $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
-    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, is_array($brokerField)?implode(&quot;,&quot;,$brokerField):$brokerField );
     $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
     $query-&gt;execute ();
     $this-&gt;errorCheck(&quot;create - insert&quot;, $query, false);
@@ -158,7 +158,7 @@ class Collection extends Database {
     $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
     $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
     $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
-    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, is_array($brokerField)?implode(&quot;,&quot;,$brokerField):$brokerField );
     $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
     $query-&gt;execute ();
     $this-&gt;errorCheck(&quot;create - update&quot;, $query, false);
@@ -176,7 +176,7 @@ class Collection extends Database {
     $query-&gt;bindValue ( &quot;:brokerConfiguration&quot;, $brokerConfiguration );
     $query-&gt;bindValue ( &quot;:brokerFilter&quot;, $brokerFilter );
     $query-&gt;bindValue ( &quot;:brokerCondition&quot;, $brokerCondition );
-    $query-&gt;bindValue ( &quot;:brokerField&quot;, $brokerField );
+    $query-&gt;bindValue ( &quot;:brokerField&quot;, is_array($brokerField)?implode(&quot;,&quot;,$brokerField):$brokerField );
     $query-&gt;bindValue ( &quot;:sourceCollectionId&quot;, $sourceCollectionId );
     if ($query-&gt;execute ()) {      
       $result = $query-&gt;fetch ( \PDO::FETCH_ASSOC );
@@ -541,7 +541,7 @@ class Collection extends Database {
           }
           // create parser for collection
           if ($subRequestCreate) {
-            $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this-&gt;configuration, null, $this, null );
+            $subCreateParser = new \Broker\Parser ( $subRequestCreate, $this-&gt;configuration, null, $this, null, null );
             // register result from parsing collection request
             $subParserWarnings = $subCreateParser-&gt;getWarnings ();
             $subParserErrors = $subCreateParser-&gt;getErrors ();
@@ -567,7 +567,7 @@ class Collection extends Database {
               $subRequestCheck-&gt;response-&gt;mtas-&gt;collection [0]-&gt;id = $result [&quot;key&quot;];
               $subRequestCheck-&gt;response-&gt;mtas-&gt;collection [0]-&gt;action = &quot;check&quot;;
               // create parser for collection
-              $subCheckParser = new \Broker\Parser ( $subRequestCheck, $this-&gt;configuration, null, $this, null );
+              $subCheckParser = new \Broker\Parser ( $subRequestCheck, $this-&gt;configuration, null, $this, null, null );
               // initialise
               $this-&gt;setInitialised ( $result [&quot;key&quot;], $subCreateParser-&gt;getConfiguration (), $subCreateParser-&gt;getUrl (), $subCreateParser-&gt;getRequest (), $subCheckParser-&gt;getRequest (), ($subCreateParser-&gt;getShards () != null) ? implode ( &quot;,&quot;, $subCreateParser-&gt;getShards () ) : &quot;&quot;, implode ( &quot;,&quot;, $localCollectionIds ) );
             }
@@ -644,7 +644,7 @@ class Collection extends Database {
           }
           // check
           try {
-            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCheckRequest&quot;], $result [&quot;solrShards&quot;], null );
+            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCheckRequest&quot;], null, $result [&quot;solrShards&quot;], null );
             $solrResponse = $solr-&gt;getResponse ();
             if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
               if (isset ( $solrResponse-&gt;mtas ) &amp;&amp; is_object ( $solrResponse-&gt;mtas )) {
@@ -663,7 +663,7 @@ class Collection extends Database {
             // should not happen
           }
           try {
-            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCreateRequest&quot;], $result [&quot;solrShards&quot;], null );
+            $solr = new \Broker\Solr ( $result [&quot;configuration&quot;], $result [&quot;solrUrl&quot;], &quot;select&quot;, $result [&quot;solrCreateRequest&quot;], null, $result [&quot;solrShards&quot;], null );
             $solrResponse = $solr-&gt;getResponse ();
             if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
               if (isset ( $solrResponse-&gt;error )) {

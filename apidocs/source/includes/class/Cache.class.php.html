@@ -71,7 +71,8 @@ class Cache extends Database {
           \&quot;configuration\&quot; TEXT NULL,
           \&quot;url\&quot; TEXT NOT NULL,
           \&quot;request\&quot; TEXT NOT NULL,
-          \&quot;response\&quot; TEXT NOT NULL,
+          \&quot;requestAddition\&quot; TEXT,
+          \&quot;response\&quot; TEXT NOT NULL,          
           \&quot;numberOfChecks\&quot; INTEGER,
           \&quot;created\&quot; TEXT NOT NULL,
           \&quot;used\&quot; TEXT NOT NULL,          
@@ -86,10 +87,11 @@ class Cache extends Database {
    *
    * @param string $configuration          
    * @param string $url          
-   * @param string $request          
+   * @param string $request  
+   * @param string $requestAddition          
    * @param unknown $response          
    */
-  public function create($configuration, $url, $request, $response) {
+  public function create($configuration, $url, $request, $requestAddition, $response) {
     $this-&gt;clean ();
     // hash
     $hash = $this-&gt;createHash ( $configuration, $url, $request );
@@ -101,13 +103,14 @@ class Cache extends Database {
     unset ( $query );
     // insert
     $sql = &quot;INSERT OR IGNORE INTO \&quot;cache\&quot;
-    (hash, configuration, url, request, response, numberOfChecks, created, used, expires)
-    VALUES (:hash, :configuration, :url, :request, :response, 1, datetime('now'), datetime('now'), datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes'))&quot;;
+    (hash, configuration, url, request, requestAddition, response, numberOfChecks, created, used, expires)
+    VALUES (:hash, :configuration, :url, :request, :requestAddition, :response, 1, datetime('now'), datetime('now'), datetime('now', '+&quot; . intval ( $this-&gt;lifetime ) . &quot; minutes'))&quot;;
     $query = $this-&gt;database-&gt;prepare ( $sql );
     $query-&gt;bindValue ( &quot;:hash&quot;, $hash );
     $query-&gt;bindValue ( &quot;:configuration&quot;, $configuration );
     $query-&gt;bindValue ( &quot;:url&quot;, $url );
     $query-&gt;bindValue ( &quot;:request&quot;, $request );
+    $query-&gt;bindValue ( &quot;:requestAddition&quot;, $requestAddition );
     $query-&gt;bindValue ( &quot;:response&quot;, $response );
     $query-&gt;execute ();
     unset ( $query );
@@ -120,7 +123,7 @@ class Cache extends Database {
    */
   public function get($hash) {
     $sql = &quot;SELECT    
-    id, hash, configuration, url, request, response, numberOfChecks,
+    id, hash, configuration, url, request, requestAddition, response, numberOfChecks,
     datetime(created, 'localtime') as created,
     datetime(used, 'localtime') as used,
     datetime(expires, 'localtime') as expires

@@ -155,10 +155,10 @@ class Response {
     $subRequest-&gt;response-&gt;documents-&gt;start = 0;
     $subRequest-&gt;response-&gt;documents-&gt;rows = 1000000;
     $subRequest-&gt;response-&gt;documents-&gt;fields = $allFields;
-    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null );
+    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null, null );
     // get data
     try {
-      $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
+      $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), null, implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
       $solrResponse = $solr-&gt;getResponse ();
       if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
         if (! isset ( $solrResponse-&gt;error ) &amp;&amp; isset ( $solrResponse-&gt;response ) &amp;&amp; isset ( $solrResponse-&gt;response-&gt;docs )) {
@@ -262,11 +262,11 @@ class Response {
     $subRequest-&gt;response-&gt;documents-&gt;start = 0;
     $subRequest-&gt;response-&gt;documents-&gt;rows = 1000000;
     $subRequest-&gt;response-&gt;documents-&gt;fields = $allFields;
-    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null );
+    $subParser = new \Broker\Parser ( $subRequest, $this-&gt;configuration, $this-&gt;cache, $this-&gt;collection, null, null );
     // get data
     if (count ( $subParser-&gt;getErrors () ) == 0) {
       try {
-        $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
+        $solr = new \Broker\Solr ( $subParser-&gt;getConfiguration (), $subParser-&gt;getUrl (), &quot;select&quot;, $subParser-&gt;getRequest (), null, implode ( &quot;,&quot;, $subParser-&gt;getShards () ), $this-&gt;cache );
         $solrResponse = $solr-&gt;getResponse ();
         if ($solrResponse &amp;&amp; is_object ( $solrResponse )) {
           if (! isset ( $solrResponse-&gt;error ) &amp;&amp; isset ( $solrResponse-&gt;response ) &amp;&amp; isset ( $solrResponse-&gt;response-&gt;docs )) {

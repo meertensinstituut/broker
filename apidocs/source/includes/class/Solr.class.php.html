@@ -53,6 +53,12 @@ class Solr {
    */
   private $request = null;
   /**
+   * Request addition
+   *
+   * @var string
+   */
+  private $requestAddition = null;
+  /**
    * Handler
    *
    * @var string
@@ -89,11 +95,13 @@ class Solr {
    * @param string $url          
    * @param string $handler          
    * @param string $request          
+   * @param string $requestAddition          
    * @param array $shards          
    * @param \Broker\Cache $cache          
    */
-  public function __construct($configuration, $url, $handler, $request, $shards, $cache) {
+  public function __construct($configuration, $url, $handler, $request, $requestAddition, $shards, $cache) {
     $this-&gt;request = $request;
+    $this-&gt;requestAddition = $requestAddition;
     $this-&gt;handler = $handler;
     $this-&gt;url = $url;
     $this-&gt;shards = $shards;
@@ -111,6 +119,7 @@ class Solr {
     if ($this-&gt;shards != null) {
       $finalRequest = ($finalRequest ? $finalRequest . &quot;&amp;&quot; : &quot;&quot;) . &quot;shards=&quot; . urlencode ( $this-&gt;shards );
     }
+    //check cache
     if ($this-&gt;cache != null) {
       list ( $id, $response ) = $this-&gt;cache-&gt;check ( $this-&gt;configuration, $this-&gt;url . $this-&gt;handler . &quot;/&quot;, $finalRequest );
       if ($id &amp;&amp; $response) {
@@ -121,6 +130,12 @@ class Solr {
         }
       }
     }
+    //add addition after cache handling
+    if($this-&gt;requestAddition!=null) {
+      $finalSearchRequest=$finalRequest.&quot;&amp;&quot;.$this-&gt;requestAddition;
+    } else {
+      $finalSearchRequest=$finalRequest;
+    }
     $ch = curl_init ( $this-&gt;url . $this-&gt;handler . &quot;/&quot; );
     $options = array (
         CURLOPT_HTTPHEADER =&gt; array (
@@ -128,7 +143,7 @@ class Solr {
         ),
         CURLOPT_RETURNTRANSFER =&gt; true,
         CURLOPT_POST =&gt; true,
-        CURLOPT_POSTFIELDS =&gt; $finalRequest 
+        CURLOPT_POSTFIELDS =&gt; $finalSearchRequest 
     );
     curl_setopt_array ( $ch, $options );
     $result = curl_exec ( $ch );
@@ -136,7 +151,7 @@ class Solr {
     if (($data = json_decode ( $result ))) {
       // cache
       if ($this-&gt;cache != null &amp;&amp; ! isset ( $data-&gt;error )) {
-        $this-&gt;cache-&gt;create ( $this-&gt;configuration, $this-&gt;url . $this-&gt;handler . &quot;/&quot;, $finalRequest, $result );
+        $this-&gt;cache-&gt;create ( $this-&gt;configuration, $this-&gt;url . $this-&gt;handler . &quot;/&quot;, $finalRequest, $this-&gt;requestAddition, $result );
       }
       // return data
       return $data;
