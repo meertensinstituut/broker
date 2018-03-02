@@ -12,6 +12,7 @@
 		<file>src/index.php</file>
 		<file>src/config/config_example.inc.php</file>
 		<ignore>src/config/modules/expansion/LexiconINTExpansion.class.php</ignore>
+		<ignore>src/config/modules/expansion/LexiconTICCLExpansion.class.php</ignore>
 	</files>
 	<transformations>
 		<template name="new-black" />

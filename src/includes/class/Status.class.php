@@ -72,6 +72,7 @@ class Status extends Database {
    * Create status
    *
    * @param string $brokerRequest          
+   * @param boolean $status          
    * @return array
    */
   public function create($brokerRequest, $status=false) {

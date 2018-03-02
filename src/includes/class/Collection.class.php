@@ -104,7 +104,7 @@ class Collection extends Database {
     $query->bindValue ( ":brokerConfiguration", $brokerConfiguration );
     $query->bindValue ( ":brokerFilter", $brokerFilter );
     $query->bindValue ( ":brokerCondition", $brokerCondition );
-    $query->bindValue ( ":brokerField", $brokerField );
+    $query->bindValue ( ":brokerField", is_array($brokerField)?implode(",",$brokerField):$brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
     $this->errorCheck("create - insert", $query, false);
@@ -122,7 +122,7 @@ class Collection extends Database {
     $query->bindValue ( ":brokerConfiguration", $brokerConfiguration );
     $query->bindValue ( ":brokerFilter", $brokerFilter );
     $query->bindValue ( ":brokerCondition", $brokerCondition );
-    $query->bindValue ( ":brokerField", $brokerField );
+    $query->bindValue ( ":brokerField", is_array($brokerField)?implode(",",$brokerField):$brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     $query->execute ();
     $this->errorCheck("create - update", $query, false);
@@ -140,7 +140,7 @@ class Collection extends Database {
     $query->bindValue ( ":brokerConfiguration", $brokerConfiguration );
     $query->bindValue ( ":brokerFilter", $brokerFilter );
     $query->bindValue ( ":brokerCondition", $brokerCondition );
-    $query->bindValue ( ":brokerField", $brokerField );
+    $query->bindValue ( ":brokerField", is_array($brokerField)?implode(",",$brokerField):$brokerField );
     $query->bindValue ( ":sourceCollectionId", $sourceCollectionId );
     if ($query->execute ()) {      
       $result = $query->fetch ( \PDO::FETCH_ASSOC );

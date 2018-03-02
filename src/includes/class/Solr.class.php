@@ -59,6 +59,7 @@ class Solr {
    * @param string $url          
    * @param string $handler          
    * @param string $request          
+   * @param string $requestAddition          
    * @param array $shards          
    * @param \Broker\Cache $cache          
    */

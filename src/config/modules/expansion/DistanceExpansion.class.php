@@ -8,31 +8,124 @@
 namespace BrokerExpansion;
 
 /**
- * LexiconINTExpansion
+ * DistanceExpansion
  */
 class DistanceExpansion implements \Broker\Expansion {
+  /**
+   * Value
+   * 
+   * @var string
+   */
   private $value;
+  /**
+   * Configuration
+   * 
+   * @var unknown
+   */
   private $configuration;
+  /**
+   * Broker configuration
+   * 
+   * @var unknown
+   */
   private $brokerConfiguration;
+  /**
+   * Solr configuration
+   * 
+   * @var unknown
+   */
   private $solrConfiguration;
+  /**
+   * Filter
+   * 
+   * @var unknown
+   */
   private $filter;
+  /**
+   * Condition
+   * 
+   * @var unknown
+   */
   private $condition;
+  /**
+   * Errors
+   * @var array
+   */
   private $errors;
+  /**
+   * Method
+   * 
+   * @var string
+   */
   private $method;
+  /**
+   * Prefix
+   * 
+   * @var string
+   */
   private $prefix;
+  /**
+   * Field
+   * 
+   * @var string
+   */
   private $field;
+  /**
+   * Minimum
+   * 
+   * @var integer
+   */
   private $minimum;  
+  /**
+   * Maximum
+   * 
+   * @var integer
+   */
   private $maximum;  
+  /**
+   * Number
+   * 
+   * @var integer
+   */
   private $number;  
+  /**
+   * Regexp
+   * 
+   * @var string
+   */
   private $regexp;  
+  /**
+   * Parameter
+   * 
+   * @var unknown
+   */
   private $parameter;
+  /**
+   * Default minimum
+   * 
+   * @var integer
+   */
   private static $defaultMinimum = 0;
+  /**
+   * Default maximum
+   * 
+   * @var integer
+   */
   private static $defaultMaximum = 1;
+  /**
+   * Default number
+   * 
+   * @var integer
+   */
   private static $defaultNumber = 100;
   
   /**
+   * Constructor
+   * 
    * @param string|array $value
    * @param unknown $expansionConfiguration
+   * @param unknown $brokerConfiguration
+   * @param unknown $solrConfiguration
    */
   public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this->errors = array();

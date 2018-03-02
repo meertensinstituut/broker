@@ -24,8 +24,11 @@ class IdentityExpansion implements \Broker\Expansion {
   
   /**
    * IdentityExpansion
+   * 
    * @param string|array $value
    * @param unknown $expansionConfiguration
+   * @param unknown $brokerConfiguration
+   * @param unknown $solrConfiguration
    */
   public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this->value = $value;

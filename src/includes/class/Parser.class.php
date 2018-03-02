@@ -120,6 +120,7 @@ class Parser {
    * @param \Broker\Cache $cache          
    * @param \Broker\Collection $collection          
    * @param \Broker\ExpansionCache $expansionCache          
+   * @param string $statusKey         
    * @throws \Exception
    */
   public function __construct($request, $configuration, $cache, $collection, $expansionCache, $statusKey) {
@@ -2536,20 +2537,46 @@ class Parser {
             } else {
               $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
             }
-          } else if ($key == "from" || $key == "to" || $key == "configuration") {
+          } else if ($key == "from" || $key == "to") {
             if ($object->type == "join") {
-              if (! is_string ( $value )) {
-                $this->errors [] = "condition - {$key} should be a string";
+              if (! is_string ( $value ) && (!is_array($value) || count($value)==0)) {
+                $this->errors [] = "condition - {$key} should be a string or non-empty array of strings";
               } else {
+                if(is_array($value)) {
+                  foreach($value AS $valueItem) {
+                    if (! is_string ( $valueItem )) {
+                      $this->errors [] = "condition - {$key} should be a string or array of strings";
+                    }
+                  }
+                }
                 if ($key == "to") {
-                  $configurations = $this->getConfigurationsForField ( $value );
-                  if (count ( $configurations ) > 0) {
-                    $this->__configurations [] = $configurations;
-                  } else {
-                    $this->errors [] = "condition - {$key} '" . $value . "' not found in any configuration";
+                  if(is_array($value) && count($this->errors)==0) {
+                    foreach($value AS $valueItem) {
+                      $configurations = $this->getConfigurationsForField ( $valueItem );
+                      if (count ( $configurations ) > 0) {
+                        $this->__configurations [] = $configurations;
+                      } else {
+                        $this->errors [] = "condition - {$key} '" . $valueItem . "' not found in any configuration";
+                      }
+                    }
+                  } else if(is_string($value)) {
+                    $configurations = $this->getConfigurationsForField ( $value );
+                    if (count ( $configurations ) > 0) {
+                      $this->__configurations [] = $configurations;
+                    } else {
+                      $this->errors [] = "condition - {$key} '" . $value . "' not found in any configuration";
+                    }
                   }
                 }
               }
+            } else {
+              $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
+            }
+          } else if ($key == "configuration") {
+            if ($object->type == "join") {
+              if (! is_string ( $value )) {
+                $this->errors [] = "condition - {$key} should be a string";
+              } 
             } else {
               $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
             }
@@ -4447,7 +4474,18 @@ class Parser {
       } else if ($object->type == "join") {
         $object->_collectionId = $this->createCollectionIdFromJoin ( $object, $this->solrConfiguration );
         $this->collectionIds [] = $object->_collectionId;
-        $object->__query = "{!" . $this->configuration->solr [$this->solrConfiguration] ["queryParserJoin"] . " field=\"" . $object->to . "\" collection=\"" . $object->_collectionId . "\"}";
+        if(is_string($object->to)) {
+          $queryToPart = "field=\"".$object->to."\""; 
+        } else if(is_array($object->to)) {
+          $queryToPart = array();
+          foreach($object->to AS $toItem) {
+            $queryToPart[] = "field=\"".$toItem."\""; 
+          }          
+          $queryToPart = implode(" ", $queryToPart);
+        } else {
+          die("unexpected to field in join");
+        }
+        $object->__query = "{!" . $this->configuration->solr [$this->solrConfiguration] ["queryParserJoin"] . " ".$queryToPart." collection=\"" . $object->_collectionId . "\"}";
       } else {
         // should not happen
         die ( "unknown type: " . $object->type );

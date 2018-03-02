@@ -51,7 +51,8 @@ class Cache extends Database {
    *
    * @param string $configuration          
    * @param string $url          
-   * @param string $request          
+   * @param string $request  
+   * @param string $requestAddition          
    * @param unknown $response          
    */
   public function create($configuration, $url, $request, $requestAddition, $response) {

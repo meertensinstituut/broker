@@ -14,7 +14,9 @@ interface Expansion {
    * Constructor
    *
    * @param string|array $value          
-   * @param unknown $configuration          
+   * @param unknown $expansionConfiguration          
+   * @param unknown $brokerConfiguration          
+   * @param unknown $solrConfiguration          
    */
   public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration);
   /**
