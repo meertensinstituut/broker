@@ -241,6 +241,7 @@ class Configuration {
           $this->solr [$key] ["required"] = array ();
           $this->solr [$key] ["stored"] = array ();
           $this->solr [$key] ["mtas"] = array ();
+          $this->solr [$key] ["mtasHandler"] = null;
           $this->solr [$key] ["typeText"] = array ();
           $this->solr [$key] ["typeBoolean"] = array ();
           $this->solr [$key] ["typeString"] = array ();
@@ -248,6 +249,25 @@ class Configuration {
           $this->solr [$key] ["typeDate"] = array ();
           $this->solr [$key] ["typeLong"] = array ();
           $this->solr [$key] ["typeBinary"] = array ();
+          // get handler
+          $ch = curl_init ( $solrConfiguration ["url"] . "select?q=*:*&rows=0&mtas=true&mtas.status=true&mtas.status.mtasHandler=true&wt=json" );
+          $options = array (
+              CURLOPT_HTTPHEADER => array (
+                  "Content-Type: application/x-www-form-urlencoded; charset=utf-8"
+              ),
+              CURLOPT_RETURNTRANSFER => true
+          );
+          curl_setopt_array ( $ch, $options );
+          $result = curl_exec ( $ch );
+          if ($data = json_decode ( $result, true )) {
+            if (isset ( $data ["mtas"] ) && is_array ( $data ["mtas"] )) {
+              if (isset ( $data ["mtas"]["status"] ) && is_array ( $data ["mtas"]["status"] )) {
+                if (isset ( $data ["mtas"]["status"]["mtasHandler"] ) && is_string ( $data ["mtas"]["status"]["mtasHandler"])) {
+                  $this->solr [$key] ["mtasHandler"] = preg_replace("/^\//","",$data ["mtas"]["status"]["mtasHandler"]);                  
+                }
+              }
+            }
+          }  
           // get schema
           $ch = curl_init ( $solrConfiguration ["url"] . "schema?wt=json" );
           $options = array (

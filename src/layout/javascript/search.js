@@ -11,7 +11,33 @@ $(function() {
   $("div.mapping[data-mappingurl]").each(function() {
     initMapping($(this));
   });
+  
+  $("div.processes[data-processesurl][data-type][data-configuration]").each(function() {
+    initProcesses($(this));
+  });
 
+  function initProcesses(container) {
+    var request = {
+      "type" : container.data("type"),
+      "configuration" : container.data("configuration")
+    };
+    $.ajax({
+      "type" : "POST",
+      "url" : container.data("processesurl"),
+      "data" : JSON.stringify(request),
+      "contentType" : "application/json",
+      "success" : function(data) {
+        createProcesses(container, data);
+      }
+    });
+  }
+  
+  function createProcesses(container, info) {
+    console.log(info)
+  }
+
+  
+  
   function initMapping(container) {
     var request = {
       "action" : "info"
@@ -26,7 +52,7 @@ $(function() {
       }
     });
   }
-
+  
   function createMapping(container, info) {
     var mappingData;
     var tabs = $("<div/>").addClass("tabs");

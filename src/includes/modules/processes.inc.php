@@ -22,10 +22,43 @@ if (! $authentication->accessBasedOnLogin ()) {
       } else if ($_GET ["suboperation"] == "error") {
         $smarty->assign ( "_processesType", "error" );
       } else if ($_GET ["suboperation"] == "api") {
-        $response = array ();
-        header ( "Content-Type: application/json" );
-        echo json_encode ( $response );
-        exit();
+        if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
+          $response = array ();
+          header ( "Content-Type: application/json" );
+          if ($apiRequest = json_decode ( file_get_contents ( "php://input" ) )) {
+            $response ["status"] = "ok";
+            if (! isset ( $apiRequest->type ) || ! is_string ( $apiRequest->type )) {
+              $response ["status"] = "error";
+              $response ["error"] = "no (valid) type in request";
+            } if (! isset ( $apiRequest->configuration ) || ! is_string ( $apiRequest->configuration ) || !isset($configuration->config ["solr"] [$apiRequest->configuration])) {
+              $response ["status"] = "error";
+              $response ["error"] = "no (valid) configuration in request";
+            } else if($configuration->solr[$apiRequest->configuration]["mtasHandler"]) {
+              $coreUrl = $configuration->config ["solr"] [$apiRequest->configuration] ["url"].$configuration->solr[$apiRequest->configuration]["mtasHandler"];
+              $ch = curl_init ( $coreUrl . "?action=".urlencode($apiRequest->type) );
+              $options = array (
+                  CURLOPT_RETURNTRANSFER => true
+              );
+              curl_setopt_array ( $ch, $options );
+              $result = curl_exec ( $ch );
+              if ($data = json_decode ( $result ) & isset($data->running)) {
+                $response ["data"] = $data->running;
+              } else {
+                $response ["status"] = "error";
+                $response ["data"] = $result;
+                $response ["error"] = "problem with status";
+              }
+            }
+          } else {
+            $response ["status"] = "error";
+            $response ["error"] = "no valid json";
+          }
+          echo json_encode ( $response );
+        } else {
+          // only allow post
+          header ( "Location: " . $configuration->url ( "api" ) );
+        }
+        exit ();
       } else {
         header ( "Location: " . $configuration->url ( "processes") );
         exit ();

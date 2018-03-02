@@ -33,13 +33,17 @@
       <div class="info">
         <button onclick="location.href='{$_configuration->url ("processes","history",$_processesConfiguration)|escape:javascript}';">History</button>
         <button onclick="location.href='{$_configuration->url ("processes","error",$_processesConfiguration)|escape:javascript}';">Errors</button>
+        &nbsp;
+        <button onclick="location.href='{$_configuration->url ("processes")|escape:javascript}';">All processes</button>
       </div>
-      <div class="processes" data-processesurl="{$_configuration->url ("processes","api",$_processesConfiguration)|escape:javascript}"></div>
+      <div class="processes" data-processesurl="{$_configuration->url ("processes","api",$_processesConfiguration)|escape:javascript}" data-type="running" data-configuration="{$_processesConfiguration|escape}"></div>
     {elseif $_processesType eq "history"}
       <div class="title">History processes '{$_processesConfiguration|escape}'</div>
       <div class="info">
         <button onclick="location.href='{$_configuration->url ("processes","running",$_processesConfiguration)|escape:javascript}';">Running</button>
         <button onclick="location.href='{$_configuration->url ("processes","error",$_processesConfiguration)|escape:javascript}';">Errors</button>
+        &nbsp;
+        <button onclick="location.href='{$_configuration->url ("processes")|escape:javascript}';">All processes</button>
       </div>
       <div class="processes" data-processesurl="{$_configuration->url ("processes","api",$_processesConfiguration)|escape:javascript}"></div>
     {elseif $_processesType eq "error"}
@@ -47,6 +51,8 @@
       <div class="info">
         <button onclick="location.href='{$_configuration->url ("processes","running",$_processesConfiguration)|escape:javascript}';">Running</button>
         <button onclick="location.href='{$_configuration->url ("processes","history",$_processesConfiguration)|escape:javascript}';">History</button>
+        &nbsp;
+        <button onclick="location.href='{$_configuration->url ("processes")|escape:javascript}';">All processes</button>
       </div>
       <div class="processes" data-processesurl="{$_configuration->url ("processes","api",$_processesConfiguration)|escape:javascript}"></div>
     {/if}

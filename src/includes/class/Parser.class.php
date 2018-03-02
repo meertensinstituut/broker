@@ -1426,14 +1426,14 @@ class Parser {
     if (($object && is_object ( $object ))) {
       foreach ( $object as $key => $value ) {
         if ($key == "stats") {
-          if ($value && is_object ( $value )) {
+          if (!is_null($value) && is_object ( $value )) {
             $object->{$key} = $this->checkResponseMtasStats ( $value );
           } else {
             $this->errors [] = "mtas - {$key} should be object";
             unset ( $object->{$key} );
           }
         } else if ($key == "document") {
-          if ($value && is_array ( $value )) {
+          if (!is_null($value) && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasDocument ( $value [$i] );
             }
@@ -1441,8 +1441,8 @@ class Parser {
             $this->errors [] = "mtas - {$key} should be array";
             unset ( $object->{$key} );
           }
-        } else if ($key == "kwic" || $key == "list") {
-          if ($value && is_array ( $value )) {
+        } else if ($key == "kwic" || $key == "list") {          
+          if (!is_null($value) && is_array ( $value ))  { 
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasKwicAndList ( $key, $value [$i] );
             }
@@ -1450,8 +1450,8 @@ class Parser {
             $this->errors [] = "mtas - {$key} should be array";
             unset ( $object->{$key} );
           }
-        } else if ($key == "termvector") {
-          if ($value && is_array ( $value )) {
+        } else if ($key == "termvector") { 
+          if (!is_null($value) && is_array ( $value )) { 
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasTermvector ( $value [$i] );
             }
@@ -1460,7 +1460,7 @@ class Parser {
             unset ( $object->{$key} );
           }
         } else if ($key == "facet") {
-          if ($value && is_array ( $value )) {
+          if (!is_null($value) && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasFacet ( $value [$i] );
             }
@@ -1469,7 +1469,7 @@ class Parser {
             unset ( $object->{$key} );
           }
         } else if ($key == "group") {
-          if ($value && is_array ( $value )) {
+          if (!is_null($value) && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasGroup ( $value [$i] );
             }
@@ -1478,7 +1478,7 @@ class Parser {
             unset ( $object->{$key} );
           }
         } else if ($key == "prefix") {
-          if ($value && is_array ( $value )) {
+          if (!is_null($value) && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->{$key} [$i] = $this->checkResponseMtasPrefix ( $value [$i] );
             }
@@ -1487,7 +1487,7 @@ class Parser {
             unset ( $object->{$key} );
           }
         } else if ($key == "collection") {
-          if ($value != null && is_array ( $value )) {
+          if (!is_null($value) != null && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
               $object->collection [$i] = $this->checkResponseMtasCollection ( $value [$i], $i );
             }
@@ -2497,9 +2497,9 @@ class Parser {
                 } else {
                   $newvalue = array ();
                   for($i = 0; $i < count ( $value ); $i ++) {
-                    $newvalue [$i] = $this->parseCondition ( $value [$i] );
-                    if (! $newvalue [$i] || ! is_object ( $newvalue [$i] ) || ! isset ( $newvalue [$i]->__query )) {
-                      $this->errors [] = "condition - could not parse condition from {$object->type} list";
+                    $newvalue [$i] = $this->checkCondition ( $value [$i] );                    
+                    if (! $newvalue [$i] || ! is_object ( $newvalue [$i] )) {
+                      $this->errors [] = "condition - could not check condition from {$object->type} list";
                     }
                   }
                   $object->{$key} = $newvalue;
@@ -4280,6 +4280,7 @@ class Parser {
       if ($object->type == "and" || $object->type == "or") {
         $subqueries = array ();
         for($i = 0; $i < count ( $object->list ); $i ++) {
+          $object->list [$i] = $this->parseCondition($object->list [$i]);
           $subquery = $object->list [$i]->__query;
           $object->__facetQueries = array_merge ( $object->__facetQueries, $object->list [$i]->__facetQueries );
           $object->__mtasStats = array_merge ( $object->__mtasStats, $object->list [$i]->__mtasStats );
