@@ -192,6 +192,12 @@ class Response {
     foreach ( $documents as $document ) {
       if (isset ( $document->{$from} ) && is_string ( $document->{$from} )) {
         $values [] = $document->{$from};
+      } else if (isset ( $document->{$from} ) && is_array ( $document->{$from} )) {
+        foreach($document->{$from} AS $subValue) {
+          if($subValue && is_string($subValue)) {
+            $values [] = $subValue;
+          }
+        }
       }
     }
     return $values;
@@ -204,51 +210,53 @@ class Response {
    * @return array
    */
   private function collectJoinDocumentsValues($values, $documentsJoin) {
-    $allFields = $documentsJoin->fields;
-    $allFields [] = $documentsJoin->to;
-    $subRequest = new \stdClass ();
-    $subRequest->configuration = $documentsJoin->configuration;
-    $subRequest->filter = array ();
-    $filter = new \stdClass ();
-    $filter->condition = new \stdClass ();
-    $filter->condition->type = "equals";
-    $filter->condition->field = $documentsJoin->to;
-    $filter->condition->value = $values;
-    $subRequest->filter [] = $filter;
-    if (isset ( $documentsJoin->filter )) {
-      $subRequest->filter [] = $documentsJoin->filter;
-    }
-    if (isset ( $documentsJoin->condition )) {
-      $subRequest->condition = $documentsJoin->condition;
-    }
-    $subRequest->response = new \stdClass ();
-    $subRequest->response->documents = new \stdClass ();
-    $subRequest->response->documents->start = 0;
-    $subRequest->response->documents->rows = 1000000;
-    $subRequest->response->documents->fields = $allFields;
-    $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null, null );
-    // get data
-    if (count ( $subParser->getErrors () ) == 0) {
-      try {
-        $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), null, implode ( ",", $subParser->getShards () ), $this->cache );
-        $solrResponse = $solr->getResponse ();
-        if ($solrResponse && is_object ( $solrResponse )) {
-          if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {
-            $subResponse = array ();
-            $subResponse ["status"] = "OK";
-            $subResponse ["response"] = clone $solrResponse;
-            $subResponseObject = new \Broker\Response ( $subResponse, $subParser->getResponseJoins (), $this->configuration, $this->cache, $this->collection );
-            $subResponse = $subResponseObject->process ();
-            return $subResponse ["response"]->response->docs;
-          }
-        }
-      } catch ( \Broker\SolrException $se ) {
-        // do nothing
-      } catch ( \Exception $e ) {
-        // do nothing
+    if($values && is_array($values) && count($values)>0) {      
+      $allFields = $documentsJoin->fields;
+      $allFields [] = $documentsJoin->to;
+      $subRequest = new \stdClass ();
+      $subRequest->configuration = $documentsJoin->configuration;
+      $subRequest->filter = array ();
+      $filter = new \stdClass ();
+      $filter->condition = new \stdClass ();
+      $filter->condition->type = "equals";
+      $filter->condition->field = $documentsJoin->to;
+      $filter->condition->value = $values;
+      $subRequest->filter [] = $filter;
+      if (isset ( $documentsJoin->filter )) {
+        $subRequest->filter [] = $documentsJoin->filter;
       }
+      if (isset ( $documentsJoin->condition )) {
+        $subRequest->condition = $documentsJoin->condition;
+      } 
+      $subRequest->response = new \stdClass ();
+      $subRequest->response->documents = new \stdClass ();
+      $subRequest->response->documents->start = 0;
+      $subRequest->response->documents->rows = 1000000;
+      $subRequest->response->documents->fields = $allFields;
+      $subParser = new \Broker\Parser ( $subRequest, $this->configuration, $this->cache, $this->collection, null, null );
+      // get data
+      if (count ( $subParser->getErrors () ) == 0) {
+        try {
+          $solr = new \Broker\Solr ( $subParser->getConfiguration (), $subParser->getUrl (), "select", $subParser->getRequest (), null, implode ( ",", $subParser->getShards () ), $this->cache );
+          $solrResponse = $solr->getResponse ();
+          if ($solrResponse && is_object ( $solrResponse )) {
+            if (! isset ( $solrResponse->error ) && isset ( $solrResponse->response ) && isset ( $solrResponse->response->docs )) {
+              $subResponse = array ();
+              $subResponse ["status"] = "OK";
+              $subResponse ["response"] = clone $solrResponse;
+              $subResponseObject = new \Broker\Response ( $subResponse, $subParser->getResponseJoins (), $this->configuration, $this->cache, $this->collection );
+              $subResponse = $subResponseObject->process ();
+              return $subResponse ["response"]->response->docs;
+            }          
+          }
+        } catch ( \Broker\SolrException $se ) {
+          // do nothing
+        } catch ( \Exception $e ) {
+          // do nothing
+        }
+      }
+      return array ();
     }
-    return array ();
   }
   /**
    * Update documents
@@ -261,22 +269,24 @@ class Response {
    * @return array
    */
   private function updateDocuments($documents, $from, $to, $name, $updates) {
-    foreach ( $documents as $document ) {
-      if (is_object ( $document )) {
-        if (isset ( $document->{$from} ) && (is_string ( $document->{$from} ) || is_array ( $document->{$from} ))) {
-          $key = $document->{$from};
-          if (! isset ( $document->{$name} )) {
-            $document->{$name} = array ();
-          }
-          if (is_array ( $document->{$name} )) {
-            foreach ( $updates as $update ) {
-              if (is_string ( $key )) {
-                if (isset ( $update->{$to} ) && (is_string ( $update->{$to} ) && $update->{$to} == $key) || (is_array ( $update->{$to} ) && in_array ( $key, $update->{$to} ))) {
-                  $document->{$name} [] = $update;
-                }
-              } else if (is_array ( $key )) {
-                if (isset ( $update->{$to} ) && (is_string ( $update->{$to} ) && in_array ( $update->{$to}, $key )) || (is_array ( $update->{$to} ) && count ( array_intersect ( $key, $update->{$to} ) ) > 0)) {
-                  $document->{$name} [] = $update;
+    if($updates) {
+      foreach ( $documents as $document ) {
+        if (is_object ( $document )) {
+          if (isset ( $document->{$from} ) && (is_string ( $document->{$from} ) || is_array ( $document->{$from} ))) {
+            $key = $document->{$from};
+            if (! isset ( $document->{$name} )) {
+              $document->{$name} = array ();
+            }
+            if (is_array ( $document->{$name} )) {
+              foreach ( $updates as $update ) {
+                if (is_string ( $key )) {
+                  if (isset ( $update->{$to} ) && (is_string ( $update->{$to} ) && $update->{$to} == $key) || (is_array ( $update->{$to} ) && in_array ( $key, $update->{$to} ))) {
+                    $document->{$name} [] = $update;
+                  }
+                } else if (is_array ( $key )) {
+                  if (isset ( $update->{$to} ) && (is_string ( $update->{$to} ) && in_array ( $update->{$to}, $key )) || (is_array ( $update->{$to} ) && count ( array_intersect ( $key, $update->{$to} ) ) > 0)) {
+                    $document->{$name} [] = $update;
+                  }
                 }
               }
             }
