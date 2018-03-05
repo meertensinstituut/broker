@@ -2171,7 +2171,7 @@ class Parser {
               } else if (! is_string ( $value )) {
                 $this->errors [] = "mtas - collection - {$key} should be string";
               }
-            } else if ($key == "configuration" || $key == "collection") {
+            } else if ($key == "configuration" || $key == "collection" || $key == "url") {
               if ($object->action != "import") {
                 $this->warnings [] = "mtas - collection - {$key} not expected for " . $object->action;
               } else if (! is_string ( $value )) {
@@ -2625,9 +2625,10 @@ class Parser {
           if (! in_array ( "to", $keys )) {
             $this->errors [] = "condition - no to defined";
           }
-          if (! in_array ( "condition", $keys ) && ! in_array ( "filter", $keys )) {
-            $this->errors [] = "condition - no filter or condition defined for " . $object->type;
-          }
+//           User can decide if this is necessary          
+//           if (! in_array ( "condition", $keys ) && ! in_array ( "filter", $keys )) {
+//             $this->errors [] = "condition - no filter or condition defined for " . $object->type;
+//           }
         }
       }
       return $object;
@@ -4284,6 +4285,9 @@ class Parser {
         if (isset ( $this->configuration->config ["solr"] [$object->configuration] ) && isset ( $this->configuration->config ["solr"] [$object->configuration] ["url"] )) {
           $requestList [] = "mtas.collection." . $i . ".url=" . urlencode ( $this->configuration->config ["solr"] [$object->configuration] ["url"] );
         }
+      }
+      if (isset ( $object->url ) && is_string ( $object->url )) {
+        $requestList [] = "mtas.collection." . $i . ".url=" . urlencode ( $object->url );
       }
       $object->__requestList = $requestList;
       return $object;
