@@ -35,14 +35,14 @@ if (! $authentication->accessBasedOnLogin ()) {
               $response ["error"] = "no (valid) configuration in request";
             } else if($configuration->solr[$apiRequest->configuration]["mtasHandler"]) {
               $coreUrl = $configuration->config ["solr"] [$apiRequest->configuration] ["url"].$configuration->solr[$apiRequest->configuration]["mtasHandler"];
-              $ch = curl_init ( $coreUrl . "?action=".urlencode($apiRequest->type) );
+              $ch = curl_init ( $coreUrl . "?action=".urlencode($apiRequest->type)."&key=".((isset($apiRequest->key)&&is_string($apiRequest->key))?urlencode($apiRequest->key):"") );
               $options = array (
                   CURLOPT_RETURNTRANSFER => true
               );
               curl_setopt_array ( $ch, $options );
               $result = curl_exec ( $ch );
-              if ($data = json_decode ( $result ) & isset($data->running)) {
-                $response ["data"] = $data->running;
+              if ($data = json_decode ( $result )) {
+                $response ["data"] = $data;
               } else {
                 $response ["status"] = "error";
                 $response ["data"] = $result;

@@ -32,11 +32,114 @@ $(function() {
     });
   }
   
-  function createProcesses(container, info) {
-    console.log(info)
+  function createProcesses(container, info) {    
+    try {
+      var obj = info.data;
+      var type = container.data("type");
+      //info
+      var description = $("<div/>").addClass("block");
+      var descriptionTable = $("<table/>").addClass("info");
+      var descriptionRow;
+      //title
+      descriptionRow = $("<tr/>").addClass("title");
+      descriptionRow.append($("<td/>").text("enabled"));
+      descriptionRow.append($("<td/>").text("total"));
+      descriptionRow.append($("<td/>").text("normal"));
+      descriptionRow.append($("<td/>").text("shardRequests"));
+      descriptionRow.append($("<td/>").text("softLimit"));
+      descriptionRow.append($("<td/>").text("hardLimit"));
+      descriptionTable.append(descriptionRow);
+      //content
+      descriptionRow = $("<tr/>");
+      descriptionRow.append($("<td/>").text(obj[type].enabled));
+      descriptionRow.append($("<td/>").text(obj[type].sizeTotal));
+      descriptionRow.append($("<td/>").text(obj[type].sizeNormal));
+      descriptionRow.append($("<td/>").text(obj[type].sizeShardRequests));
+      descriptionRow.append($("<td/>").text(obj[type].softLimit));
+      descriptionRow.append($("<td/>").text(obj[type].hardLimit));
+      descriptionTable.append(descriptionRow);
+      //finish
+      description.append(descriptionTable);
+      container.append(description);
+      container.append($("<br/>"));
+      //list
+      container.append($("<div/>").addClass("subtitle").text("Processes"));
+      var list = $("<div/>").addClass("block").addClass("list");
+      var listTable = $("<table/>");
+      var listRow = $("<tr/>").addClass("title");
+      listRow.append($("<td/>").text("start"));
+      listRow.append($("<td/>").text("finished"));
+      listRow.append($("<td/>").text("time"));
+      listRow.append($("<td/>").text("request"));
+      listRow.append($("<td/>").text("documents"));
+      listRow.append($("<td/>").text("segments"));
+      listTable.append(listRow);
+      list.append(listTable);
+      container.append(list);
+      if (obj[type] !== undefined && obj[type].list !== undefined && $.isArray(obj[type].list)) {
+        for (var i = 0; i < obj[type].list.length; i++) {
+          var key = obj[type].list[i].key;
+          listRow = $("<tr/>").click(function(){
+            createProcessesDetail(container, $(this), key);
+          });
+          listRow.append($("<td/>").text(obj[type].list[i].timeStart));
+          listRow.append($("<td/>").text(obj[type].list[i].finished));
+          listRow.append($("<td/>").text(obj[type].list[i].timeTotal));
+          if(obj[type].list[i].distributed) {
+            listRow.append($("<td/>").text("distributed"));
+          } else if(obj[type].list[i].shardRequest) {
+            listRow.append($("<td/>").text("shardRequest"));
+          } 
+          listRow.append($("<td/>").text(obj[type].list[i].documentNumberFound));
+          listRow.append($("<td/>").text(obj[type].list[i].segmentNumberTotal));
+          
+          listTable.append(listRow);
+          console.log(obj[type].list[i]); 
+        }
+      } else {
+        console.log(obj[type]);
+      }     
+    } catch (err) {
+      console.log(err);
+      console.log("couldn't parse processes");
+      //do nothing
+    }
   }
 
-  
+  function createProcessesDetail(container, row, key) {
+    var detailRow;
+    if(row.hasClass("selected")) {
+      row.removeClass("selected");
+      detailRow= row.next();
+      if(detailRow.hasClass("detail")) {
+        detailRow.remove();
+      }
+    } else {
+      row.addClass("selected");
+      detailRow = $("<tr/>").addClass("detail");
+      var detailContent = $("<td/>").attr("colspan",row.children().length).text("Get details status "+key);
+      detailRow.append(detailContent);
+      detailRow.insertAfter(row);
+      detailRow.click(function() {
+        row.removeClass("selected");
+        $(this).remove();
+      });
+      var request = {
+          "type" : "status",
+          "key" : key,
+          "configuration" : container.data("configuration")
+        };
+        $.ajax({
+          "type" : "POST",
+          "url" : container.data("processesurl"),
+          "data" : JSON.stringify(request),
+          "contentType" : "application/json",
+          "success" : function(data) {
+            detailContent.text(JSON.stringify(data.data.status));
+          }
+        });
+    }    
+  }
   
   function initMapping(container) {
     var request = {

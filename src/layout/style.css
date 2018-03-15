@@ -496,6 +496,29 @@ div#content div.examples div.content div.details hr {
 	margin-top: 20px;
 }
 
+div#content div.processes {
+  margin: 30px 0 0 0;
+}
+
+div#content div.processes table {
+  width: 100%;  
+  border-collapse: collapse;
+}
+
+div#content div.processes table td {
+  vertical-align: top;
+  border: solid 1px #555555;
+  padding: 5px;
+} 
+
+div#content div.processes table tr.title td {
+  font-weight: bold;
+}
+
+div#content div.processes table tr.selected td {
+  background-color: #FFFFCC;
+}
+
 div#content div.info {
   margin: 30px 0 0 0;
 }
@@ -526,6 +549,12 @@ div#content div.info button {
   background-color: #F5F5F5;
   cursor: pointer;
   height: 25px;
+}
+
+div#content div.info button.selected {
+  border-color: #000080;
+  background-color: #000080;
+  color: #FFFFFF;
 }
 
 div#content div.info input.text {
