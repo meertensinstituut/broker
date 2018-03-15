@@ -1733,7 +1733,7 @@ class Parser {
             $this->errors [] = "mtas - document - {$key} should be boolean";
           }
         } else if ($key == "list" || $key == "ignoreList") {
-          if (! is_array ( $value ) || count ( $value ) == 0) {
+          if (! is_array ( $value )) {
             $this->errors [] = "mtas - document - {$key} should be non empty array of strings";
           } else {
             foreach ( $value as $valueItem ) {
@@ -1864,7 +1864,7 @@ class Parser {
             }
           }
         } else if ($key == "list" || $key == "ignoreList") {
-          if (! is_array ( $value ) || count ( $value ) == 0) {
+          if (! is_array ( $value )) {
             $this->errors [] = "mtas - termvector - {$key} should be non empty array of strings";
           } else {
             foreach ( $value as $subValue ) {
@@ -3824,7 +3824,7 @@ class Parser {
       if (isset ( $object->ignoreRegexp ) && is_string ( $object->ignoreRegexp )) {
         $requestList [] = "mtas.document." . $i . ".ignoreRegexp=" . urlencode ( $object->ignoreRegexp );
       }
-      if (isset ( $object->list ) && is_array ( $object->list )) {
+      if (isset ( $object->list ) && is_array ( $object->list ) && count($object->list)>0) {
         $requestList [] = "mtas.document." . $i . ".list=" . urlencode ( implode ( ",", str_replace ( ",", "\\,", str_replace ( "\\", "\\\\", $object->list ) ) ) );
       }
       if (isset ( $object->listRegexp ) && is_bool ( $object->listRegexp )) {
@@ -3836,7 +3836,7 @@ class Parser {
       if (isset ( $object->listExpandNumber ) && is_int ( $object->listExpandNumber )) {
         $requestList [] = "mtas.document." . $i . ".listExpandNumber=" . urlencode ( $object->listExpandNumber );
       }
-      if (isset ( $object->ignoreList ) && is_array ( $object->ignoreList )) {
+      if (isset ( $object->ignoreList ) && is_array ( $object->ignoreList ) && count($object->ignoreList)>0) {
         $requestList [] = "mtas.document." . $i . ".ignoreList=" . urlencode ( implode ( ",", $object->ignoreList ) );
       }
       if (isset ( $object->ignoreListRegexp ) && is_bool ( $object->ignoreListRegexp )) {
@@ -3955,13 +3955,13 @@ class Parser {
       if (isset ( $object->ignorRegexp ) && is_string ( $object->ignoreRegexp )) {
         $requestList [] = "mtas.termvector." . $i . ".ignoreRegexp=" . urlencode ( $object->ignoreRegexp );
       }
-      if (isset ( $object->list ) && is_array ( $object->list )) {
+      if (isset ( $object->list ) && is_array ( $object->list ) && count($object->list)>0) {
         $requestList [] = "mtas.termvector." . $i . ".list=" . urlencode ( implode ( ",", str_replace ( ",", "\\,", str_replace ( "\\", "\\\\", $object->list ) ) ) );
       }
       if (isset ( $object->listRegexp ) && is_bool ( $object->listRegexp )) {
         $requestList [] = "mtas.termvector." . $i . ".listRegexp=" . urlencode ( $object->listRegexp ? "true" : "false" );
       }
-      if (isset ( $object->ignoreList ) && is_array ( $object->ignoreList )) {
+      if (isset ( $object->ignoreList ) && is_array ( $object->ignoreList ) && count($object->ignoreList)>0) {
         $requestList [] = "mtas.termvector." . $i . ".ignoreList=" . urlencode ( implode ( ",", $object->ignoreList ) );
       }
       if (isset ( $object->ignoreListRegexp ) && is_bool ( $object->ignoreListRegexp )) {
@@ -4216,7 +4216,7 @@ class Parser {
         }
         if (isset ( $object->grouping->left ) && is_array ( $object->grouping->left )) {
           for($j = 0; $j < count ( $object->grouping->left ); $j ++) {
-            if (isset ( $object->grouping->left [$j]->prefixes ) && is_string ( $object->grouping->leftt [$j]->prefixes )) {
+            if (isset ( $object->grouping->left [$j]->prefixes ) && is_string ( $object->grouping->left [$j]->prefixes )) {
               $requestList [] = "mtas.group." . $i . ".grouping.left." . $j . ".prefixes=" . urlencode ( $object->grouping->left [$j]->prefixes );
             }
             if (isset ( $object->grouping->left [$j]->position ) && (is_string ( $object->grouping->left [$j]->position ) || is_int ( $object->grouping->left [$j]->position ))) {
