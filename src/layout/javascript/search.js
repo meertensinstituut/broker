@@ -78,9 +78,8 @@ $(function() {
       container.append(list);
       if (obj[type] !== undefined && obj[type].list !== undefined && $.isArray(obj[type].list)) {
         for (var i = 0; i < obj[type].list.length; i++) {
-          var key = obj[type].list[i].key;
-          listRow = $("<tr/>").click(function(){
-            createProcessesDetail(container, $(this), key);
+          listRow = $("<tr/>").data("key",obj[type].list[i].key).click(function(){
+            createProcessesDetail(container, $(this));
           });
           listRow.append($("<td/>").text(obj[type].list[i].timeStart));
           listRow.append($("<td/>").text(obj[type].list[i].finished));
@@ -89,10 +88,11 @@ $(function() {
             listRow.append($("<td/>").text("distributed"));
           } else if(obj[type].list[i].shardRequest) {
             listRow.append($("<td/>").text("shardRequest"));
-          } 
+          } else {
+            listRow.append($("<td/>").text("regular"));
+          }
           listRow.append($("<td/>").text(obj[type].list[i].documentNumberFound));
           listRow.append($("<td/>").text(obj[type].list[i].segmentNumberTotal));
-          
           listTable.append(listRow);
           console.log(obj[type].list[i]); 
         }
@@ -106,7 +106,7 @@ $(function() {
     }
   }
 
-  function createProcessesDetail(container, row, key) {
+  function createProcessesDetail(container, row) {
     var detailRow;
     if(row.hasClass("selected")) {
       row.removeClass("selected");
@@ -117,7 +117,7 @@ $(function() {
     } else {
       row.addClass("selected");
       detailRow = $("<tr/>").addClass("detail");
-      var detailContent = $("<td/>").attr("colspan",row.children().length).text("Get details status "+key);
+      var detailContent = $("<td/>").attr("colspan",row.children().length).text("Get details status "+row.data("key"));
       detailRow.append(detailContent);
       detailRow.insertAfter(row);
       detailRow.click(function() {
@@ -126,7 +126,7 @@ $(function() {
       });
       var request = {
           "type" : "status",
-          "key" : key,
+          "key" : row.data("key"),
           "configuration" : container.data("configuration")
         };
         $.ajax({
@@ -135,10 +135,26 @@ $(function() {
           "data" : JSON.stringify(request),
           "contentType" : "application/json",
           "success" : function(data) {
-            detailContent.text(JSON.stringify(data.data.status));
+            detailContent.text("").append(parseObject(data.data.status));
           }
         });
-    }    
+    }
+    function parseObject(o) {
+      var table = $("<table/>");
+      for(var k in o){
+        var r = $("<tr/>");
+        r.append($("<td/>").addClass("title").text(k));
+        if (typeof(o[k]) === "object") {
+          r.append($("<td/>").append(parseObject(o[k])));
+        } else if (typeof(o[k]) === "string" || typeof(o[k]) === "number" || typeof(o[k]) === "boolean") {
+          r.append($("<td/>").text(o[k]));
+        } else {
+          r.append($("<td/>").text(typeof(o[k])));
+        }
+        table.append(r);
+      }
+      return table;
+    }
   }
   
   function initMapping(container) {

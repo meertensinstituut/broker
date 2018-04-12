@@ -511,6 +511,11 @@ div#content div.processes table td {
   padding: 5px;
 } 
 
+div#content div.processes table td.title {
+	font-weight: bold;
+	width: 150px;
+}
+
 div#content div.processes table tr.title td {
   font-weight: bold;
 }
