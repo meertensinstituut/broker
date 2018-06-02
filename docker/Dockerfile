@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Matthijs Brouwer, Meertens Institute
+MAINTAINER Matthijs Brouwer, Text Exploration
 
 EXPOSE 80
   
@@ -22,13 +22,13 @@ RUN service apache2 stop && \
     rm -rf /var/www/html/* && \
     printf "echo\n" >> /start.sh && \
     printf "echo \"=============================== BROKER ================================\"\n" >> /start.sh && \
-    printf "echo \"  See https://meertensinstituut.github.io/broker/ for more information\"\n" >> /start.sh && \
+    printf "echo \"  See https://textexploration.github.io/broker/ for more information\"\n" >> /start.sh && \
     printf "echo \"=======================================================================\"\n" >> /start.sh && \
     printf "echo\n" >> /start.sh && \
     printf "service apache2 start\n" >> /start.sh && \
     chmod 755 /start.sh
     
-RUN svn --force export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html && \
+RUN svn --force export https://github.com/textexploration/broker/trunk/src/ /var/www/html && \
     chmod 777 /var/www/html/cache && \
     composer install -d /var/www/html/
     

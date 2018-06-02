@@ -6,7 +6,7 @@ quickly with the Broker.
 To build the image
 
 ```console
-docker build -t broker https://raw.githubusercontent.com/meertensinstituut/broker/master/docker/Dockerfile
+docker build -t broker https://raw.githubusercontent.com/textexploration/broker/master/docker/Dockerfile
 ```
 
 And to run the created image
@@ -18,7 +18,7 @@ docker run -t -i -p 8080:80 --name broker broker
 This wil make a Broker available on port 8080 from your docker host ip.
 
 The Broker can also be installed by making the content of the <em>src</em> directory
-in the [source](https://github.com/meertensinstituut/broker/) available on a 
+in the [source](https://github.com/textexploration/broker/) available on a 
 webserver. 
 
 * Webserver with [PHP](http://php.net/) installed. 
