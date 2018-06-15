@@ -15,7 +15,7 @@ class Collection extends Database {
    * Constructor
    *
    * @param string $directory          
-   * @param unknown $configuration          
+   * @param object $configuration          
    */
   public function __construct($directory, $configuration) {
     parent::__construct($directory, $configuration, "collection");
@@ -58,9 +58,9 @@ class Collection extends Database {
   /**
    * Create
    *
-   * @param unknown $configuration          
-   * @param unknown $filter          
-   * @param unknown $condition          
+   * @param object $configuration          
+   * @param object $filter          
+   * @param object $condition          
    * @param string $field          
    * @return string
    */
@@ -70,7 +70,7 @@ class Collection extends Database {
   /**
    * Create from collection
    *
-   * @param unknown $configuration          
+   * @param object $configuration          
    * @param string $collectionId          
    * @return string
    */
@@ -80,9 +80,9 @@ class Collection extends Database {
   /**
    * Create
    *
-   * @param unknown $configuration          
-   * @param unknown $filter          
-   * @param unknown $condition          
+   * @param object $configuration          
+   * @param object $filter          
+   * @param object $condition          
    * @param string $field          
    * @param string $collectionId          
    * @return string
@@ -300,7 +300,7 @@ class Collection extends Database {
    * Set initialised
    *
    * @param string $key          
-   * @param unknown $configuration          
+   * @param object $configuration          
    * @param string $solrUrl          
    * @param string $solrCreateRequest          
    * @param string $solrCheckRequest          
@@ -731,11 +731,11 @@ class Collection extends Database {
   /**
    * Create hash
    *
-   * @param unknown $configuration          
-   * @param unknown $filter          
-   * @param unknown $condition          
-   * @param unknown $field          
-   * @param unknown $collectionId          
+   * @param object $configuration          
+   * @param object $filter          
+   * @param object $condition          
+   * @param object $field          
+   * @param object $collectionId          
    * @return array
    */
   private static function createHash($configuration, $filter, $condition, $field, $collectionId) {

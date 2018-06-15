@@ -49,8 +49,8 @@ class ExpansionCache extends Database {
    *
    * @param string $module          
    * @param string|array $value          
-   * @param unknown $parameters          
-   * @param unknown $result          
+   * @param object $parameters          
+   * @param object $result          
    */
   public function create($module, $value, $parameters, $result) {
     $this->clean ();
@@ -82,7 +82,7 @@ class ExpansionCache extends Database {
    * Get
    *
    * @param string $hash          
-   * @return unknown
+   * @return object
    */
   public function get($hash) {
     $sql = "SELECT
@@ -119,7 +119,7 @@ class ExpansionCache extends Database {
    *
    * @param string $module          
    * @param string|array $value          
-   * @param unknown $parameters          
+   * @param object $parameters          
    * @return array
    */
   public function check($module, $value, $parameters) {

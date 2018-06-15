@@ -32,7 +32,7 @@ class Status extends Database {
    * Constructor
    *
    * @param string $directory          
-   * @param unknown $configuration          
+   * @param object $configuration          
    * @param \Broker\Cache $cache          
    */
   public function __construct($directory, $configuration, $cache) {

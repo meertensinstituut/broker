@@ -73,7 +73,7 @@ class Parser {
   /**
    * Errors
    *
-   * @var errors
+   * @var array errors
    */
   private $errors = array ();
   /**
@@ -91,7 +91,7 @@ class Parser {
   /**
    * Configuration
    *
-   * @var unknown
+   * @var object
    */
   private $configuration = null;
   /**
@@ -115,7 +115,7 @@ class Parser {
   /**
    * Constructor
    *
-   * @param unknown $request          
+   * @param object $request          
    * @param array $configuration          
    * @param \Broker\Cache $cache          
    * @param \Broker\Collection $collection          
@@ -259,7 +259,7 @@ class Parser {
   /**
    * Get response joins
    *
-   * @return unknown
+   * @return object
    */
   public function getResponseJoins() {
     return $this->responseJoins;
@@ -373,8 +373,8 @@ class Parser {
   /**
    * Check cache in request
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkCache($object) {
     if (is_bool ( $object )) {
@@ -388,8 +388,8 @@ class Parser {
   /**
    * Check debug in request
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkDebug($object) {
     if ($object && is_string ( $object )) {
@@ -402,8 +402,8 @@ class Parser {
   /**
    * Check sort in request
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkSort($object) {
     if ($object && is_array ( $object ) && count ( $object ) > 0) {
@@ -419,8 +419,8 @@ class Parser {
   /**
    * Check sortItem in sort
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkSortitem($object) {
     if ($object && is_object ( $object )) {
@@ -460,8 +460,8 @@ class Parser {
   /**
    * Check response in request
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponse($object) {
     if ($object && is_object ( $object )) {
@@ -487,8 +487,8 @@ class Parser {
   /**
    * Check documents in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseDocuments($object) {
     if ($object && is_object ( $object )) {
@@ -551,8 +551,8 @@ class Parser {
   /**
    * Check documents join in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseDocumentsJoin($object) {
     if (is_object ( $object ) && isset ( $object->type ) && is_string ( $object->type ) && $object->type == "join") {
@@ -597,8 +597,8 @@ class Parser {
   /**
    * Check facets in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseFacets($object) {
     if (($object && is_object ( $object ))) {
@@ -700,7 +700,7 @@ class Parser {
   /**
    * Check facet field
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyList          
    * @return array
    */
@@ -829,8 +829,8 @@ class Parser {
   /**
    * Check join facet field
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseFacetFieldJoin($object) {
     if (is_object ( $object )) {
@@ -884,7 +884,7 @@ class Parser {
   /**
    * Check facet query
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyList          
    * @return array
    */
@@ -996,7 +996,7 @@ class Parser {
   /**
    * Check facet range
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyList          
    * @return array
    */
@@ -1137,7 +1137,7 @@ class Parser {
   /**
    * Check facet pivot
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyList          
    * @return array
    */
@@ -1268,8 +1268,8 @@ class Parser {
   /**
    * Check stats in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseStats($object) {
     if ($object && is_object ( $object )) {
@@ -1313,7 +1313,7 @@ class Parser {
   /**
    * Check stats field
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyList          
    * @return array
    */
@@ -1420,8 +1420,8 @@ class Parser {
   /**
    * Check mtas in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtas($object) {
     if (($object && is_object ( $object ))) {
@@ -1509,8 +1509,8 @@ class Parser {
   /**
    * Check mtas stats
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasStats($object) {
     if ($object && is_object ( $object )) {
@@ -1555,8 +1555,8 @@ class Parser {
   /**
    * Check mtas stats positions
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasStatsPositions($object) {
     if ($object && is_object ( $object )) {
@@ -1598,8 +1598,8 @@ class Parser {
   /**
    * Check mtas stats tokens
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasStatsTokens($object) {
     if ($object && is_object ( $object )) {
@@ -1641,8 +1641,8 @@ class Parser {
   /**
    * Check mtas stats spans
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasStatsSpans($object) {
     if ($object && is_object ( $object )) {
@@ -1703,8 +1703,8 @@ class Parser {
   /**
    * Check mtas documents
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasDocument($object) {
     if ($object && is_object ( $object )) {
@@ -1765,8 +1765,8 @@ class Parser {
    * Check mtas kwic and list
    *
    * @param string $type          
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasKwicAndList($type, $object) {
     if ($type != "list" && $type != "kwic") {
@@ -1820,8 +1820,8 @@ class Parser {
   /**
    * Check mtas termvector
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasTermvector($object) {
     if ($object && is_object ( $object )) {
@@ -1910,8 +1910,8 @@ class Parser {
   /**
    * Check mtas facet
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasFacet($object) {
     if ($object && is_object ( $object )) {
@@ -1971,8 +1971,8 @@ class Parser {
   /**
    * Check mtas group
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasGroup($object) {
     if ($object && is_object ( $object )) {
@@ -2084,8 +2084,8 @@ class Parser {
   /**
    * Check mtas prefix
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasPrefix($object) {
     if ($object && is_object ( $object )) {
@@ -2123,8 +2123,8 @@ class Parser {
   /**
    * Check mtas collection
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkResponseMtasCollection($object) {
     if ($object && is_object ( $object )) {
@@ -2210,9 +2210,9 @@ class Parser {
   /**
    * Check query mtas
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefix          
-   * @return unknown
+   * @return object
    */
   private function checkResponseMtasQuery($object, $prefix) {
     if ($object && is_object ( $object )) {
@@ -2246,9 +2246,9 @@ class Parser {
   /**
    * Check mtas base (facets)
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefix          
-   * @return unknown
+   * @return object
    */
   private function checkResponseMtasBase($object, $prefix) {
     if ($object && is_object ( $object )) {
@@ -2313,9 +2313,9 @@ class Parser {
   /**
    * Check mtas function
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefix          
-   * @return unknown
+   * @return object
    */
   private function checkResponseMtasFunction($object, $prefix) {
     if ($object && is_object ( $object )) {
@@ -2340,9 +2340,9 @@ class Parser {
   /**
    * Check mtas distance
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefix          
-   * @return unknown
+   * @return object
    */
   private function checkResponseMtasDistance($object, $prefix) {
     if ($object && is_object ( $object )) {
@@ -2386,8 +2386,8 @@ class Parser {
   /**
    * Check condition
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkCondition($object) {
     static $availableTypes = array (
@@ -2640,8 +2640,8 @@ class Parser {
   /**
    * Check filter
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkFilter($object) {
     if ($object && is_object ( $object )) {
@@ -2668,8 +2668,8 @@ class Parser {
   /**
    * Check filters
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function checkFilters($object) {
     if ($object && is_object ( $object )) {
@@ -2687,10 +2687,10 @@ class Parser {
   /**
    * Check variables
    *
-   * @param unknown $object          
-   * @param unknown $fromCondition          
+   * @param object $object          
+   * @param object $fromCondition          
    * @param string $prefixMessage          
-   * @return unknown
+   * @return object
    */
   private function checkVariables($object, $fromCondition, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
@@ -2816,9 +2816,9 @@ class Parser {
   /**
    * Check mtas stats
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefixMessage          
-   * @return unknown
+   * @return object
    */
   private function checkMtasStats($object, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
@@ -2852,9 +2852,9 @@ class Parser {
   /**
    * Check mtas stats functions
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $prefixMessage          
-   * @return unknown
+   * @return object
    */
   private function checkMtasStatsFunction($object, $prefixMessage = "") {
     if ($object && is_object ( $object )) {
@@ -2879,7 +2879,7 @@ class Parser {
   /**
    * Parse cache
    *
-   * @param unknown $object          
+   * @param object $object          
    * @return null
    */
   private function parseCache($object) {
@@ -2888,7 +2888,7 @@ class Parser {
   /**
    * Parse debug
    *
-   * @param unknown $object          
+   * @param object $object          
    * @return string|NULL
    */
   private function parseDebug($object) {
@@ -2900,7 +2900,7 @@ class Parser {
   /**
    * parse Sort
    *
-   * @param unknown $object          
+   * @param object $object          
    * @return string|NULL
    */
   private function parseSort($object) {
@@ -2926,10 +2926,10 @@ class Parser {
   /**
    * Parse response
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $facetQueries          
    * @param array $mtasStats          
-   * @return unknown
+   * @return object
    */
   private function parseResponse($object, $facetQueries, $mtasStats) {
     if ($object && is_object ( $object )) {
@@ -2999,8 +2999,8 @@ class Parser {
   /**
    * Parse documents in response
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function parseResponseDocuments($object) {
     if ($object && is_object ( $object )) {
@@ -3033,8 +3033,8 @@ class Parser {
   /**
    * Parse join in documents
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function parseResponseDocumentsJoin($object) {
     if ($object && is_object ( $object )) {
@@ -3060,9 +3060,9 @@ class Parser {
   /**
    * Parse facets in response
    *
-   * @param unknown $object          
-   * @param unknown $facetqueries          
-   * @return unknown
+   * @param object $object          
+   * @param object $facetqueries          
+   * @return object
    */
   private function parseResponseFacets($object, $facetqueries) {
     if (($object && is_object ( $object ))) {
@@ -3104,7 +3104,7 @@ class Parser {
   /**
    * Parse facet fields
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @return array
    */
@@ -3122,9 +3122,9 @@ class Parser {
   /**
    * Parse facet field
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseFacetField($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3164,10 +3164,10 @@ class Parser {
   /**
    * Parse join facet field
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param string $key          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseFacetFieldJoin($object, $key, $i) {
     if ($object && is_object ( $object )) {
@@ -3186,7 +3186,7 @@ class Parser {
   /**
    * Parse facet queries
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @param array $keyListFacetQueries          
    * @return array
@@ -3209,7 +3209,7 @@ class Parser {
   /**
    * Parse facet query
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $keyListFacetQueries          
    * @param number $i          
    * @return array
@@ -3312,7 +3312,7 @@ class Parser {
   /**
    * Parse facet range
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @return array
    */
@@ -3330,9 +3330,9 @@ class Parser {
   /**
    * Parse facet range
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseFacetRange($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3351,7 +3351,7 @@ class Parser {
   /**
    * Parse facet pivots
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @return array
    */
@@ -3369,9 +3369,9 @@ class Parser {
   /**
    * Parse facet pivot
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseFacetPivot($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3390,7 +3390,7 @@ class Parser {
   /**
    * Parse stats in response
    *
-   * @param unknown $object
+   * @param object $object
    *          return unknown
    */
   private function parseResponseStats($object) {
@@ -3413,7 +3413,7 @@ class Parser {
   /**
    * Parse stats fields
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @return array
    */
@@ -3431,9 +3431,9 @@ class Parser {
   /**
    * Parse stats field
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseStatsField($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3452,9 +3452,9 @@ class Parser {
   /**
    * Parse mtas in response
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $mtasStats          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtas($object, $mtasStats) {
     $localErrors = array ();
@@ -3573,9 +3573,9 @@ class Parser {
   /**
    * Parse mtas stats
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $mtasStats          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasStats($object, $mtasStats) {
     if ($object && is_object ( $object )) {
@@ -3630,9 +3630,9 @@ class Parser {
   /**
    * Parse mtas stats positions
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasStatsPositions($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3661,9 +3661,9 @@ class Parser {
   /**
    * Parse mtas stats tokens
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasStatsTokens($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3692,9 +3692,9 @@ class Parser {
   /**
    * Parse mtas stats spans
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasStatsSpans($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3799,9 +3799,9 @@ class Parser {
   /**
    * Parse mtas documents
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasDocument($object, $i) {
     if ($object && is_object ( $object )) {
@@ -3855,9 +3855,9 @@ class Parser {
    * Parse mtas kwic and list
    *
    * @param string $type          
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasKwicAndList($type, $object, $i) {
     if ($type != "list" && $type != "kwic") {
@@ -3927,9 +3927,9 @@ class Parser {
   /**
    * Parse mtas termvector
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasTermvector($object, $i) {
     if ($object && is_object ( $object )) {
@@ -4027,9 +4027,9 @@ class Parser {
   /**
    * Parse mtas facet
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasFacet($object, $i) {
     if ($object && is_object ( $object )) {
@@ -4130,9 +4130,9 @@ class Parser {
   /**
    * Parse mtas group
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasGroup($object, $i) {
     if ($object && is_object ( $object )) {
@@ -4234,9 +4234,9 @@ class Parser {
   /**
    * Parse mtas prefix
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasPrefix($object, $i) {
     if ($object && is_object ( $object )) {
@@ -4256,9 +4256,9 @@ class Parser {
   /**
    * Parse mtas collection
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param number $i          
-   * @return unknown
+   * @return object
    */
   private function parseResponseMtasCollection($object, $i) {
     if ($object && is_object ( $object )) {
@@ -4298,8 +4298,8 @@ class Parser {
   /**
    * Parse condition
    *
-   * @param unknown $object          
-   * @return unknown
+   * @param object $object          
+   * @return object
    */
   private function parseCondition($object) {
     if ($object && is_object ( $object )) {
@@ -4509,7 +4509,7 @@ class Parser {
   /**
    * Parse filters
    *
-   * @param unknown $object          
+   * @param object $object          
    * @return array
    */
   private function parseFilters($object) {
@@ -4539,7 +4539,7 @@ class Parser {
   /**
    * Parse filter
    *
-   * @param unknown $object          
+   * @param object $object          
    * @param array $requestList          
    * @param array $facetQueries          
    * @param array $mtasStats          
@@ -4578,8 +4578,8 @@ class Parser {
   /**
    * Create collectionId from join
    *
-   * @param unknown $object          
-   * @param unknown $configuration          
+   * @param object $object          
+   * @param object $configuration          
    * @return string
    */
   private function createCollectionIdFromJoin($object, $configuration) {
@@ -4611,8 +4611,8 @@ class Parser {
   /**
    * Finish collectionId from join
    *
-   * @param unknown $collectionId          
-   * @param unknown $configuration          
+   * @param object $collectionId          
+   * @param object $configuration          
    * @return string
    */
   private function finishCollectionIdFromJoin($collectionId, $configuration) {
@@ -4700,7 +4700,7 @@ class Parser {
   /**
    * Get configurations for field
    *
-   * @param unknown $field          
+   * @param object $field          
    * @return array
    */
   private function getConfigurationsForField($field) {
@@ -4724,7 +4724,7 @@ class Parser {
    * Compute expansions values
    *
    * @param array|string $value          
-   * @param unknown $expansion          
+   * @param object $expansion          
    * @param string $prefixMessage          
    * @return array
    */
@@ -4798,7 +4798,7 @@ class Parser {
    * Compute configuration
    *
    * @param string $config          
-   * @return unknown
+   * @return object
    */
   private function computeConfiguration($config) {
     $availableConfigs = array_keys ( $this->configuration->getConfig ( "solr" ) );
@@ -4844,7 +4844,7 @@ class Parser {
   /**
    * Solr encode
    *
-   * @param unknown $value          
+   * @param object $value          
    * @param string $type          
    * @return string
    */

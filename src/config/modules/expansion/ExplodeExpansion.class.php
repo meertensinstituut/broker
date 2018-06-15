@@ -31,9 +31,9 @@ class ExplodeExpansion implements \Broker\Expansion {
    * Explode expansion
    * 
    * @param string|array $value          
-   * @param unknown $expansionConfiguration
-   * @param unknown $brokerConfiguration
-   * @param unknown $solrConfiguration
+   * @param object $expansionConfiguration
+   * @param object $brokerConfiguration
+   * @param object $solrConfiguration
    */
   public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this->value = $value;

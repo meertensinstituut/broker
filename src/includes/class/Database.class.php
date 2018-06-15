@@ -20,7 +20,7 @@ abstract class Database {
   /**
    * Configuration
    *
-   * @var unknown
+   * @var object
    */
   public $configuration;
   /**
@@ -39,7 +39,7 @@ abstract class Database {
    * Constructor
    *
    * @param string $directory
-   * @param unknown $configuration
+   * @param object $configuration
    * @param string $classname
    */  
   public function __construct($directory, $configuration, $classname) {

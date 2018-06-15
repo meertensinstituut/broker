@@ -43,7 +43,7 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::close()
+   * @see \SessionHandlerInterface::close()
    */
   public function close() {
     $this->database = null;
@@ -53,7 +53,7 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::destroy()
+   * @see \SessionHandlerInterface::destroy()
    * @param string $session_id          
    */
   public function destroy($session_id) {
@@ -66,7 +66,7 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::gc()
+   * @see \SessionHandlerInterface::gc()
    * @param number $maxlifetime          
    */
   public function gc($maxlifetime) {
@@ -78,7 +78,7 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::open()
+   * @see \SessionHandlerInterface::open()
    * @param string $save_path          
    * @param string $session_name          
    */
@@ -89,7 +89,7 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::read()
+   * @see \SessionHandlerInterface::read()
    * @param string $session_id          
    */
   public function read($session_id) {
@@ -111,9 +111,9 @@ class Session extends Database implements \SessionHandlerInterface {
    *
    * {@inheritDoc}
    *
-   * @see SessionHandlerInterface::write()
+   * @see \SessionHandlerInterface::write()
    * @param string $session_id          
-   * @param unknown $session_data          
+   * @param object $session_data          
    */
   public function write($session_id, $session_data) {
     $sql = "INSERT OR REPLACE INTO session (sid, data, created, updated) 

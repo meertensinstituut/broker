@@ -37,13 +37,13 @@ class Authentication {
   /**
    * Configuration
    *
-   * @var unknown
+   * @var object
    */
   private $configuration;
   /**
    * Constructor
    *
-   * @param unknown $configuration          
+   * @param object $configuration          
    */
   public function __construct($configuration) {
     if ($configuration && is_array ( $configuration )) {

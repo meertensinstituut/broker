@@ -49,7 +49,7 @@ class Solr {
   /**
    * Configuration
    *
-   * @var unknown
+   * @var object
    */
   private $configuration = null;
   /**
@@ -75,7 +75,7 @@ class Solr {
   /**
    * Perform request and return response object
    *
-   * @return unknown
+   * @return object
    * @throws \Broker\SolrException
    */
   public function getResponse() {

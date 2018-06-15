@@ -52,4 +52,11 @@ $solr = array (
         "exampleMtasPrefixPosValues"=>null,
     ),         
 );
+
+$cache = array(
+    "lifetime" => 3000,
+    "softlimit" => 800,
+    "hardlimit" => 1000,
+    "timelimit" => 60
+);
 ?>

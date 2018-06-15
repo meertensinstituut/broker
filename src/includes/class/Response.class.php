@@ -13,19 +13,19 @@ class Response {
   /**
    * Response
    *
-   * @var unknown
+   * @var object
    */
   private $response;
   /**
    * Response joins
    *
-   * @var unknown
+   * @var object
    */
   private $responseJoins;
   /**
    * Configuration
    *
-   * @var unknown
+   * @var object
    */
   private $configuration = null;
   /**
@@ -43,9 +43,9 @@ class Response {
   /**
    * Constructor
    *
-   * @param unknown $response          
-   * @param unknown $responseJoins          
-   * @param unknown $configuration          
+   * @param object $response          
+   * @param object $responseJoins          
+   * @param object $configuration          
    * @param \Broker\Cache $cache          
    * @param \Broker\Collection $collection          
    */
@@ -101,7 +101,7 @@ class Response {
    * Collect join facet field values
    *
    * @param array $values          
-   * @param unknown $facetFieldJoin          
+   * @param object $facetFieldJoin          
    * @return array
    */
   private function collectJoinFacetFieldValues($values, $facetFieldJoin) {
@@ -206,7 +206,7 @@ class Response {
    * Collect join documents values
    *
    * @param array $values          
-   * @param unknown $documentsJoin          
+   * @param object $documentsJoin          
    * @return array
    */
   private function collectJoinDocumentsValues($values, $documentsJoin) {

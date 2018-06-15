@@ -71,7 +71,7 @@ class Configuration {
    * Get configuration item
    *
    * @param string $name          
-   * @return unknown
+   * @return object
    */
   public function getConfig($name) {
     if ($this->config && is_array ( $this->config ) && isset ( $this->config [$name] ) && is_array ( $this->config [$name] )) {
@@ -83,7 +83,7 @@ class Configuration {
   /**
    * Get solr configuration item
    *
-   * @param unknown $name          
+   * @param object $name          
    */
   public function getSolrConfig($name) {
     if ($this->solr && is_array ( $this->solr ) && isset ( $this->solr [$name] ) && is_array ( $this->solr [$name] )) {
@@ -165,7 +165,7 @@ class Configuration {
   /**
    * Get timestamp automatic solr configuration
    *
-   * @return unknown
+   * @return object
    */
   public function getSolrTimestamp() {
     return $this->solrTimestamp;
@@ -401,7 +401,7 @@ class Configuration {
    * @param array $item          
    * @param array $fieldTypes          
    * @param array $configuration          
-   * @return unknown
+   * @return object
    */
   private function _processSolrConfiguration($item, $fieldTypes, $configuration) {
     if (isset ( $item ["multiValued"] ) && is_bool ( $item ["multiValued"] ) && $item ["multiValued"] == true) {

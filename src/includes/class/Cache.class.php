@@ -17,13 +17,51 @@ class Cache extends Database {
    */
   private $lifetime = 3000;
   /**
+   * Softlimit
+   *
+   * @var number
+   */
+  private $softlimit = 800;
+  /**
+   * Hardlimit
+   *
+   * @var number
+   */
+  private $hardlimit = 1000;
+  /**
+   * Timelimit
+   *
+   * @var number
+   */
+  private $timelimit = 60;
+  /**
    * Constructor
    *
-   * @param string $directory          
-   * @param unknown $configuration          
+   * @param string $directory
+   * @param object $configuration
    */
   public function __construct($directory, $configuration) {
-    parent::__construct($directory, $configuration, "cache");
+    parent::__construct ( $directory, $configuration, "cache" );
+    if(isset($configuration->config["cache"])) {
+      if(isset($configuration->config["cache"]["lifetime"])) {
+        $this->lifetime = intval($configuration->config["cache"]["lifetime"]);
+      }
+      if(isset($configuration->config["cache"]["softlimit"])) {
+        $this->softlimit = intval($configuration->config["cache"]["softlimit"]);
+      }
+      if(isset($configuration->config["cache"]["hardlimit"])) {
+        $this->hardlimit = intval($configuration->config["cache"]["hardlimit"]);
+      }
+      if(isset($configuration->config["cache"]["timelimit"])) {
+        $this->timelimit = intval($configuration->config["cache"]["timelimit"]);
+      }
+    }
+    //check
+    if($this->softlimit<=0 || $this->softlimit>$this->hardlimit) {
+      die("invalid soft/hard limit for cache");
+    } else if($this->lifetime<=0 || $this->timelimit<=0) {
+      die("invalid time setting in cache");
+    }
   }
   /**
    * Init
@@ -49,11 +87,11 @@ class Cache extends Database {
   /**
    * Create
    *
-   * @param string $configuration          
-   * @param string $url          
-   * @param string $request  
-   * @param string $requestAddition          
-   * @param unknown $response          
+   * @param string $configuration
+   * @param string $url
+   * @param string $request
+   * @param string $requestAddition
+   * @param object $response
    */
   public function create($configuration, $url, $request, $requestAddition, $response) {
     $this->clean ();
@@ -82,7 +120,7 @@ class Cache extends Database {
   /**
    * Get
    *
-   * @param string $hash          
+   * @param string $hash
    * @return array
    */
   public function get($hash) {
@@ -106,9 +144,9 @@ class Cache extends Database {
   /**
    * Check
    *
-   * @param string $configuration          
-   * @param string $url          
-   * @param string $request          
+   * @param string $configuration
+   * @param string $url
+   * @param string $request
    * @return array
    */
   public function check($configuration, $url, $request) {
@@ -163,8 +201,8 @@ class Cache extends Database {
   /**
    * Get list
    *
-   * @param number $start          
-   * @param number $number          
+   * @param number $start
+   * @param number $number
    * @return array
    */
   public function getList($start, $number) {
@@ -199,13 +237,64 @@ class Cache extends Database {
     $query = $this->database->prepare ( $sql );
     $query->execute ();
     unset ( $query );
-  }  
+    // check limits
+    $number = $this->getSize ();
+    if ($number > $this->hardlimit) {
+      // first delete everything with only one check and created longer than $this->timelimit minutes ago
+      $sql = "DELETE FROM \"cache\" 
+              WHERE numberOfChecks = 1 
+              AND created < datetime('now', '+" . intval ( $this->timelimit ) . " minutes');";
+      $query = $this->database->prepare ( $sql );
+      $query->execute ();
+      unset ( $query );
+      $number = $this->getSize ();
+    } else {
+      return;
+    }
+    //recheck
+    if ($number > $this->hardlimit) {
+      //get expires limit
+      $sql = "SELECT expires FROM \"cache\" 
+              ORDER BY expires DESC 
+              LIMIT :start,1;";      
+      $query = $this->database->prepare ( $sql );
+      $query->bindValue ( ":start", $this->softLimit );
+      if ($query->execute ()) {
+        $result = $query->fetchAll ( \PDO::FETCH_ASSOC );
+        unset ( $query );
+        if ($result) {
+          $sql = "DELETE FROM \"cache\"
+                  WHERE expires >= :expires;";
+          $query = $this->database->prepare ( $sql );
+          $query->bindValue ( ":expires", $result["expires"] );
+          $query->execute ();
+        }
+      } 
+    }
+  }
+  /**
+   * Get number
+   *
+   * @return number
+   */
+  private function getSize() {
+    $sql = "SELECT COUNT(\"id\") AS \"number\" FROM \"cache\";";
+    $query = $this->database->prepare ( $sql );
+    $query->execute ();
+    $result = $query->fetch ( \PDO::FETCH_ASSOC );
+    unset ( $query );
+    if ($result && is_array ( $result ) && isset ( $result ["number"] )) {
+      return intval ( $result ["number"] );
+    } else {
+      return 0;
+    }
+  }
   /**
    * Create hash
    *
-   * @param string $configuration          
-   * @param string $url          
-   * @param string $request          
+   * @param string $configuration
+   * @param string $url
+   * @param string $request
    * @return string
    */
   private static function createHash($configuration, $url, $request) {

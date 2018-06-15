@@ -20,31 +20,31 @@ class DistanceExpansion implements \Broker\Expansion {
   /**
    * Configuration
    * 
-   * @var unknown
+   * @var object
    */
   private $configuration;
   /**
    * Broker configuration
    * 
-   * @var unknown
+   * @var object
    */
   private $brokerConfiguration;
   /**
    * Solr configuration
    * 
-   * @var unknown
+   * @var object
    */
   private $solrConfiguration;
   /**
    * Filter
    * 
-   * @var unknown
+   * @var object
    */
   private $filter;
   /**
    * Condition
    * 
-   * @var unknown
+   * @var object
    */
   private $condition;
   /**
@@ -97,7 +97,7 @@ class DistanceExpansion implements \Broker\Expansion {
   /**
    * Parameter
    * 
-   * @var unknown
+   * @var object
    */
   private $parameter;
   /**
@@ -123,9 +123,9 @@ class DistanceExpansion implements \Broker\Expansion {
    * Constructor
    * 
    * @param string|array $value
-   * @param unknown $expansionConfiguration
-   * @param unknown $brokerConfiguration
-   * @param unknown $solrConfiguration
+   * @param object $expansionConfiguration
+   * @param object $brokerConfiguration
+   * @param object $solrConfiguration
    */
   public function __construct($value, $expansionConfiguration, $brokerConfiguration, $solrConfiguration) {
     $this->errors = array();
