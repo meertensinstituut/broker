@@ -1488,12 +1488,19 @@ class Parser {
             unset ( $object->{$key} );
           }
         } else if ($key == "collection") {
-          if (!is_null($value) != null && is_array ( $value )) {
+          if (!is_null($value) && is_array ( $value )) {
             for($i = 0; $i < count ( $value ); $i ++) {
-              $object->collection [$i] = $this->checkResponseMtasCollection ( $value [$i], $i );
+              $object->collection [$i] = $this->checkResponseMtasCollection ( $value [$i] );
             }
           } else {
             $this->errors [] = "mtas - {$key} should be array";
+            unset ( $object->{$key} );
+          }
+        } else if ($key == "version") {
+          if (!is_null($value) && is_bool ( $value )) {
+            $object->version = $this->checkResponseMtasVersion ( $value );
+          } else {
+            $this->errors [] = "mtas - {$key} should be boolean";
             unset ( $object->{$key} );
           }
         } else {
@@ -2206,6 +2213,15 @@ class Parser {
       $this->warnings [] = "mtas - collection - unexpected type";
       return null;
     }
+  }
+  /**
+   * Check mtas collection
+   *
+   * @param object $object          
+   * @return object
+   */
+  private function checkResponseMtasVersion($object) {
+    return $object;
   }
   /**
    * Check query mtas
@@ -3544,6 +3560,10 @@ class Parser {
                 $requestList = array_merge ( $requestList, $value [$i]->__requestList );
               }
             }
+          }
+        } else if ($key == "version") {
+          if ($value && is_bool ( $value )) {
+            $requestList [] = "mtas.version=".($value?"true":"false"); 
           }
         }
       }
