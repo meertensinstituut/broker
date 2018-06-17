@@ -101,6 +101,7 @@ $(function() {
       }     
     } catch (err) {
       console.log(err);
+      console.log(info);
       console.log("couldn't parse processes");
       //do nothing
     }
@@ -1137,6 +1138,7 @@ $(function() {
       row.append($("<td/>").text("fields"));
       row.append($("<td/>").text("dynamicFields"));
       row.append($("<td/>").text("mtas"));
+      row.append($("<td/>").text("mtasHandler"));
       row.append($("<td/>").text("cql-parser"));
       row.append($("<td/>").text("join-parser"));
       table.append(row);
@@ -1148,6 +1150,7 @@ $(function() {
           row.append($("<td/>").addClass("centered").text(solrConfig[property].fields.length));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].dynamicFields.length));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].mtas.length));
+          row.append($("<td/>").addClass("centered").text(solrConfig[property].mtasHandler));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].queryParserCql));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].queryParserJoin));
           table.append(row);

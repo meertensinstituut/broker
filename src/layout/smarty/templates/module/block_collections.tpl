@@ -5,7 +5,7 @@
   {if $_collectionsType eq "list"}
   
     {if $_collectionsList|@count gt 0}
-      <div class="subtitle">{($_collectionsPage*$_collectionsNumber) + 1} - {($_collectionsPage*$_collectionsNumber) + $_collectionsList|@count} from {$_collectionsTotal|intval} item(s)</div>
+      <div class="subtitle">{math equation="x*y+1" x=$_collectionsPage y=$_collectionsNumber} - {math equation="x*y+z" x=$_collectionsPage y=$_collectionsNumber z=$_collectionsList|@count} from {$_collectionsTotal|intval} item(s)</div>
       
       <table>
         <tr class="title">

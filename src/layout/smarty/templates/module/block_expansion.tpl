@@ -5,7 +5,7 @@
   {if $_expansionType eq "list"}
   
     {if $_expansionList|@count gt 0}
-      <div class="subtitle">{($_expansionPage*$_expansionNumber) + 1} - {($_expansionPage*$_expansionNumber) + $_expansionList|@count} from {$_expansionTotal|intval} item(s)</div>
+      <div class="subtitle">{math equation="x*y+1" x=$_expansionPage y=$_expansionNumber} - {math equation="x*y+z" x=$_expansionPage y=$_expansionNumber z=$_expansionList|@count} from {$_expansionTotal|intval} item(s)</div>
       
       <table>
         <tr class="title">

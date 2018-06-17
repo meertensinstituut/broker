@@ -5,7 +5,7 @@
   {if $_cacheType eq "list"}
   
     {if $_cacheList|@count gt 0}
-      <div class="subtitle">{($_cachePage*$_cacheNumber) + 1} - {($_cachePage*$_cacheNumber) + $_cacheList|@count} from {$_cacheTotal|intval} item(s)</div>
+      <div class="subtitle">{math equation="x*y+1" x=$_cachePage y=$_cacheNumber} - {math equation="x*y+z" x=$_cachePage y=$_cacheNumber z=$_cacheList|@count} from {$_cacheTotal|intval} item(s)</div>
       
       <table>
         <tr class="title">

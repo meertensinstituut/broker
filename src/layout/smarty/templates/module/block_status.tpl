@@ -5,7 +5,7 @@
   {if $_statusType eq "list"}
   
     {if $_statusList|@count gt 0}
-      <div class="subtitle">{($_statusPage*$_statusNumber) + 1} - {($_statusPage*$_statusNumber) + $_statusList|@count} from {$_statusTotal|intval} item(s)</div>
+      <div class="subtitle">{math equation="x*y+1" x=$_statusPage y=$_statusNumber} - {math equation="x*y+z" x=$_statusPage y=$_statusNumber z=$_statusList|@count} from {$_statusTotal|intval} item(s)</div>
       
       <table>
         <tr class="title">

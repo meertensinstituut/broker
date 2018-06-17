@@ -59,7 +59,9 @@
         {foreach $_configuration->config["solr"] AS $configuration=>$settings}
           <tr>
             <td>{$configuration|escape:html}</td>   
-            <td>{if isset($settings.url) && is_string($settings.url)}{$settings.url|escape:html}{else}---{/if}</td>
+            <td>
+              {if isset($settings.url) && is_string($settings.url)}{$settings.url|escape:html}{else}---{/if}
+            </td>
             <td>{if isset($settings.shards) && is_array($settings.shards)}{foreach $settings.shards as $shard}{if is_string($shard)}{$shard|escape:html}{else}?{/if}<br/>{/foreach}{else}---{/if}</td>
             <td>
               exampleFieldText: {if isset($settings.exampleFieldText) && is_string($settings.exampleFieldText)}{$settings.exampleFieldText|escape:html}{else}---{/if}<br />
@@ -79,8 +81,28 @@
           </tr>
         {/foreach}
       </table>               
-    </div>
-    <br />     
+    </div>  
+  {/if}
+  
+  {if $_configuration->config && $_configuration->config["cache"]}
+    <div class="info">      
+      <b>Cache</b><br />
+      Configuration cache<br /> 
+      <table>
+        <tr class="title">
+          <td width="25%">Lifetime</td>
+          <td width="25%">Softlimit</td>
+          <td width="25%">Hardlimit</td>
+          <td width="25%">Timelimit</td>
+        </tr>  
+        <tr>
+          <td>{if isset($_configuration->config["cache"]["lifetime"])}{$_configuration->config["cache"]["lifetime"]|escape:html} minutes{else}---{/if}</td>
+          <td>{if isset($_configuration->config["cache"]["softlimit"])}{$_configuration->config["cache"]["softlimit"]|escape:html} items{else}---{/if}</td>
+          <td>{if isset($_configuration->config["cache"]["hardlimit"])}{$_configuration->config["cache"]["hardlimit"]|escape:html} items{else}---{/if}</td>
+          <td>{if isset($_configuration->config["cache"]["timelimit"])}{$_configuration->config["cache"]["timelimit"]|escape:html} minutes{else}---{/if}</td>
+        </tr>  
+      </table>    
+    </div> 
   {/if}
 
   {if $_authentication->accessWithAdminPrivileges()}     

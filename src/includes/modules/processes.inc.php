@@ -15,12 +15,8 @@ if (! $authentication->accessBasedOnLogin ()) {
         header ( "Location: " . $configuration->url ( "processes") );
         exit ();
       }      
-      if ($_GET ["suboperation"] == "running") {
-        $smarty->assign ( "_processesType", "running" );
-      } else if ($_GET ["suboperation"] == "history") {
-        $smarty->assign ( "_processesType", "history" );
-      } else if ($_GET ["suboperation"] == "error") {
-        $smarty->assign ( "_processesType", "error" );
+      if ($_GET ["suboperation"] == "running" || $_GET ["suboperation"] == "history" || $_GET ["suboperation"] == "error") {
+        $smarty->assign ( "_processesType", $_GET ["suboperation"] );
       } else if ($_GET ["suboperation"] == "api") {
         if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
           $response = array ();
@@ -40,9 +36,9 @@ if (! $authentication->accessBasedOnLogin ()) {
                   CURLOPT_RETURNTRANSFER => true
               );
               curl_setopt_array ( $ch, $options );
-              $result = curl_exec ( $ch );
+              $result = curl_exec ( $ch ); 
               if ($data = json_decode ( $result )) {
-                $response ["data"] = $data;
+                $response ["data"] = $data; 
               } else {
                 $response ["status"] = "error";
                 $response ["data"] = $result;
