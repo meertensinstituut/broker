@@ -32,6 +32,7 @@ $authentication = array (
 $solr = array ( 
     "config1" => array (
         "url" => "http://localhost:8983/solr/core1/",
+        "maxTimeAllowed" => 300000,
         "shards" => array ( 
             "http://localhost:8983/solr/core2/",
             "http://localhost:8983/solr/core3/",

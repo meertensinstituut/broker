@@ -53,17 +53,17 @@
         <tr class="title">
           <td width="25%">Configuration</td>
           <td width="25%">Main</td>
-          <td width="25%">Shards</td>
+          <td width="25%">Shards, Timeout</td>
           <td width="25%">Fields</td>
         </tr>  
         {foreach $_configuration->config["solr"] AS $configuration=>$settings}
           <tr>
-            <td>{$configuration|escape:html}</td>   
-            <td>
+            <td rowspan="2">{$configuration|escape:html}</td>   
+            <td rowspan="2">
               {if isset($settings.url) && is_string($settings.url)}{$settings.url|escape:html}{else}---{/if}
             </td>
             <td>{if isset($settings.shards) && is_array($settings.shards)}{foreach $settings.shards as $shard}{if is_string($shard)}{$shard|escape:html}{else}?{/if}<br/>{/foreach}{else}---{/if}</td>
-            <td>
+            <td rowspan="2">
               exampleFieldText: {if isset($settings.exampleFieldText) && is_string($settings.exampleFieldText)}{$settings.exampleFieldText|escape:html}{else}---{/if}<br />
               exampleFieldTextValues: {if isset($settings.exampleFieldTextValues) && is_array($settings.exampleFieldTextValues)}{$settings.exampleFieldTextValues|implode:", "|escape:html}{else}---{/if}<br />
               exampleFieldInteger: {if isset($settings.exampleFieldInteger) && is_string($settings.exampleFieldInteger)}{$settings.exampleFieldInteger|escape:html}{else}---{/if}<br />
@@ -79,6 +79,11 @@
               exampleMtasPrefixPosValues: {if isset($settings.exampleMtasPrefixPosValues) && is_array($settings.exampleMtasPrefixPosValues)}{$settings.exampleMtasPrefixPosValues|implode:", "|escape:html}{else}---{/if}<br />              
             </td>          
           </tr>
+          <tr>
+            <td>
+              {if isset($settings.timeAllowed) && is_numeric($settings.timeAllowed)}timeAllowed maximum is {$settings.timeAllowed|escape:html} ms{else}---{/if}
+            </td>
+          </tr>  
         {/foreach}
       </table>               
     </div>  

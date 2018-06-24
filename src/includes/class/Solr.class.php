@@ -115,7 +115,9 @@ class Solr {
     if (($data = json_decode ( $result ))) {
       // cache
       if ($this->cache != null && ! isset ( $data->error )) {
-        $this->cache->create ( $this->configuration, $this->url . $this->handler . "/", $finalRequest, $this->requestAddition, $result );
+        if(!isset($data->responseHeader) || !isset($data->responseHeader->partialResults) || !$data->responseHeader->partialResults) {
+          $this->cache->create ( $this->configuration, $this->url . $this->handler . "/", $finalRequest, $this->requestAddition, $result );
+        }
       }
       // return data
       return $data;

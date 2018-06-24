@@ -142,6 +142,18 @@ class Cache extends Database {
     }
   }
   /**
+   * Delete
+   *
+   * @param string $hash
+   */
+  public function delete($hash) {
+    $sql = "DELETE FROM \"cache\" WHERE hash IS :hash;";
+    $query = $this->database->prepare ( $sql );
+    $query->bindValue ( ":hash", $hash );
+    $query->execute ();
+    unset ( $query );
+  }
+  /**
    * Check
    *
    * @param string $configuration

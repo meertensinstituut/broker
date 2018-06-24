@@ -54,6 +54,17 @@ if (strtoupper ( $_SERVER ['REQUEST_METHOD'] ) == "POST") {
         if ($solrResponse && is_object ( $solrResponse )) {
           if (isset ( $solrResponse->error )) {
             $response ["error"] = $solrResponse->error;
+          } else if (isset ( $solrResponse->responseHeader ) && isset ( $solrResponse->responseHeader->partialResults ) && $solrResponse->responseHeader->partialResults) {
+            $partialNumber = (isset($solrResponse->response) && isset($solrResponse->response->numFound))?intval($solrResponse->response->numFound):null;
+            $partialTime = (isset ($solrResponse->responseHeader) && isset ($solrResponse->responseHeader->QTime))?intval($solrResponse->responseHeader->QTime):null;
+            $partialError = "Only partial results";
+            if($partialNumber!==null) {
+              $partialError.=": ".$partialNumber." documents";
+            }
+            if($partialTime!==null) {
+              $partialError.=" found in ".$partialTime." ms";
+            }
+            $response ["error"] = $partialError;
           } else if (isset ( $solrResponse->response )) {
             $response ["status"] = "OK";
             $response ["response"] = clone $solrResponse;

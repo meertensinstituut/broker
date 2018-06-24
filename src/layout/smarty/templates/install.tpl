@@ -82,6 +82,7 @@
     "config1" => array (
       // obligatory: url solr core
       "url" => {if isset($smarty.post.solrUrl) && is_string($smarty.post.solrUrl)}"{$smarty.post.solrUrl|replace:"\"":"\\\""|escape:html}"{else}"http://localhost:8983/solr/core1/"{/if},
+      "timeAllowed" => 300000,              // allowed time in ms
       //"shards" => array (                 // optional: shards
       //  "http://localhost:8983/solr/demoCore1/",
       //  "http://localhost:8983/solr/demoCore2/",

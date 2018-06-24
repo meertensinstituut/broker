@@ -272,7 +272,8 @@ class Parser {
     $__facetQueries = array ();
     $__mtasStats = array ();
     $requestList = array ();
-    $requestAdditionalList = array ();    
+    $requestAdditionalList = array (); 
+    //$requestAdditionalList[] = "debug=true";
     foreach ( $this->brokerRequest as $key => $value ) {
       if ($key == "condition") {
         $this->brokerRequest->condition = $this->checkCondition ( $value );
@@ -286,6 +287,8 @@ class Parser {
         $this->brokerRequest->debug = $this->checkDebug ( $value );
       } else if ($key == "cache") {
         $this->brokerRequest->cache = $this->checkCache ( $value );
+      } else if ($key == "timeAllowed") {
+        $this->brokerRequest->timeAllowed = $this->checkTimeAllowed ( $value );
       } else if ($key == "configuration") {
         if ($value && is_string ( $value )) {
           $this->solrConfiguration = $value;
@@ -312,6 +315,14 @@ class Parser {
         $this->solrUrl = isset ( $__config ["url"] ) ? $__config ["url"] : "";
         $this->solrShards = isset ( $__config ["shards"] ) ? $__config ["shards"] : "";
         $this->solrConfiguration = $config;
+        //check timeAllowed for configuration
+        if(isset($this->brokerRequest->timeAllowed)) {
+          if(isset($__config ["timeAllowed"]) && (intval($__config ["timeAllowed"])>0)) {
+            $this->brokerRequest->timeAllowed = min($this->brokerRequest->timeAllowed, intval($__config ["timeAllowed"]));
+          }
+        } else if(isset($__config ["timeAllowed"]) && (intval($__config ["timeAllowed"])>0)) {
+          $this->brokerRequest->timeAllowed = intval($__config ["timeAllowed"]);
+        }
       }
       // compute query
       if (isset ( $this->brokerRequest->filter )) {
@@ -363,6 +374,12 @@ class Parser {
             $requestList [] = $requestCache;
           }
         }
+        if (isset ( $this->brokerRequest->timeAllowed )) {
+          $requestTimeAllowed = $this->parseTimeAllowed ( $this->brokerRequest->timeAllowed );
+          if ($requestTimeAllowed) {
+            $requestAdditionalList [] = $requestTimeAllowed;
+          }
+        }
       }
     }
     $requestList [] = "wt=json";
@@ -382,6 +399,21 @@ class Parser {
       return $object;
     } else {
       $this->errors [] = "cache - unexpected type";
+      return null;
+    }
+  }
+  /**
+   * Check timeAllowed in request
+   *
+   * @param object $object
+   * @return object
+   */
+  private function checkTimeAllowed($object) {
+    if (is_numeric ( $object )) {
+      $this->timeAllowed = $object;
+      return $object;
+    } else {
+      $this->errors [] = "timeAllowed - unexpected type";
       return null;
     }
   }
@@ -2902,13 +2934,25 @@ class Parser {
     return null;
   }
   /**
+   * Parse timeAllowed
+   *
+   * @param object $object          
+   * @return null
+   */
+  private function parseTimeAllowed($object) {
+    if ($object && is_numeric ( $object )) {
+      return "timeAllowed=" . urlencode ( $object );
+    }
+    return null;
+  }
+  /**
    * Parse debug
    *
    * @param object $object          
    * @return string|NULL
    */
   private function parseDebug($object) {
-    if ($object && is_string ( $object ) && $object) {
+    if ($object && is_string ( $object )) {
       return "debug=" . urlencode ( $object );
     }
     return null;
