@@ -1078,14 +1078,15 @@ class Parser {
               $this->warnings [] = "facets - facetranges - ex should be a string";
             }
           }
-          if (isset ( $object->mincount )) {
-            $ignoreList [] = "mincount";
-            if (is_numeric ( $object->mincount )) {
-              $object->__options [] = "facet.mincount=".$object->mincount;
-            } else {
-              $this->warnings [] = "facets - facetranges - mincount should be numeric";
-            }
-          }
+// disabled: solr-problem with sharding
+//           if (isset ( $object->mincount )) {
+//             $ignoreList [] = "mincount";
+//             if (is_numeric ( $object->mincount )) {
+//               $object->__options [] = "facet.mincount=".$object->mincount;
+//             } else {
+//               $this->warnings [] = "facets - facetranges - mincount should be numeric";
+//             }
+//           }
           if (isset ( $object->key )) {
             if (is_string ( $object->key )) {
               $counter = 0;
