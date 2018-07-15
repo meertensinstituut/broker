@@ -1070,6 +1070,14 @@ class Parser {
               $this->warnings [] = "facets - facetranges - ex should be a string";
             }
           }
+          if (isset ( $object->other )) {
+            $ignoreList [] = "other";
+            if (is_string ( $object->other )) {
+              $object->__options [] = "facet.range.other=\"" . str_replace ( "\"", "\\\"", $object->ex) . "\"";
+            } else {
+              $this->warnings [] = "facets - facetranges - ex should be a string";
+            }
+          }
           if (isset ( $object->mincount )) {
             $ignoreList [] = "mincount";
             if (is_numeric ( $object->mincount )) {
