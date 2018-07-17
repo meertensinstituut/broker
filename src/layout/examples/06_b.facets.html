@@ -16,6 +16,8 @@
       data-section="facetrange">facetrange</a>&gt;,...]</span>, 
   <span class="optional">"facetpivots" : [&lt;<a
       data-section="facetpivot">facetpivot</a>&gt;,...]</span>,   
+  <span class="optional">"facetheatmaps" : [&lt;<a
+      data-section="facetheatmap">facetheatmap</a>&gt;,...]</span>,   
   <span class="optional">"prefix" : &lt;string&gt;,</span>
   <span class="optional">"contains" : &lt;string&gt;,</span>
   <span class="optional">"sort" : "index" / "count",</span>
@@ -648,6 +650,38 @@
       </td>
       <td class="text">Get facetpivots on only <em>::exampleFieldInteger(fieldName)::</em> with 
       fieldstats labeled as <em>exampleStats</em>.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="subtitle" data-section="facetheatmap">Facetheatmaps</div>
+
+<div class="text">A facetheatmap is of the form</div>
+
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"geom" : &lt;string&gt;,</span>
+  <span class="optional">"gridLevel" : &lt;integer&gt;,</span>
+  <span class="optional">"distErrPct" : &lt;numeric&gt;,</span>
+  <span class="optional">"distErr" : &lt;numeric&gt;,</span>
+  <span class="optional">"format" : &lt;string&gt;,</span>
+}</pre>
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'facetheatmap'</button>
+        <div class="json">{ "response": { "facets": {
+          "facetheatmaps": [ {"field": "::exampleFieldGeo(fieldName)::", "geom": "[\"2.8 50.3\" TO \"7.2 53.8\"]", "gridLevel": 3} ]
+          }}   }</div>
+      </td>
+      <td class="text">Get facetheatmap for field <em>::exampleFieldGeo(fieldName)::</em>.
       </td>
     </tr>
   </table>

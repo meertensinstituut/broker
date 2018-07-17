@@ -250,6 +250,7 @@ class Configuration {
           $this->solr [$key] ["typeDate"] = array ();
           $this->solr [$key] ["typeLong"] = array ();
           $this->solr [$key] ["typeBinary"] = array ();
+          $this->solr [$key] ["typeGeo"] = array ();
           // get handler
           $ch = curl_init ( $solrConfiguration ["url"] . "select?q=*:*&rows=0&mtas=true&mtas.status=true&mtas.status.mtasHandler=true&wt=json" );
           $options = array (
@@ -289,6 +290,7 @@ class Configuration {
               $fieldTypes ["long"] = array ();
               $fieldTypes ["date"] = array ();
               $fieldTypes ["binary"] = array ();
+              $fieldTypes ["geo"] = array();
               $fieldTypes ["mtas"] = array ();
               if (isset ( $data ["schema"] ["fieldTypes"] ) && is_array ( $data ["schema"] ["fieldTypes"] )) {
                 foreach ( $data ["schema"] ["fieldTypes"] as $item ) {
@@ -308,6 +310,8 @@ class Configuration {
                         $fieldTypes ["date"] [] = $item ["name"];
                       } else if ($item ["class"] == "solr.BinaryField") {
                         $fieldTypes ["binary"] [] = $item ["name"];
+                      } else if ($item ["class"] == "solr.RptWithGeometrySpatialField") {
+                        $fieldTypes ["geo"] [] = $item ["name"];
                       }
                     }
                     if (isset ( $item ["postingsFormat"] ) && is_string ( $item ["postingsFormat"] )) {
@@ -348,6 +352,9 @@ class Configuration {
               list ( $this->solr [$key] ["exampleFieldInteger"], $this->solr [$key] ["exampleFieldIntegerValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldInteger"] ) ? $solrConfiguration ["exampleFieldInteger"] : null, isset ( $solrConfiguration ["exampleFieldIntegerValues"] ) ? $solrConfiguration ["exampleFieldIntegerValues"] : null, $this->solr [$key], $solrConfiguration, array (
                   "year" 
               ), "integer/long", true, null, true, null, false );
+              list ( $this->solr [$key] ["exampleFieldGeo"], $this->solr [$key] ["exampleFieldGeoValues"] ) = $this->_findExample ( isset ( $solrConfiguration ["exampleFieldGeo"] ) ? $solrConfiguration ["exampleFieldGeo"] : null, isset ( $solrConfiguration ["exampleFieldGeoValues"] ) ? $solrConfiguration ["exampleFieldGeoValues"] : null, $this->solr [$key], $solrConfiguration, array (
+                  "latlng"
+              ), "geo", true, null, true, null, false );
               list ( $this->solr [$key] ["exampleFieldMtas"], $this->solr [$key] ["exampleFieldMtasWord"], $this->solr [$key] ["exampleFieldMtasLemma"], $this->solr [$key] ["exampleFieldMtasPos"], $this->solr [$key] ["exampleFieldMtasSinglePosition"], $this->solr [$key] ["exampleFieldMtasMultiplePosition"], $this->solr [$key] ["exampleFieldMtasSetPosition"], $this->solr [$key] ["exampleFieldMtasIntersecting"] ) = $this->_findMtasExamples ( isset ( $solrConfiguration ["exampleFieldMtas"] ) ? $solrConfiguration ["exampleFieldMtas"] : null, $this->solr [$key], $solrConfiguration, array (
                   "mtas" 
               ) );
@@ -434,6 +441,8 @@ class Configuration {
         $configuration ["typeDate"] [] = $item ["name"];
       } else if (in_array ( $item ["type"], $fieldTypes ["binary"] )) {
         $configuration ["typeBinary"] [] = $item ["name"];
+      } else if (in_array ( $item ["type"], $fieldTypes ["geo"] )) {
+        $configuration ["typeGeo"] [] = $item ["name"];
       }
     }
     return $configuration;
@@ -498,6 +507,11 @@ class Configuration {
               break;
             case "integer/long" :
               if (! in_array ( $checkField, $configuration ["typeInteger"] ) && ! in_array ( $checkField, $configuration ["typeLong"] )) {
+                continue 2;
+              }
+              break;
+            case "geo" :
+              if (! in_array ( $checkField, $configuration ["typeGeo"] )) {
                 continue 2;
               }
               break;

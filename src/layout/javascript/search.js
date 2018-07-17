@@ -1040,6 +1040,11 @@ $(function() {
             text = text.replace(/::exampleFieldMtas(\([^\)]+\))?::/g, solrConfig[property].exampleFieldMtas);
           }
         }
+        if (text.match(/::exampleFieldGeo(\([^\)]+\))?::/)) {
+          if (solrConfig[property].exampleFieldGeo !== undefined) {
+            text = text.replace(/::exampleFieldGeo(\([^\)]+\))?::/g, solrConfig[property].exampleFieldGeo);
+          }
+        }
         if (text.match(/::exampleFieldTextValue([0-9]+)(\([^\)]+\))?::/)) {
           if (solrConfig[property].exampleFieldTextValues !== undefined && solrConfig[property].exampleFieldTextValues !== null) {
             text = text.replace(/::exampleFieldTextValue([0-9]+)(\(([^\)]+)\))?::/g, function(match, p1, p2, p3) {
@@ -1201,6 +1206,8 @@ $(function() {
               type.push("date");
             } else if ($.inArray(list[i], solrConfig[property].typeBinary) >= 0) {
               type.push("binary");
+            } else if ($.inArray(list[i], solrConfig[property].typeGeo) >= 0) {
+              type.push("geo");
             }
             row.append($("<td/>").text(type.join(", ")));
           }

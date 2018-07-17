@@ -638,6 +638,7 @@ class Parser {
       $facetQueryKeyList = array ();
       $facetRangeKeyList = array ();
       $facetPivotKeyList = array ();
+      $facetHeatmapKeyList = array ();
       foreach ( $object as $key => $value ) {
         if ($key == "facetfields") {
           if ($value != null && is_array ( $value )) {
@@ -665,6 +666,13 @@ class Parser {
             list ( $object->facetpivots, $facetPivotKeyList ) = $this->checkResponseFacetPivots ( $object->facetpivots, $facetPivotKeyList );
           } else {
             $this->errors [] = "facets - facetpivots should be array";
+            unset ( $object->{$key} );
+          }
+        } else if ($key == "facetheatmaps") {
+          if ($value != null && is_array ( $value )) {
+            list ( $object->facetheatmaps, $facetHeatmapKeyList ) = $this->checkResponseFacetHeatmaps ( $object->facetheatmaps, $facetHeatmapKeyList );
+          } else {
+            $this->errors [] = "facets - facetheatmaps should be array";
             unset ( $object->{$key} );
           }
         } else if ($key == "prefix" || $key == "sort" || $key == "method" || $key == "contains") {
@@ -1314,6 +1322,140 @@ class Parser {
       );
     }
   }
+  /**
+   * Check facet heatmaps
+   *
+   * @param array $facetheatmaps
+   * @param array $keyList
+   * @return array
+   */
+  private function checkResponseFacetHeatmaps($facetheatmaps, $keyList) {
+    if (count ( $facetheatmaps ) > 0) {
+      for($i = 0; $i < count ( $facetheatmaps ); $i ++) {
+        list ( $facetheatmaps [$i], $keyList ) = $this->checkResponseFacetHeatmap ( $facetheatmaps [$i], $keyList );
+      }
+    }
+    return array (
+        $facetheatmaps,
+        $keyList
+    );
+  }
+  /**
+   * Check facet pivot
+   *
+   * @param object $object
+   * @param array $keyList
+   * @return array
+   */
+  private function checkResponseFacetHeatmap($object, $keyList) {
+    if ($object && is_object ( $object )) {
+      if (isset ( $object->field ) && is_string ( $object->field )) {
+        $configurations = $this->getConfigurationsForField ( $object->field );
+        if (count ( $configurations ) > 0) {
+          $this->__configurations [] = $configurations;
+          if (isset ( $object->__options )) {
+            $this->warnings [] = "facets - facetheatmaps - __options not expected";
+          }
+          $object->__options = array ();
+          $ignoreList = array (
+              "__options",
+              "field",
+              "key"
+          );
+          if (isset ( $object->geom )) {
+            $ignoreList [] = "geom";
+            if (is_string ( $object->geom )) {
+              $object->__options [] = "facet.heatmap.geom=\"" . str_replace ( "\"", "\\\"", $object->geom ) . "\"";
+            } else {
+              $this->warnings [] = "facets - facetranges - geom should be a string";
+            }
+          }
+          if (isset ( $object->gridLevel )) {
+            $ignoreList [] = "gridLevel";
+            if (is_int ( $object->gridLevel )) {
+              $object->__options [] = "facet.heatmap.gridLevel=".$object->gridLevel;
+            } else {
+              $this->warnings [] = "facets - facetranges - gridLevel should be an integer";
+            }
+          }
+          if (isset ( $object->distErrPct )) {
+            $ignoreList [] = "distErrPct";
+            if (is_numeric ( $object->distErrPct )) {
+              $object->__options [] = "facet.heatmap.distErrPct=".$object->distErrPct;
+            } else {
+              $this->warnings [] = "facets - facetranges - distErrPct should be numeric";
+            }
+          }
+          if (isset ( $object->distErr )) {
+            $ignoreList [] = "distErr";
+            if (is_numeric ( $object->distErr )) {
+              $object->__options [] = "facet.heatmap.distErr=".$object->distErr;
+            } else {
+              $this->warnings [] = "facets - facetranges - distErr should be numeric";
+            }
+          }
+          if (isset ( $object->key )) {
+            if (is_string ( $object->key )) {
+              $counter = 0;
+              if (in_array ( $object->key, $keyList )) {
+                $this->warnings [] = "facets - facetheatmaps - key " . $object->key . " already exists";
+                $counter = 0;
+                $originalKey = $object->key;
+                while ( in_array ( $object->key, $keyList ) ) {
+                  $counter ++;
+                  $object->key = $originalKey . " (" . $counter . ")";
+                }
+              }
+            } else {
+              unset ( $object->key );
+              $this->warnings [] = "facets - facetheatmaps - key should be a string";
+            }
+          }
+          if (! isset ( $object->key )) {
+            $counter = 0;
+            $object->key = $object->field;
+            $originalKey = $object->key;
+            while ( in_array ( $object->key, $keyList ) ) {
+              $counter ++;
+              $object->key = $originalKey . " (" . $counter . ")";
+            }
+          }
+          $object->__options [] = "key=\"" . str_replace ( "\"", "\\\"", $object->key ) . "\"";
+          $keyList [] = $object->key;
+          foreach ( $object as $key => $value ) {
+            if (in_array ( $key, $ignoreList )) {
+              // ignore
+            } else {
+              $this->warnings [] = "facets - facetheatmaps - {$key} not expected";
+            }
+          }
+          return array (
+              $object,
+              $keyList
+          );
+        } else {
+          $this->warnings [] = "facets - facetheatmaps - unexpected field (type)";
+          return array (
+              null,
+              $keyList
+          );
+        }
+      } else {
+        $this->errors [] = "facets - facetheatmaps - no (valid) heatmap provided";
+        return array (
+            null,
+            $keyList
+        );
+      }
+    } else {
+      $this->warnings [] = "facets - facetheatmaps - unexpected type";
+      return array (
+          null,
+          $keyList
+      );
+    }
+  }
+  
   /**
    * Check stats in response
    *
@@ -3156,6 +3298,8 @@ class Parser {
           $requestList = $this->parseResponseFacetRanges ( $value, $requestList );
         } else if ($key == "facetpivots") {
           $requestList = $this->parseResponseFacetPivots ( $value, $requestList );
+        } else if ($key == "facetheatmaps") {
+          $requestList = $this->parseResponseFacetHeatmaps ( $value, $requestList );
         } else if ($key == "prefix" || $key == "sort" || $key == "method" || $key == "contains") {
           $requestList [] = "facet.{$key}=" . urlencode ( $value );
         } else if ($key == "limit" || $key == "offset" || $key == "mincount") {
@@ -3457,6 +3601,45 @@ class Parser {
         $requestList [] = "facet.pivot=" . urlencode ( "{!" . implode ( " ", $object->__options ) . "}" . implode ( ",", $object->pivot ) );
       } else {
         $requestList [] = "facet.pivot=" . urlencode ( implode ( ",", $object->pivot ) );
+      }
+      $object->__requestList = $requestList;
+      return $object;
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Parse facet heatmaps
+   *
+   * @param object $object
+   * @param array $requestList
+   * @return array
+   */
+  private function parseResponseFacetHeatmaps($object, array $requestList) {
+    if ($object != null && is_array ( $object )) {
+      for($i = 0; $i < count ( $object ); $i ++) {
+        $object [$i] = $this->parseResponseFacetHeatmap ( $object [$i], $i );
+        if ($object [$i] && is_object ( $object [$i] ) && isset ( $object [$i]->__requestList )) {
+          $requestList = array_merge ( $requestList, $object [$i]->__requestList );
+        }
+      }
+    }
+    return $requestList;
+  }
+  /**
+   * Parse facet heatmap
+   *
+   * @param object $object          
+   * @param number $i          
+   * @return object
+   */
+  private function parseResponseFacetHeatmap($object, $i) {
+    if ($object && is_object ( $object )) {
+      $requestList = array ();
+      if (isset ( $object->__options ) && is_array ( $object->__options ) && count ( $object->__options ) > 0) {
+        $requestList [] = "facet.heatmap=" . urlencode ( "{!" . implode ( " ", $object->__options ) . "}" . $object->field );
+      } else {
+        $requestList [] = "facet.heatmap=" . urlencode ( $object->field );
       }
       $object->__requestList = $requestList;
       return $object;
