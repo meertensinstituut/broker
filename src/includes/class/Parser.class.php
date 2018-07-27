@@ -1375,7 +1375,7 @@ class Parser {
             if (is_int ( $object->gridLevel )) {
               $object->__options [] = "facet.heatmap.gridLevel=".$object->gridLevel;
             } else {
-              $this->warnings [] = "facets - facetranges - gridLevel should be an integer";
+              $this->warnings [] = "facets - facetheatmaps - gridLevel should be an integer";
             }
           }
           if (isset ( $object->distErrPct )) {
@@ -1391,7 +1391,15 @@ class Parser {
             if (is_numeric ( $object->distErr )) {
               $object->__options [] = "facet.heatmap.distErr=".$object->distErr;
             } else {
-              $this->warnings [] = "facets - facetranges - distErr should be numeric";
+              $this->warnings [] = "facets - facetheatmaps - distErr should be numeric";
+            }
+          }
+          if (isset ( $object->ex )) {
+            $ignoreList [] = "ex";
+            if (is_string ( $object->ex )) {
+              $object->__options [] = "ex=\"" . implode ( ",", array_map ( "base64_encode", explode ( ",", $object->ex ) ) ) . "\"";
+            } else {
+              $this->warnings [] = "facets - facetheatmaps - ex should be a string";
             }
           }
           if (isset ( $object->key )) {
