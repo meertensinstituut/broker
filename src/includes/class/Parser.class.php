@@ -2614,6 +2614,7 @@ class Parser {
         "wildcard",
         "regexp",
         "cql",
+        "geojson",
         "range",
         "join" 
     );
@@ -2623,14 +2624,15 @@ class Parser {
         "wildcard",
         "regexp",
         "cql",
-        "range" 
+        "range",
+        "geojson"
     );
     static $valueTypes = array (
         "equals",
         "phrase",
         "wildcard",
         "regexp",
-        "cql" 
+        "cql"
     );
     if ($object && is_object ( $object )) {
       $keys = array ();
@@ -2701,6 +2703,24 @@ class Parser {
             if ($object->type == "range") {
               if (! is_string ( $value )) {
                 $this->errors [] = "condition - {$key} should be string";
+              }
+            } else {
+              $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
+            }
+          } else if ($key == "geometry") {
+            if ($object->type == "geojson") {
+              if (! is_string ( $value )) {
+                $this->errors [] = "condition - {$key} should be string";
+              }
+            } else {
+              $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
+            }
+          } else if ($key == "predicate") {
+            if ($object->type == "geojson") {
+              if (! is_string ( $value )) {
+                $this->errors [] = "condition - {$key} should be string";
+              } else if(!in_array($value, array("intersects", "iswithin", "contains", "isdisjointto"))) {
+                $this->errors [] = "condition - {$key} cannot be ".$value;
               }
             } else {
               $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
@@ -2826,6 +2846,13 @@ class Parser {
           if (! in_array ( "list", $keys )) {
             $this->errors [] = "condition - no list defined";
           }
+        } else if ($object->type == "geojson") {
+          if (! in_array ( "predicate", $keys )) {
+            $this->errors [] = "condition - no predicate defined";
+          }
+          if (! in_array ( "geometry", $keys )) {
+            $this->errors [] = "condition - no geometry defined";
+          }
         } else if ($object->type == "collection") {
           if (! in_array ( "url", $keys )) {
             $this->errors [] = "condition - no url defined";
@@ -2840,10 +2867,6 @@ class Parser {
           if (! in_array ( "to", $keys )) {
             $this->errors [] = "condition - no to defined";
           }
-//           User can decide if this is necessary          
-//           if (! in_array ( "condition", $keys ) && ! in_array ( "filter", $keys )) {
-//             $this->errors [] = "condition - no filter or condition defined for " . $object->type;
-//           }
         }
       }
       return $object;
@@ -4685,6 +4708,20 @@ class Parser {
         $start = isset ( $object->start ) ? $object->start : "*";
         $end = isset ( $object->end ) ? $object->end : "*";
         $object->__query = $object->field . ":[" . $this->solrEncode ( $start, $object->type ) . " TO " . $this->solrEncode ( $end, $object->type ) . "]";
+        if (isset ( $object->not ) && $object->not) {
+          $object->__query = "(*:* NOT " . $object->__query . ")";
+        }
+      } else if ($object->type == "geojson") {
+        if($object->predicate=="intersects") {
+          $value  = "Intersects(".$object->geometry.")"; 
+        } else if($object->predicate=="iswithin") {
+          $value  = "IsWithin(".$object->geometry.")";
+        } else if($object->predicate=="contains") {
+          $value  = "Contains(".$object->geometry.")";
+        } else if($object->predicate=="isdisjointto") {
+          $value  = "IsDisjointTo(".$object->geometry.")";
+        }
+        $object->__query = $object->field . ":".$this->solrEncode ( $value, $object->type );
         if (isset ( $object->not ) && $object->not) {
           $object->__query = "(*:* NOT " . $object->__query . ")";
         }

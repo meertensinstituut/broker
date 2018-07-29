@@ -17,6 +17,7 @@
       matching the provided range</li>
     <li><a data-section="cql">cql</a> : field contains the provided
       cql expression</li>
+    <li><a data-section="geojson">geojson</a> : geometric condition</li>  
   </ul>
 </div>
 
@@ -578,6 +579,30 @@ since this is automatically derived from the CQL query with the different instan
       </td>
     </tr>
   </table>
+</div>
+
+<br>
+
+<hr />
+
+<div class="subtitle" data-section="geojson">GeoJSON</div>
+
+<div class="text">
+  In a condition of type <em>geojson</em>, documents are matched for
+  which the defined geometric condition on the <em>field</em> is
+  satisfied.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "geojson",</span>
+  <span class="obligatory">"field" : &lt;field&gt;,</span>
+  <span class="obligatory">"predicate" : "intersects" / "iswithin" / "contains" / "isdisjointto",</span>
+  <span class="obligatory">"geometry" : &lt;string&gt;,</span>
+  <span class="optional">"not" : &lt;boolean&gt;,</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
 </div>
 
 <br />
