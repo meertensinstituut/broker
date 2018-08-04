@@ -1145,6 +1145,7 @@ $(function() {
       row.append($("<td/>").text("mtas"));
       row.append($("<td/>").text("mtasHandler"));
       row.append($("<td/>").text("cql-parser"));
+      row.append($("<td/>").text("simple-parser"));
       row.append($("<td/>").text("join-parser"));
       table.append(row);
       for ( var property in solrConfig) {
@@ -1157,6 +1158,7 @@ $(function() {
           row.append($("<td/>").addClass("centered").text(solrConfig[property].mtas.length));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].mtasHandler));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].queryParserCql));
+          row.append($("<td/>").addClass("centered").text(solrConfig[property].queryParserSimple));
           row.append($("<td/>").addClass("centered").text(solrConfig[property].queryParserJoin));
           table.append(row);
         }

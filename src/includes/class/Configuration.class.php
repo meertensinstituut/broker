@@ -382,7 +382,11 @@ class Configuration {
                     if (isset ( $queryParserConfig ["name"] ) && is_string ( $queryParserConfig ["name"] )) {
                       $this->solr [$key] ["queryParserCql"] = $queryParserConfig ["name"];
                     }
-                  } else if (is_array ( $queryParserConfig ) && isset ( $queryParserConfig ["class"] ) && $queryParserConfig ["class"] == "mtas.solr.search.MtasSolrJoinQParserPlugin") {
+                  } else if (is_array ( $queryParserConfig ) && isset ( $queryParserConfig ["class"] ) && $queryParserConfig ["class"] == "mtas.solr.search.MtasSolrSimpleQParserPlugin") {
+                    if (isset ( $queryParserConfig ["name"] ) && is_string ( $queryParserConfig ["name"] )) {
+                      $this->solr [$key] ["queryParserSimple"] = $queryParserConfig ["name"];
+                    }
+                  } elseif (is_array ( $queryParserConfig ) && isset ( $queryParserConfig ["class"] ) && $queryParserConfig ["class"] == "mtas.solr.search.MtasSolrJoinQParserPlugin") {
                     if (isset ( $queryParserConfig ["name"] ) && is_string ( $queryParserConfig ["name"] )) {
                       $this->solr [$key] ["queryParserJoin"] = $queryParserConfig ["name"];
                     }

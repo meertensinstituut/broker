@@ -2448,6 +2448,10 @@ class Parser {
       }
       if (! isset ( $object->type )) {
         $this->errors [] = $prefix . "type is obligatory";
+      } else if($object->type=="simple") {
+        if (! isset ( $object->prefix )) {
+          $this->errors [] = $prefix . "prefix is obligatory for type ".$object->type;
+        }
       }
       if (! isset ( $object->value )) {
         $this->errors [] = $prefix . "value is obligatory";
@@ -2614,6 +2618,7 @@ class Parser {
         "wildcard",
         "regexp",
         "cql",
+        "simple",
         "geojson",
         "range",
         "join" 
@@ -2624,6 +2629,7 @@ class Parser {
         "wildcard",
         "regexp",
         "cql",
+        "simple",
         "range",
         "geojson"
     );
@@ -2632,7 +2638,8 @@ class Parser {
         "phrase",
         "wildcard",
         "regexp",
-        "cql"
+        "cql",
+        "simple"
     );
     if ($object && is_object ( $object )) {
       $keys = array ();
@@ -2747,7 +2754,7 @@ class Parser {
               $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
             }
           } else if ($key == "ignore" || $key == "prefix") {
-            if ($object->type == "cql") {
+            if ($object->type == "cql" || $object->type == "simple") {
               if (! is_string ( $value )) {
                 $this->errors [] = "condition - {$key} should be string";
               }
@@ -2755,7 +2762,7 @@ class Parser {
               $this->warnings [] = "condition - {$key} not expected for type '{$object->type}'";
             }
           } else if ($key == "maximumIgnoreLength") {
-            if ($object->type == "cql") {
+            if ($object->type == "cql" || $object->type == "simple") {
               if (! is_int ( $value )) {
                 $this->errors [] = "condition - {$key} should be integer";
               }
@@ -2866,6 +2873,10 @@ class Parser {
           }
           if (! in_array ( "to", $keys )) {
             $this->errors [] = "condition - no to defined";
+          }
+        } else if ($object->type == "simple") {
+          if (! in_array ( "prefix", $keys )) {
+            $this->errors [] = "condition - no prefix defined";
           }
         }
       }
@@ -4725,7 +4736,7 @@ class Parser {
         if (isset ( $object->not ) && $object->not) {
           $object->__query = "(*:* NOT " . $object->__query . ")";
         }
-      } else if ($object->type == "cql") {
+      } else if ($object->type == "cql"  || $object->type == "simple") {
         if (isset ( $object->ignore ) && (trim ( $object->ignore ) != "")) {
           $ignore = $object->ignore;
           if (isset ( $object->maximumIgnoreLength ) && is_int ( $object->maximumIgnoreLength )) {
@@ -4742,14 +4753,19 @@ class Parser {
         } else {
           $prefix = null;
         }
-        if (isset ( $object->variables )) {
+        
+        if ($object->type == "cql" && isset ( $object->variables )) {
           $variables = $object->variables->__variables;
           $stats = $object->variables->__stats;
         } else {
           $variables = null;
           $stats = null;
         }
-        $object->__query = "{!" . $this->configuration->solr [$this->solrConfiguration] ["queryParserCql"] . " field=\"" . $object->field . "\" query=" . $this->solrEncode ( $object->value, $object->type ) . " " . ($prefix != null ? "prefix=" . $this->solrEncode ( $prefix, "equals" ) : "") . " " . ($ignore != null ? ("ignore=" . $this->solrEncode ( $ignore, $object->type )) : "") . " " . ($maximumIgnoreLength != null ? ("maximumIgnoreLength=" . $maximumIgnoreLength) : "") . " " . $this->createVariablesString ( $variables ) . "}";
+        if ($object->type == "cql") {
+          $object->__query = "{!" . $this->configuration->solr [$this->solrConfiguration] ["queryParserCql"] . " field=\"" . $object->field . "\" query=" . $this->solrEncode ( $object->value, $object->type ) . " " . ($prefix != null ? "prefix=" . $this->solrEncode ( $prefix, "equals" ) : "") . " " . ($ignore != null ? ("ignore=" . $this->solrEncode ( $ignore, $object->type )) : "") . " " . ($maximumIgnoreLength != null ? ("maximumIgnoreLength=" . $maximumIgnoreLength) : "") . " " . $this->createVariablesString ( $variables ) . "}";
+        } else if ($object->type == "simple") {
+          $object->__query = "{!" . $this->configuration->solr [$this->solrConfiguration] ["queryParserSimple"] . " field=\"" . $object->field . "\" query=" . $this->solrEncode ( $object->value, $object->type ) . " prefix=" . $this->solrEncode ( $prefix, "equals" ) . " " . ($ignore != null ? ("ignore=" . $this->solrEncode ( $ignore, $object->type )) : "") . " " . ($maximumIgnoreLength != null ? ("maximumIgnoreLength=" . $maximumIgnoreLength) : "") . "}";
+        }
         if (isset ( $object->not ) && $object->not) {
           $object->__query = "(*:* NOT " . $object->__query . ")";
         }
@@ -5314,7 +5330,7 @@ class Parser {
       );
       $string = str_replace ( $match, $replace, $value );
       $string = "/" . $string . "/";
-    } else if ($type == "cql") {
+    } else if ($type == "cql" || $type == "simple") {
       $match = array (
           '\\',
           '"' 
