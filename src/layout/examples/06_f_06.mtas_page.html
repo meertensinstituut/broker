@@ -1,0 +1,50 @@
+<div class="title">Mtas Page</div>
+
+<div class="text">
+  The mtas page section occurs within the <a data-tab="mtas">mtas</a> section,
+  and describes page results that should be included in the
+  response for the listed documents. The mtas page section is of the form
+</div>
+
+<div class="code">
+  <pre>[
+  {
+    <span class="obligatory">"field" : &lt;field&gt;</span>,
+    <span class="obligatory">"start" : &lt;integer&gt;</span>,
+    <span class="obligatory">"end" : &lt;integer&gt;</span>,
+    <span class="optional">"key" : &lt;string&gt;</span>,
+    <span class="optional">"prefix" : &lt;string&gt;</span>,
+  },... 
+]</pre>
+</div>
+
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example 'page'</button>
+        <div class="json">{ "condition" : { "type": "cql", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "[]"},
+          "response": 
+            { "documents": { "start":
+              0, "rows": 2, "fields": [ "::uniqueKey::", "::exampleFieldText(fieldName)::" ] },
+              "mtas": { 
+                "page" : [{
+                  "field": "::exampleFieldMtas(fieldName)::",
+                  "start": 0,
+                  "end": 100,
+                  "prefix": "::exampleFieldMtasWordPrefix(prefix1)::,::exampleFieldMtasLemmaPrefix(prefix2)::,::exampleFieldMtasPosPrefix(prefix3)::"
+                }]
+              }
+            }
+          }</div>
+      </td>
+      <td class="text">Get page from position 0 until 100 
+      with prefixes <em>::exampleFieldMtasWordPrefix(prefix1)::</em>, <em>::exampleFieldMtasLemmaPrefix(prefix2)::</em> and <em>::exampleFieldMtasPosPrefix(prefix3)::</em> 
+      in <em>::exampleFieldMtas(fieldName)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>

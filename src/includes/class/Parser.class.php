@@ -1650,6 +1650,15 @@ class Parser {
             $this->errors [] = "mtas - {$key} should be array";
             unset ( $object->{$key} );
           }
+        } else if ($key == "page") {
+          if (!is_null($value) && is_array ( $value ))  {
+            for($i = 0; $i < count ( $value ); $i ++) {
+              $object->{$key} [$i] = $this->checkResponseMtasPage ( $value [$i] );
+            }
+          } else {
+            $this->errors [] = "mtas - {$key} should be array";
+            unset ( $object->{$key} );
+          }
         } else if ($key == "termvector") { 
           if (!is_null($value) && is_array ( $value )) { 
             for($i = 0; $i < count ( $value ); $i ++) {
@@ -2020,6 +2029,55 @@ class Parser {
       return $object;
     } else {
       $this->warnings [] = "mtas - {$type} unexpected type";
+      return null;
+    }
+  }
+  /**
+   * Check mtas page
+   *
+   * @param object $object
+   * @return object
+   */
+  private function checkResponseMtasPage($object) {
+    if ($object && is_object ( $object )) {
+      foreach ( $object as $key => $value ) {
+        if ($key == "field") {
+          if (! is_string ( $value )) {
+            $this->errors [] = "mtas - page - {$key} should be string";
+          } else {
+            $configurations = $this->getConfigurationsForField ( $value );
+            if (count ( $configurations ) > 0) {
+              $this->__configurations [] = $configurations;
+            } else {
+              $this->errors [] = "mtas - page - {$key} :  '" . $value . "' not found in any configuration";
+            }
+          }
+        } else if ($key == "prefix" || $key == "key") {
+          if (! is_string ( $value )) {
+            $this->errors [] = "mtas - page - {$key} should be string";
+          }
+        } else if ($key == "start" || $key == "end") {
+          if (! is_int ( $value )) {
+            $this->errors [] = "mtas - page - {$key} should be integer";
+          }
+        } else {
+          $this->warnings [] = "mtas - page - {$key} not expected";
+        }
+      }
+      if (count ( $this->errors ) == 0) {
+        if (! isset ( $object->field )) {
+          $this->errors [] = "mtas - page - field is obligatory";
+        }
+        if (! isset ( $object->start )) {
+          $this->errors [] = "mtas - page - start is obligatory";
+        }
+        if (! isset ( $object->end )) {
+          $this->errors [] = "mtas - page - end is obligatory";
+        }
+      }
+      return $object;
+    } else {
+      $this->warnings [] = "mtas - page - unexpected type";
       return null;
     }
   }
@@ -3797,6 +3855,16 @@ class Parser {
               }
             }
           }
+        } else if ($key == "page") {
+          if ($value && is_array ( $value )) {
+            $requestList [] = "mtas.{$key}=true";
+            for($i = 0; $i < count ( $value ); $i ++) {
+              $object->{$key} [$i] = $this->parseResponseMtasPage ( $object->{$key} [$i], $i );
+              if ($object->{$key} [$i] && is_object ( $object->{$key} [$i] ) && isset ( $object->{$key} [$i]->__requestList )) {
+                $requestList = array_merge ( $requestList, $object->{$key} [$i]->__requestList );
+              }
+            }
+          }
         } else if ($key == "termvector") {
           if ($value && is_array ( $value )) {
             $requestList [] = "mtas.{$key}=true";
@@ -4223,6 +4291,37 @@ class Parser {
             $counter ++;
           }
         }
+      }
+      $object->__requestList = $requestList;
+      return $object;
+    } else {
+      return null;
+    }
+  }
+  /**
+   * Parse mtas page
+   *
+   * @param object $object          
+   * @param number $i          
+   * @return object
+   */
+  private function parseResponseMtasPage($object, $i) {
+    if ($object && is_object ( $object )) {
+      $requestList = array ();
+      if (isset ( $object->key ) && is_string ( $object->key )) {
+        $requestList [] = "mtas.page." . $i . ".key=" . urlencode ( $object->key );
+      }
+      if (isset ( $object->field ) && is_string ( $object->field )) {
+        $requestList [] = "mtas.page." . $i . ".field=" . urlencode ( $object->field );
+      }
+      if (isset ( $object->prefix ) && is_string ( $object->prefix )) {
+        $requestList [] = "mtas.page." . $i . ".prefix=" . urlencode ( $object->prefix );
+      }
+      if (isset ( $object->start ) && is_int ( $object->start )) {
+        $requestList [] = "mtas.page." . $i . ".start=" . urlencode ( $object->start );
+      }
+      if (isset ( $object->start ) && is_int ( $object->start )) {
+        $requestList [] = "mtas.page." . $i . ".end=" . urlencode ( $object->end );
       }
       $object->__requestList = $requestList;
       return $object;

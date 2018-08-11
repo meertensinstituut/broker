@@ -17,6 +17,8 @@
       matching the provided range</li>
     <li><a data-section="cql">cql</a> : field contains the provided
       cql expression</li>
+    <li><a data-section="simple">simple</a> : field contains the provided
+      simple expression</li>
     <li><a data-section="geojson">geojson</a> : geometric condition</li>  
   </ul>
 </div>
@@ -584,6 +586,66 @@ since this is automatically derived from the CQL query with the different instan
 <br>
 
 <hr />
+
+<div class="subtitle" data-section="simple">Simple</div>
+
+::ifMtasField()(
+<div class="warning">The current configuration does not seem to
+  contain fields where the MtasCodec is used during indexation.</div>
+)::
+
+<div class="text">
+  In a condition of type <em>simple</em>, documents are matched for which
+  the defined <em>field</em> contains the provided simple
+    expression.
+</div>
+
+<div class="code">
+  <pre>{
+  <span class="obligatory">"type" : "simple",</span>
+  <span class="obligatory">"value" : &lt;string&gt;</span>
+  <span class="obligatory">"prefix" : &lt;string&gt;</span>
+  <span class="optional">"ignore" : &lt;string&gt;</span>
+  <span class="optional">"maximumIgnoreLength" : &lt;integer&gt;</span>
+  <span class="optional">"key" : &lt;string&gt;,</span>
+  <span class="optional">"facetquery" : &lt;boolean&gt;,</span>
+}</pre>
+</div>
+
+<div class="text">
+  Besides <em>type</em>, the <em>value</em> and <em>prefix</em> are obligatory and should
+  contain a simple expression and dfeault prefix. The optional <em>ignore</em> allows the definition of
+  a simple expression that should be ignored in the
+  expression defined by the provided <em>value</em>. The <em>facetquery</em>
+  option enables the automatic generation of a <a data-tab="facets">facetquery</a>
+  based on this condition, the optional <em>key</em> is used to label
+  this facetquery.
+</div>
+
+<div class="example">
+  <table>
+    <tr>
+      <td class="button">
+        <button class="json">Example type 'simple'</button>
+        <div class="json">{ "condition" : { "type": "simple", "field"
+          : "::exampleFieldMtas(fieldName)::", "value" :
+          "\"::exampleFieldMtasLemmaPostfix0(value1):: ::exampleFieldMtasLemmaPostfix1(value2)::\"", "prefix": "::exampleFieldMtasLemmaPrefix(prefix)::"},
+          "response": { "documents": { "start": 0, "rows": 10, "fields":
+          [ "::uniqueKey::" , "::exampleFieldText(fieldName)::"] }}  }</div>
+      </td>
+      <td class="text">Get unique key and field <em>::exampleFieldText(someFieldName)::</em>
+        for the first 10 documents where field <em>::exampleFieldMtas(mtasFieldName)::</em>
+        matches <em>"::exampleFieldMtasLemmaPostfix0(value1):: ::exampleFieldMtasLemmaPostfix1(value2)::"</em>
+        with default prefix <em>::exampleFieldMtasLemmaPrefix(prefix)::</em>.
+      </td>
+    </tr>
+  </table>
+</div>   
+
+<br>
+
+<hr />
+
 
 <div class="subtitle" data-section="geojson">GeoJSON</div>
 
