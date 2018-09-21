@@ -271,7 +271,8 @@ class Configuration {
             }
           }  
           // get schema
-          $ch = curl_init ( $solrConfiguration ["url"] . "schema?wt=json" );
+          $schema_url = $solrConfiguration["url"] . "schema?wt=json";
+          $ch = curl_init ( $schema_url );
           $options = array (
               CURLOPT_HTTPHEADER => array (
                   "Content-Type: application/x-www-form-urlencoded; charset=utf-8" 
@@ -359,10 +360,10 @@ class Configuration {
                   "mtas" 
               ) );
             } else {
-              die ( "No schema available for '" . $solrConfiguration ["url"] . "' in configuration '" . $key . "'" );
+              die ( "Could not retrieve schema from '" . $schema_url . "' in configuration '" . $key . "'" );
             }
           } else {
-            die ( "No schema available for '" . $solrConfiguration ["url"] . "' in configuration '" . $key . "'" );
+            die ( "Could not retrieve schema from '" . $schema_url . "' in configuration '" . $key . "'" );
           }
           // get config
           $ch = curl_init ( $solrConfiguration ["url"] . "config?wt=json" );
