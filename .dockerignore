@@ -1,0 +1,13 @@
+.dockerignore
+.editorconfig
+.git
+.gitignore
+Dockerfile
+
+# Macs
+._.DS_Store
+.DS_Store
+__MACOSX
+
+# Vim
+*.sw[op]

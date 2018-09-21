@@ -1,35 +1,27 @@
 FROM ubuntu:16.04
 
 EXPOSE 80
-  
+
 USER root
 
-WORKDIR "/root" 
+WORKDIR "/root"
 
-RUN mkdir lib 
+RUN mkdir lib
 
-RUN apt-get update && apt-get install -y locales apache2 libapache2-mod-php php php-cli php-curl curl php-sqlite3 sqlite3 php-mbstring subversion git vim && \
+RUN apt-get -y update && \
+    apt-get install -y apache2 composer curl libapache2-mod-php locales php \
+        php-cli php-curl php-sqlite3 php-mbstring sqlite3 unzip && \
     locale-gen en_US.UTF-8 en_US && update-locale LANG=en_US.UTF-8 LANGUAGE=en_US:en
-    
-RUN php -r "copy('https://getcomposer.org/installer', '/tmp/composer-setup.php');" && \
-    php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
-    rm -rf /tmp/composer-setup.php
-            
-RUN service apache2 stop && \
-    echo "ServerName localhost" | tee /etc/apache2/conf-available/fqdn.conf && \
-    a2enconf fqdn && \
-    rm -rf /var/www/html/* && \
-    printf "echo\n" >> /start.sh && \
-    printf "echo \"=============================== BROKER ================================\"\n" >> /start.sh && \
-    printf "echo \"  See https://meertensinstituut.github.io/broker/ for more information\"\n" >> /start.sh && \
-    printf "echo \"=======================================================================\"\n" >> /start.sh && \
-    printf "echo\n" >> /start.sh && \
-    printf "service apache2 start\n" >> /start.sh && \
-    chmod 755 /start.sh
-    
-RUN svn --force export https://github.com/meertensinstituut/broker/trunk/src/ /var/www/html && \
-    chmod 777 /var/www/html/cache && \
-    composer install -d /var/www/html/
-    
 
-CMD bash -C '/start.sh'; 'bash'
+RUN rm -rf /var/www/html
+COPY src/ /var/www/html
+COPY docker/start.sh /
+
+RUN service apache2 stop && \
+    echo "ServerName localhost" > /etc/apache2/conf-available/fqdn.conf && \
+    a2enconf fqdn
+
+RUN chmod 777 /var/www/html/cache && \
+    composer install -d /var/www/html/
+
+CMD sh /start.sh; bash
