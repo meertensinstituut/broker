@@ -15,7 +15,7 @@
 
 <div class="info">
   See the <a href="{$_configuration->url("search",null)}">examples</a>, 
-  Solr documention and also <a href="https://textexploration.github.io/mtas/" target="_blank">Mtas documentation</a> for more information.
+  Solr documention and also <a href="https://meertensinstituut.github.io/mtas/" target="_blank">Mtas documentation</a> for more information.
 </div>
 
 <div class="info">
